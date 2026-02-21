@@ -170,7 +170,7 @@ static func get_dishes() -> Array:
 			"flavor": 7, "mod_slots": 2,
 			"tags": ["vegetable", "fried", "umami_tag"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "desc": "获得1层鲜美，20%概率风味翻倍", "effect": {"add_keyword": "umami", "keyword_stacks": 1, "random_chance": 0.2, "on_success": {"flavor_mult": 2.0}}}
+				{"event": "item_activated", "condition": "self", "desc": "获得1层鲜美", "effect": {"add_keyword": "umami", "keyword_stacks": 1}}
 			],
 			"on_activate": [],
 			"description": "炸出汁豆腐。"
@@ -270,9 +270,7 @@ static func get_dishes() -> Array:
 			"cuisine": "washoku", "tier": 2, "size": 2, "cooldown": 6.0,
 			"flavor": 14, "mod_slots": 2,
 			"tags": ["meat", "fried", "rice", "rich"],
-			"triggers": [
-				{"event": "item_activated", "condition": "self", "desc": "25%概率风味翻倍", "effect": {"random_chance": 0.25, "on_success": {"flavor_mult": 2.0}}}
-			],
+			"triggers": [],
 			"on_activate": [],
 			"description": "炸猪排盖饭。"
 		},

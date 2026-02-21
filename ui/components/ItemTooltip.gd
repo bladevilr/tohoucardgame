@@ -167,7 +167,10 @@ func show_item(item_data: Dictionary, mouse_pos: Vector2) -> void:
 	else:
 		custom_minimum_size.x = 300
 
-	reset_size()
+	# 给自动换行标签设置最小宽度，确保高度计算正确
+	var label_min_x: float = custom_minimum_size.x - 24
+	effect_label.custom_minimum_size.x = label_min_x
+	desc_label.custom_minimum_size.x = label_min_x
 
 	var star_level: int = int(item_data.get("star_level", 1))
 	star_label.text = GameConfig.STAR_NAMES.get(star_level, "★")
@@ -201,6 +204,7 @@ func show_item(item_data: Dictionary, mouse_pos: Vector2) -> void:
 
 	hint_label.text = "右键查看详情"
 
+	reset_size()
 	global_position = mouse_pos + Vector2(20, 20)
 	await get_tree().process_frame
 	_keep_on_screen(mouse_pos)
@@ -452,6 +456,25 @@ func _build_effect_summary(item_data: Dictionary) -> String:
 		if lines.size() > 3:
 			lines = lines.slice(0, 3)
 		return "\n".join(lines)
+
+	# 标签驱动的引擎机制（显示在效果摘要首位）
+	var tags_arr: Array = item_data.get("tags", [])
+	if "light" in tags_arr or "tea" in tags_arr:
+		lines.append("清口：清除50%油腻，每层+3分+全场加速")
+	if "spicy" in tags_arr or "sour" in tags_arr:
+		lines.append("开胃：推进相邻菜CD 15%")
+	if "grilled" in tags_arr or "stir_fried" in tags_arr:
+		lines.append("爆香：蓄热4次后得分×3.0")
+	if "fried" in tags_arr:
+		lines.append("爽脆：25%概率双重激活×0.7")
+	if "rich" in tags_arr or "umami_tag" in tags_arr:
+		lines.append("上瘾：每次+2层，每层/秒1.5分")
+	if "rich" in tags_arr and "fried" in tags_arr:
+		lines.append("油腻：浓郁+油炸叠加，每层减慢CD 8%")
+	if "umami_tag" in tags_arr:
+		lines.append("提鲜：同菜系≥2时，右邻下次×1.8")
+	if "fermented" in tags_arr:
+		lines.append("发酵：首次×1.3，每次激活+1%")
 
 	var active: Array = item_data.get("on_activate", [])
 	if not active.is_empty():

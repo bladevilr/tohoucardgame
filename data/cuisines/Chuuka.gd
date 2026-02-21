@@ -22,9 +22,9 @@ static func get_dishes() -> Array:
 			"cuisine": "chuuka", "tier": 0, "size": 1, "cooldown": 3.5,
 			"flavor": 5, "mod_slots": 2,
 			"tags": ["meat", "fried", "rich"],
-			"triggers": [{"event": "item_activated", "condition": "self", "effect": {"random_chance": 0.2, "on_success": {"flavor_mult": 2.0}}, "desc": "20%概率风味翻倍"}],
+			"triggers": [],
 			"on_activate": [],
-			"description": "煎饺。"
+			"description": "煎炸小食。油炸特性触发爽脆，每次激活有25%概率再次结算，第2次得分×0.7。"
 		},
 		{
 			"id": "mapo_tofu", "name": "麻婆豆腐", "name_cn": "麻婆豆腐",
@@ -51,7 +51,7 @@ static func get_dishes() -> Array:
 			"tags": ["rice", "light", "staple"],
 			"triggers": [{"event": "item_activated", "condition": "self", "effect": {"type": "stat_bonus", "flavor": 3}, "desc": "风味+3"}],
 			"on_activate": [],
-			"description": "白粥。"
+			"description": "清淡主食。激活清口机制，清除场上50%油腻层数，每清一层+3分并全场加速冷却0.3秒。"
 		},
 		{
 			"id": "baozi", "name": "肉包子", "name_cn": "肉包子",
@@ -76,7 +76,7 @@ static func get_dishes() -> Array:
 			"cuisine": "chuuka", "tier": 0, "size": 1, "cooldown": 3.0,
 			"flavor": 5, "mod_slots": 2,
 			"tags": ["fried", "staple", "rich"],
-			"triggers": [{"event": "item_activated", "condition": "self", "effect": {"random_chance": 0.2, "on_success": {"flavor_mult": 2.0}}, "desc": "20%概率风味翻倍"}],
+			"triggers": [],
 			"on_activate": [],
 			"description": "葱油饼。"
 		},

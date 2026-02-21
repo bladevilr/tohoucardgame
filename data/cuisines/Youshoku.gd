@@ -85,10 +85,7 @@ static func get_dishes() -> Array:
 			"cuisine": "youshoku", "tier": 0, "size": 1, "cooldown": 3.5,
 			"flavor": 5, "mod_slots": 2,
 			"tags": ["meat", "fried", "rich"],
-			"triggers": [
-				{"event": "item_activated", "condition": "self", "desc": "20%概率风味翻倍",
-				 "effect": {"random_chance": 0.2, "on_success": {"type": "flavor_mult", "value": 2.0}}}
-			],
+			"triggers": [],
 			"on_activate": [],
 			"description": "可乐饼。"
 		},
