@@ -84,7 +84,7 @@ static func get_dishes() -> Array:
 						"on_threshold": {"add_keyword": "aftertaste", "keyword_stacks": 3, "reset_counter": true}
 					}
 				},
-				"desc": "每激活2次，获得3层余韵"
+				"desc": "每激活2次，获得3层回味"
 			}],
 			"on_activate": [],
 			"description": "烤红薯。"
@@ -120,7 +120,7 @@ static func get_dishes() -> Array:
 					"if_position": "leftmost",
 					"then_bonus": {"add_keyword": "umami", "keyword_stacks": 1}
 				},
-				"desc": "获得1层焦香；若在最左侧，额外获得1层鲜味"
+				"desc": "获得1层焦香；若在最左侧，额外获得1层鲜美"
 			}],
 			"on_activate": [],
 			"description": "烤饭团。"
@@ -150,7 +150,7 @@ static func get_dishes() -> Array:
 			"flavor": 10, "mod_slots": 2,
 			"tags": ["noodle", "rich", "umami_tag"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "umami", "keyword_stacks": 1, "add_keyword_2": "char_aroma", "keyword_stacks_2": 1}, "desc": "获得1层鲜味和1层焦香"}
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "umami", "keyword_stacks": 1, "add_keyword_2": "char_aroma", "keyword_stacks_2": 1}, "desc": "获得1层鲜美和1层焦香"}
 			],
 			"on_activate": [],
 			"description": "屋台拉面。"
@@ -183,7 +183,7 @@ static func get_dishes() -> Array:
 			"flavor": 9, "mod_slots": 2,
 			"tags": ["seafood", "grilled", "rich"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "char_aroma", "keyword_stacks": 1, "chain_right": {"range": 1, "effect": {"add_keyword": "umami", "keyword_stacks": 1}}}, "desc": "获得1层焦香，并向右传递1层鲜味"}
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "char_aroma", "keyword_stacks": 1, "chain_right": {"range": 1, "effect": {"add_keyword": "umami", "keyword_stacks": 1}}}, "desc": "获得1层焦香，并向右传递1层鲜美"}
 			],
 			"on_activate": [],
 			"description": "烤八目鳗。"
@@ -251,7 +251,7 @@ static func get_dishes() -> Array:
 			"flavor": 15, "mod_slots": 2,
 			"tags": ["meat", "stewed", "rich", "umami_tag"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"type": "first_activate_bonus", "flavor": 25, "extra": {"add_keyword": "umami", "keyword_stacks": 2}}, "desc": "首次激活获得25风味和2层鲜味"}
+				{"event": "item_activated", "condition": "self", "effect": {"type": "first_activate_bonus", "flavor": 25, "extra": {"add_keyword": "umami", "keyword_stacks": 2}}, "desc": "首次激活获得25风味和2层鲜美"}
 			],
 			"on_activate": [],
 			"description": "内脏锅。"
@@ -284,7 +284,7 @@ static func get_dishes() -> Array:
 			"flavor": 10, "mod_slots": 2,
 			"tags": ["vegetable", "grilled", "umami_tag"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "umami", "keyword_stacks": 2, "reduce_cooldown_adjacent": 0.3}, "desc": "获得2层鲜味，减少相邻料理0.3秒冷却"}
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "umami", "keyword_stacks": 2, "reduce_cooldown_adjacent": 0.3}, "desc": "获得2层鲜美，减少相邻料理0.3秒冷却"}
 			],
 			"on_activate": [],
 			"description": "锡纸烤蘑菇。"
@@ -339,7 +339,7 @@ static func get_dishes() -> Array:
 			"flavor": 13, "mod_slots": 2,
 			"tags": ["seafood", "grilled", "rich"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"clear_environment": "greasy", "clear_amount": 2, "bonus_on_clear": {"type": "gain_keyword", "keyword": "umami"}}, "desc": "清除2层油腻环境，成功时获得鲜味"}
+				{"event": "item_activated", "condition": "self", "effect": {"clear_environment": "greasy", "clear_amount": 2, "bonus_on_clear": {"type": "gain_keyword", "keyword": "umami"}}, "desc": "清除2层油腻环境，成功时获得鲜美"}
 			],
 			"on_activate": [],
 			"description": "盐烤秋刀鱼。"
@@ -352,7 +352,7 @@ static func get_dishes() -> Array:
 			"flavor": 22, "mod_slots": 2,
 			"tags": ["seafood", "grilled", "mastered"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"type": "first_activate_bonus", "flavor": 50, "extra": {"add_keyword": "char_aroma", "keyword_stacks": 3, "add_keyword_2": "umami", "keyword_stacks_2": 2}}, "desc": "首次激活获得50风味、3层焦香和2层鲜味"}
+				{"event": "item_activated", "condition": "self", "effect": {"type": "first_activate_bonus", "flavor": 50, "extra": {"add_keyword": "char_aroma", "keyword_stacks": 3, "add_keyword_2": "umami", "keyword_stacks_2": 2}}, "desc": "首次激活获得50风味、3层焦香和2层鲜美"}
 			],
 			"on_activate": [],
 			"description": "夜雀之宴。"
@@ -396,7 +396,7 @@ static func get_dishes() -> Array:
 			"flavor": 21, "mod_slots": 2,
 			"tags": ["seafood", "grilled", "mastered", "umami_tag"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "char_aroma", "keyword_stacks": 3, "add_keyword_2": "umami", "keyword_stacks_2": 3, "reduce_cooldown_adjacent": 0.5}, "desc": "获得3层焦香和3层鲜味，减少相邻料理0.5秒冷却"}
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "char_aroma", "keyword_stacks": 3, "add_keyword_2": "umami", "keyword_stacks_2": 3, "reduce_cooldown_adjacent": 0.5}, "desc": "获得3层焦香和3层鲜美，减少相邻料理0.5秒冷却"}
 			],
 			"on_activate": [],
 			"description": "米斯蒂娅的秘传烧烤。"

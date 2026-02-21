@@ -459,32 +459,52 @@ func _build_effect_summary(item_data: Dictionary) -> String:
 
 	# 标签驱动的引擎机制（显示在效果摘要首位）
 	var tags_arr: Array = item_data.get("tags", [])
+	var has_engine_mechanic: bool = false
+
 	if "light" in tags_arr or "tea" in tags_arr:
 		lines.append("清口：清除50%油腻，每层+3分+全场加速")
+		has_engine_mechanic = true
 	if "spicy" in tags_arr or "sour" in tags_arr:
 		lines.append("开胃：推进相邻菜CD 15%")
+		has_engine_mechanic = true
 	if "grilled" in tags_arr or "stir_fried" in tags_arr:
 		lines.append("爆香：蓄热4次后得分×3.0")
+		has_engine_mechanic = true
 	if "fried" in tags_arr:
 		lines.append("爽脆：25%概率双重激活×0.7")
+		has_engine_mechanic = true
 	if "rich" in tags_arr or "umami_tag" in tags_arr:
 		lines.append("上瘾：每次+2层，每层/秒1.5分")
+		has_engine_mechanic = true
 	if "rich" in tags_arr and "fried" in tags_arr:
 		lines.append("油腻：浓郁+油炸叠加，每层减慢CD 8%")
+		has_engine_mechanic = true
 	if "umami_tag" in tags_arr:
 		lines.append("提鲜：同菜系≥2时，右邻下次×1.8")
+		has_engine_mechanic = true
 	if "fermented" in tags_arr:
 		lines.append("发酵：首次×1.3，每次激活+1%")
+		has_engine_mechanic = true
 
 	var active: Array = item_data.get("on_activate", [])
 	if not active.is_empty():
 		lines.append("上菜: " + _describe_effect(active[0]))
 
+	# 显示trigger（除非trigger为空或只是简单的stat_bonus）
 	var triggers: Array = item_data.get("triggers", [])
 	if not triggers.is_empty():
 		var trigger_desc: String = _describe_trigger(triggers[0])
 		if trigger_desc != "":
-			lines.append(trigger_desc)
+			# 检查是否是简单的stat_bonus（如"上菜: 风味+3"）
+			var is_simple_stat_bonus: bool = false
+			if triggers[0] is Dictionary:
+				var eff = triggers[0].get("effect", {})
+				if eff is Dictionary and eff.get("type", "") == "stat_bonus":
+					is_simple_stat_bonus = true
+
+			# 如果有引擎机制且trigger只是简单stat_bonus，跳过
+			if not (has_engine_mechanic and is_simple_stat_bonus):
+				lines.append(trigger_desc)
 
 	if lines.is_empty():
 		lines.append("无特殊效果")
