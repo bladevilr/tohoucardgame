@@ -715,21 +715,32 @@ func _execute_effect(effect: Variant, player_idx: int, slot_idx: int, item: Dict
 			player.add_gold(gold_amount)
 			SignalBus.gold_changed.emit(player_idx, player.gold)
 
-	# 10. 减少冷却（reduce_cooldown_self / reduce_cooldown_adjacent）
+	# 10. CD 操控效果（写入 context，由 ShowdownResolver 统一消费）
+	# 缩减自身冷却
 	if effect_dict.has("reduce_cooldown_self"):
-		var cd_reduction = float(effect_dict.reduce_cooldown_self)
-		if cd_reduction > 0.0 and slot_idx >= 0:
-			var board_item = player.get_board_item_at(slot_idx)
-			if board_item != null:
-				var current_cd = float(board_item.get("current_cooldown", 0.0))
-				board_item["current_cooldown"] = max(0.0, current_cd - cd_reduction)
-
+		var amt = float(effect_dict.reduce_cooldown_self)
+		if amt > 0.0:
+			context["cd_reduction_self"] = float(context.get("cd_reduction_self", 0.0)) + amt
+	# 缩减相邻冷却
 	if effect_dict.has("reduce_cooldown_adjacent"):
-		var cd_reduction = float(effect_dict.reduce_cooldown_adjacent)
-		if cd_reduction > 0.0:
-			for adj_item in player.get_adjacent(slot_idx):
-				var current_cd = float(adj_item.get("current_cooldown", 0.0))
-				adj_item["current_cooldown"] = max(0.0, current_cd - cd_reduction)
+		var amt = float(effect_dict.reduce_cooldown_adjacent)
+		if amt > 0.0:
+			context["cd_reduction_adjacent"] = float(context.get("cd_reduction_adjacent", 0.0)) + amt
+	# 加速自身（临时提高 CD 转速）
+	if effect_dict.has("haste"):
+		var dur  = float(effect_dict.get("haste", 1.0))
+		var mult = float(effect_dict.get("haste_mult", 2.0))
+		context["haste_self"] = {"duration": dur, "multiplier": mult}
+	# 加速相邻
+	if effect_dict.has("haste_adjacent"):
+		var dur  = float(effect_dict.get("haste_adjacent", 1.0))
+		var mult = float(effect_dict.get("haste_mult", 2.0))
+		context["haste_adjacent"] = {"duration": dur, "multiplier": mult}
+	# 减速（对手，默认全体）
+	if effect_dict.has("slow"):
+		var dur  = float(effect_dict.get("slow", 1.0))
+		var mult = float(effect_dict.get("slow_mult", 0.5))
+		context["slow_opponent"] = {"duration": dur, "multiplier": mult}
 
 	# 11. 随机概率触发（random_chance）
 	if effect_dict.has("random_chance"):
@@ -788,7 +799,7 @@ func _execute_effect(effect: Variant, player_idx: int, slot_idx: int, item: Dict
 			# 从相邻菜品复制关键词（这里简化为复制玩家的关键词）
 			if keyword == "any":
 				# 复制玩家当前拥有的第一个关键词
-				var player_keywords = player.get_all_keywords()
+				var player_keywords = player.keyword_stacks
 				if not player_keywords.is_empty():
 					var first_kw = player_keywords.keys()[0]
 					player.add_keyword(first_kw, stacks)

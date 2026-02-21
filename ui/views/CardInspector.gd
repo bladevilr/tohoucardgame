@@ -5,7 +5,7 @@ signal close_requested
 const ItemCardScene = preload("res://ui/components/ItemCard.tscn")
 
 const TAG_TEXT := {
-	"chinese": "中餐",
+	"chinese": "中华",
 	"washoku": "和食",
 	"chuuka": "中华",
 	"youshoku": "洋食",
@@ -15,7 +15,7 @@ const TAG_TEXT := {
 	"meat": "肉类",
 	"vegetable": "蔬菜",
 	"seafood": "海鲜",
-	"dessert": "甜点",
+	"dessert": "甜品",
 	"soup": "汤品",
 	"noodle": "面食",
 	"grilled": "烧烤",

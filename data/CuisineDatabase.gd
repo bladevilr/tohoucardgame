@@ -8,26 +8,26 @@ func _ready():
 
 func _init_cuisines():
 	# === 三大基本菜系 ===
-	_add_cuisine("washoku", "和风料理",
+	_add_cuisine("washoku", "和食",
 		{flavor="normal", aroma="strong", technique="strong", presentation="normal"},
-		{count=3, name="旬味极致", effect={per_washoku_flavor_bonus=0.10}, desc="「旬の味を極める」——三道和食共鸣，季节的精华在舌尖绽放。每道和风料理风味+10%。"})
+		{count=3, name="旬味极致", effect={per_washoku_flavor_bonus=0.10}, desc="「旬の味を極める」——三道和食共鸣，季节的精华在舌尖绽放。每道和食风味+10%。"})
 
-	_add_cuisine("chuuka", "中餐",
+	_add_cuisine("chuuka", "中华",
 		{flavor="strong", aroma="strong", technique="normal", presentation="weak"},
-		{count=3, name="火候精通", effect={chuuka_cd_reduction=0.15}, desc="「火候就是一切」——三道中华料理的锅气汇聚，炉火纯青。所有中餐CD-15%。"})
+		{count=3, name="火候精通", effect={chuuka_cd_reduction=0.15}, desc="「火候就是一切」——三道中华的锅气汇聚，炉火纯青。所有中华CD-15%。"})
 
-	_add_cuisine("youshoku", "西餐",
+	_add_cuisine("youshoku", "洋食",
 		{flavor="normal", aroma="normal", technique="strong", presentation="strong"},
-		{count=3, name="美食美学", effect={presentation_output_bonus=0.25}, desc="「料理即是艺术」——三道西餐的美学共鸣，视觉盛宴。卖相产出+25%。"})
+		{count=3, name="美食美学", effect={presentation_output_bonus=0.25}, desc="「料理即是艺术」——三道洋食的美学共鸣，视觉盛宴。卖相产出+25%。"})
 
 	# === 三大特殊菜系 ===
-	_add_cuisine("yatai", "夜市料理",
+	_add_cuisine("yatai", "夜市",
 		{flavor="strong", aroma="very_strong", technique="weak", presentation="weak"},
-		{count=3, name="夜市匠心", effect={first_activate_flavor_mult=1.5}, desc="「屋台的第一口最重要！」——三道夜市料理的匠心，开场即巅峰。首次激活风味×1.5。"})
+		{count=3, name="夜市匠心", effect={first_activate_flavor_mult=1.5}, desc="「夜市的第一口最重要！」——三道夜市的匠心，开场即巅峰。首次激活风味×1.5。"})
 
-	_add_cuisine("kanmi", "甜点",
+	_add_cuisine("kanmi", "甜品",
 		{flavor="normal", aroma="normal", technique="normal", presentation="very_strong"},
-		{count=3, name="甘美余韵", effect={aftertaste_bonus_mult=1.5}, desc="「甜蜜的余韵久久不散」——三道甜点的甘美共鸣，回味无穷。回味关键词效果×1.5。"})
+		{count=3, name="甘美回味", effect={aftertaste_bonus_mult=1.5}, desc="「甜蜜的回味久久不散」——三道甜品的甘美共鸣，回味无穷。回味关键词效果×1.5。"})
 
 	_add_cuisine("yakuzen", "药膳",
 		{flavor="weak", aroma="strong", technique="strong", presentation="normal"},
@@ -58,7 +58,7 @@ func _init_fusion_combos():
 	_add_fusion("yatai_yakuzen", ["yatai", "yakuzen"],
 		"恋色魔炮",
 		{random_bonus_on_grill=true, mushroom_bonus=0.20},
-		"恋色魔炮——魔理沙的疯狂实验料理。夜市料理激活时20%触发随机Buff，蘑菇菜品效果+20%。")
+		"恋色魔炮——魔理沙的疯狂实验料理。夜市激活时20%触发随机Buff，蘑菇菜品效果+20%。")
 
 	_add_fusion("washoku_yakuzen", ["washoku", "yakuzen"],
 		"博丽茶会",
@@ -73,7 +73,7 @@ func _init_fusion_combos():
 	_add_fusion("kanmi_yakuzen", ["kanmi", "yakuzen"],
 		"月兔秘药点心",
 		{aftertaste_to_secret=true, conversion_threshold=3},
-		"月兔秘药点心——铃仙将永琳的药学融入甜点。回味叠到3层时自动转化为1层秘方。")
+		"月兔秘药点心——铃仙将永琳的药学融入甜品。回味叠到3层时自动转化为1层秘方。")
 
 	# === 万国博览 (4+菜系特殊) ===
 	_add_fusion("world_expo", [],

@@ -8,11 +8,11 @@ extends Node
 # Shop inventories per merchant type
 var _shops: Dictionary = {
 	"dish": [],
-	"chuuka": [],      # 中华料理
+	"chuuka": [],      # 中华
 	"washoku": [],     # 和食
 	"yatai": [],       # 夜市
 	"youshoku": [],    # 洋食
-	"kanmi": [],       # 甘味
+	"kanmi": [],       # 甜品
 	"yakuzen": [],     # 药膳
 	"ingredient": [],
 	"technique": [],

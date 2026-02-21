@@ -137,6 +137,11 @@ func setup():
 				"current_cd": base_cd,
 				"activate_count": 0,
 				"tick_accum": {},
+				# 加速/减速计时器（秒）和倍率
+				"haste_time": 0.0,
+				"haste_mult": 1.0,
+				"slow_time": 0.0,
+				"slow_mult": 1.0,
 			}
 			_item_runtimes[p_idx].append(runtime)
 
@@ -205,7 +210,22 @@ func tick(delta: float):
 
 			var cd_reduction_mult = 1.0 - _aroma_reductions[p_idx]
 			var effective_tick = delta / maxf(0.1, cd_reduction_mult)
-			runtime.current_cd -= effective_tick
+
+			# 加速/减速倍率（互相独立，加速优先级更高）
+			var rate_mult := 1.0
+			if runtime.haste_time > 0.0:
+				rate_mult *= runtime.haste_mult
+				runtime.haste_time -= delta
+				if runtime.haste_time < 0.0:
+					runtime.haste_time = 0.0
+					runtime.haste_mult = 1.0
+			if runtime.slow_time > 0.0:
+				rate_mult *= runtime.slow_mult
+				runtime.slow_time -= delta
+				if runtime.slow_time < 0.0:
+					runtime.slow_time = 0.0
+					runtime.slow_mult = 1.0
+			runtime.current_cd -= effective_tick * rate_mult
 
 			if runtime.current_cd <= 0:
 				_activate_item(p_idx, runtime)
@@ -364,6 +384,37 @@ func _activate_item(player_idx: int, runtime: Dictionary):
 	for attr in score_bonus:
 		modified_scores[attr] = modified_scores.get(attr, 0.0) + float(score_bonus[attr])
 	var _trigger_flavor = float(score_bonus.get("flavor", 0.0))
+
+	# --- 消费 context 里的 CD 操控效果 ---
+	# 缩减自身
+	var cd_self := float(context.get("cd_reduction_self", 0.0))
+	if cd_self > 0.0:
+		runtime.current_cd = maxf(0.0, runtime.current_cd - cd_self)
+	# 缩减相邻
+	var cd_adj := float(context.get("cd_reduction_adjacent", 0.0))
+	if cd_adj > 0.0:
+		for other in _item_runtimes[player_idx]:
+			if abs(int(other.slot_idx) - slot_idx) == 1:
+				other.current_cd = maxf(0.0, other.current_cd - cd_adj)
+	# 加速自身
+	if context.has("haste_self"):
+		var h = context["haste_self"]
+		runtime.haste_time  = maxf(runtime.haste_time, float(h.get("duration", 1.0)))
+		runtime.haste_mult  = float(h.get("multiplier", 2.0))
+	# 加速相邻
+	if context.has("haste_adjacent"):
+		var h = context["haste_adjacent"]
+		for other in _item_runtimes[player_idx]:
+			if abs(int(other.slot_idx) - slot_idx) == 1:
+				other.haste_time = maxf(other.haste_time, float(h.get("duration", 1.0)))
+				other.haste_mult = float(h.get("multiplier", 2.0))
+	# 减速对手相邻（最近的那个）
+	if context.has("slow_opponent"):
+		var s = context["slow_opponent"]
+		var opp_idx = 1 - player_idx
+		for other in _item_runtimes[opp_idx]:
+			other.slow_time = maxf(other.slow_time, float(s.get("duration", 1.0)))
+			other.slow_mult = float(s.get("multiplier", 0.5))
 
 	var flavor = float(modified_scores.get("flavor", 0.0))
 	flavor *= _technique_mults[player_idx]
@@ -707,7 +758,7 @@ func _process_fusion_runtime_triggers(player_idx: int, runtime: Dictionary, cont
 # ============================================================
 func _generate_serve_broadcast(player_idx: int, item: Dictionary, score: float, activate_count: int, youmu_doubled: bool):
 	var name = item.get("name", "???")
-	var cuisine_names = {"chuuka": "中华", "washoku": "和食", "youshoku": "洋食", "yatai": "屋台", "kanmi": "菓子", "yakuzen": "薬膳"}
+	var cuisine_names = {"chuuka": "中华", "washoku": "和食", "youshoku": "洋食", "yatai": "夜市", "kanmi": "甜品", "yakuzen": "药膳"}
 	var cuisine = cuisine_names.get(item.get("cuisine", ""), "")
 
 	# 基础上菜播报
@@ -764,7 +815,7 @@ func _generate_finish_broadcast():
 
 	# Clash penalties
 	for clash in _clash_penalties:
-		var cuisine_names = {"chuuka": "中华", "washoku": "和食", "youshoku": "洋食", "yatai": "屋台", "kanmi": "菓子", "yakuzen": "薬膳"}
+		var cuisine_names = {"chuuka": "中华", "washoku": "和食", "youshoku": "洋食", "yatai": "夜市", "kanmi": "甜品", "yakuzen": "药膳"}
 		var c_name = cuisine_names.get(clash.get("cuisine", ""), clash.get("cuisine", ""))
 		_add_broadcast(-1, "clash", "撞菜惩罚！%s料理对决中落败方扣除%.0f分。" % [c_name, clash.get("penalty", 0)])
 

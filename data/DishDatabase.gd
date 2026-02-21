@@ -67,6 +67,11 @@ func _localize_dish_entry(dish: Dictionary) -> Dictionary:
 		dish["name_cn"] = _normalize_display_name(id, str(dish.get("name_cn", dish.get("name", ""))))
 	if dish.has("description"):
 		dish["description"] = _normalize_text(str(dish.get("description", "")))
+
+	# Wrap top-level flavor into base_stats so ItemTooltip can display it
+	if not dish.has("base_stats") and dish.has("flavor"):
+		dish["base_stats"] = {"flavor": int(dish.get("flavor", 0))}
+
 	return dish
 
 func _normalize_display_name(id: String, raw_text: String) -> String:

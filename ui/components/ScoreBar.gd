@@ -23,6 +23,22 @@ func _ready() -> void:
 		p2_score_label.visible = true
 		p2_score_label.modulate = Color.WHITE
 
+	# 放大所有视觉元素
+	if p1_score_label:
+		p1_score_label.add_theme_font_size_override("font_size", 36)
+	if p2_score_label:
+		p2_score_label.add_theme_font_size_override("font_size", 36)
+	if diff_label:
+		diff_label.add_theme_font_size_override("font_size", 20)
+	if p1_bar:
+		p1_bar.custom_minimum_size.y = 36
+	if p2_bar:
+		p2_bar.custom_minimum_size.y = 36
+	if dot_label:
+		dot_label.add_theme_font_size_override("font_size", 15)
+	if env_label:
+		env_label.add_theme_font_size_override("font_size", 15)
+
 func update_scores(p1_score: float, p2_score: float):
 	print("ScoreBar.update_scores called: p1=", p1_score, " p2=", p2_score)
 	print("ScoreBar @onready nodes: p1_score_label=", p1_score_label != null, " p2_score_label=", p2_score_label != null)

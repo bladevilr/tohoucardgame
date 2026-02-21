@@ -12,7 +12,7 @@ func _init_chefs() -> void:
 		"夜雀食堂",
 		"passive",
 		{yatai_cd_reduction = 0.15, night_blindness_on_opponent = true},
-		"夜雀的歌声让食客迷失方向，却被屋台的香气引导。夜市菜品冷却减少15%，对手在夜盲中手忙脚乱。",
+		"夜雀的歌声让食客迷失方向，却被夜市的香气引导。夜市菜品冷却减少15%，对手在夜盲中手忙脚乱。",
 		3,
 		{flavor = 6, aroma = 8, technique = 4, presentation = 3}
 	)

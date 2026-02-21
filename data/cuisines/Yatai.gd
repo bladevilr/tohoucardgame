@@ -64,7 +64,7 @@ static func get_dishes() -> Array:
 					"if_adjacent_has_tag": "yatai",
 					"then_bonus": {"reduce_cooldown_self": 0.3}
 				},
-				"desc": "获得1层焦香；若相邻有屋台料理，减少0.3秒冷却"
+				"desc": "获得1层焦香；若相邻有夜市菜品，减少0.3秒冷却"
 			}],
 			"on_activate": [],
 			"description": "烤鱿鱼。"
@@ -145,7 +145,7 @@ static func get_dishes() -> Array:
 
 		# ===== SILVER (Tier 1) =====
 		{
-			"id": "yatai_ramen", "name": "屋台拉面", "name_cn": "屋台拉面",
+			"id": "yatai_ramen", "name": "夜市拉面", "name_cn": "夜市拉面",
 			"cuisine": "yatai", "tier": 1, "size": 2, "cooldown": 5.5,
 			"flavor": 10, "mod_slots": 2,
 			"tags": ["noodle", "rich", "umami_tag"],
@@ -153,7 +153,7 @@ static func get_dishes() -> Array:
 				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "umami", "keyword_stacks": 1, "add_keyword_2": "char_aroma", "keyword_stacks_2": 1}, "desc": "获得1层鲜美和1层焦香"}
 			],
 			"on_activate": [],
-			"description": "屋台拉面。"
+			"description": "夜市拉面。"
 		},
 		{
 			"id": "kushikatsu", "name": "炸串", "name_cn": "炸串",

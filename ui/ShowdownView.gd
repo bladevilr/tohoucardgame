@@ -117,6 +117,7 @@ func _ready() -> void:
 	SignalBus.dot_tick.connect(_on_dot_tick)
 	SignalBus.keyword_gained.connect(_on_keyword_gained)
 	SignalBus.keyword_consumed.connect(_on_keyword_consumed)
+	_apply_ui_scale()
 
 func _setup_chef_portrait() -> void:
 	var style := StyleBoxFlat.new()
@@ -193,7 +194,7 @@ func _setup_judge_avatar() -> void:
 
 	# 清理旧的评委头像
 	for child in center_area.get_children():
-		if child.name.begins_with("JudgeAvatar"):
+		if child.name.begins_with("JudgeAvatar") or child.name.begins_with("JudgeStatusLabel") or child.name.begins_with("JudgeNameLabel"):
 			child.queue_free()
 
 	# 创建两个评委头像
@@ -201,7 +202,7 @@ func _setup_judge_avatar() -> void:
 	if JudgeAvatarScene == null:
 		return
 
-	var spacing = 140.0  # 两个头像之间的间距
+	var spacing = 340.0  # 两个头像之间的间距（拉开足够距离）
 	for i in range(mini(2, judges.size())):
 		var j = judges[i]
 		var judge_id: String = ""
@@ -214,16 +215,52 @@ func _setup_judge_avatar() -> void:
 		avatar.name = "JudgeAvatar%d" % i
 		center_area.add_child(avatar)
 
-		# 左右并排放置
+		# 左右并排放置，x_offset 为相对于屏幕中心的偏移
 		var x_offset = -spacing / 2 if i == 0 else spacing / 2
 		avatar.set_anchors_preset(Control.PRESET_CENTER)
-		avatar.offset_left = x_offset - 60.0
-		avatar.offset_top = -140.0
-		avatar.offset_right = x_offset + 60.0
+		avatar.offset_left   = x_offset - 100.0
+		avatar.offset_top    = -220.0
+		avatar.offset_right  = x_offset + 100.0
 		avatar.offset_bottom = -20.0
 
 		if avatar.has_method("setup"):
 			avatar.setup(judge_id)
+
+		# 评委名字标签（头像正上方）
+		var name_lbl := Label.new()
+		name_lbl.name = "JudgeNameLabel%d" % i
+		name_lbl.add_theme_font_size_override("font_size", 17)
+		name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		name_lbl.text = judge_id
+		name_lbl.set_anchors_preset(Control.PRESET_CENTER)
+		name_lbl.offset_left   = x_offset - 100.0
+		name_lbl.offset_top    = -248.0
+		name_lbl.offset_right  = x_offset + 100.0
+		name_lbl.offset_bottom = -224.0
+		name_lbl.mouse_filter  = Control.MOUSE_FILTER_IGNORE
+		name_lbl.add_theme_color_override("font_color", Color(1.0, 0.95, 0.8))
+		name_lbl.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.9))
+		name_lbl.add_theme_constant_override("shadow_offset_x", 1)
+		name_lbl.add_theme_constant_override("shadow_offset_y", 1)
+		center_area.add_child(name_lbl)
+
+		# 评委状态标签（头像正下方，分两行：debuff 和环境）
+		var status_lbl := Label.new()
+		status_lbl.name = "JudgeStatusLabel%d" % i
+		status_lbl.add_theme_font_size_override("font_size", 16)
+		status_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		status_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		status_lbl.text = ""
+		status_lbl.set_anchors_preset(Control.PRESET_CENTER)
+		status_lbl.offset_left   = x_offset - 110.0
+		status_lbl.offset_top    = -18.0   # 紧贴头像下沿（offset_bottom = -20）
+		status_lbl.offset_right  = x_offset + 110.0
+		status_lbl.offset_bottom = 42.0    # 60px 高度容纳两行
+		status_lbl.mouse_filter  = Control.MOUSE_FILTER_IGNORE
+		status_lbl.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.85))
+		status_lbl.add_theme_constant_override("shadow_offset_x", 1)
+		status_lbl.add_theme_constant_override("shadow_offset_y", 1)
+		center_area.add_child(status_lbl)
 
 	# 保存第一个评委头像的引用（用于动画）
 	judge_avatar = center_area.get_node_or_null("JudgeAvatar0")
@@ -256,6 +293,9 @@ func _setup_board_display(player_idx: int, container: HBoxContainer) -> void:
 	for child in container.get_children():
 		child.queue_free()
 
+	# 对手卡牌贴上沿，玩家卡牌贴下沿
+	var v_flags = Control.SIZE_SHRINK_BEGIN if player_idx == 1 else Control.SIZE_SHRINK_END
+
 	var player: PlayerState = GameManager.get_player(player_idx)
 	if player:
 		for entry in player.get_board_items():
@@ -264,8 +304,7 @@ func _setup_board_display(player_idx: int, container: HBoxContainer) -> void:
 			card.setup(entry.item)
 			card.set_meta("draggable", false)
 			card.card_right_clicked.connect(_inspect_card)
-			card.scale = Vector2(0.8, 0.8)
-			card.custom_minimum_size = Vector2(160, 240) * 0.8
+			card.size_flags_vertical = v_flags
 
 # ============================================================
 #  V2: 评委状态面板
@@ -371,6 +410,7 @@ func _on_tick(elapsed: float) -> void:
 		_update_battle_info_panel()
 		_poll_broadcast_log()
 		_update_keyword_displays()
+		_update_judge_status_labels()
 
 func _update_battle_info_panel() -> void:
 	var match_state = GameManager.get_match_state()
@@ -416,15 +456,26 @@ func _on_item_served(player_idx: int, item_idx: int, result: Dictionary) -> void
 	var chain_mult: float = float(result.get("chain_mult", 1.0))
 	var adjacent_links: int = int(result.get("adjacent_links", 0))
 
+	# 提取菜品数据，用于暴击判定和弹道
+	var served_item: Dictionary = result.get("item", {}) if not GameConfig.BATTLE_SYSTEM_V2 else result.get("dish", {})
+
+	# 暴击判定：得分达到基础风味 2.5 倍，或绝对值 ≥ 60
+	var base_flavor: float = float(served_item.get("flavor", result.get("base_flavor", 0.0)))
+	var is_crit: bool = (base_flavor > 0.0 and flavor >= base_flavor * 2.5) or flavor >= 60.0
+
 	var anims = get_node_or_null("/root/UIAnimations")
 	if anims:
 		anims.call("hover_lift", card, 0.9, 0.1)
 
 	# Build base target point
 	var start_pos = card.global_position + card.size * 0.5 * card.scale
-	
+
 	if adjacent_links > 0:
 		FloatingTextScript.spawn(self, "连锁连击 ×%.1f" % chain_mult, start_pos + Vector2(0, -40), Color(1.0, 0.7, 0.2), 1.2, 70.0, 24)
+
+	# 更新卡牌角标（实时风味值 + 暴击样式）
+	if card.has_method("show_flavor_overlay"):
+		card.show_flavor_overlay(int(flavor), is_crit)
 
 	# 向两位评委发射菜品弹道
 	var center_area = get_node_or_null("CenterArea")
@@ -437,7 +488,6 @@ func _on_item_served(player_idx: int, item_idx: int, result: Dictionary) -> void
 			var proj = DishProjectileScene.instantiate()
 			projectiles_layer.add_child(proj)
 			var target = avatar.global_position + avatar.size * 0.5
-			var served_item: Dictionary = result.get("item", {}) if not GameConfig.BATTLE_SYSTEM_V2 else result.get("dish", {})
 			proj.launch(start_pos, target, flavor, served_item)
 
 			# 延迟反应
@@ -447,8 +497,12 @@ func _on_item_served(player_idx: int, item_idx: int, result: Dictionary) -> void
 					avatar.react_to_impact(flavor)
 			)
 
-	var score_color = Color(1.0, 0.86, 0.35) if flavor > 30.0 else Color(0.6, 0.8, 1.0)
-	FloatingTextScript.spawn(self, "+%d" % int(flavor), start_pos, score_color, 0.8, 60.0, 24)
+	# 浮动得分数字：暴击用橙红大字，普通保持金色/蓝色
+	if is_crit:
+		FloatingTextScript.spawn(self, "暴击！+%d" % int(flavor), start_pos, Color(1.0, 0.3, 0.1), 1.0, 90.0, 34)
+	else:
+		var score_color = Color(1.0, 0.86, 0.35) if flavor > 30.0 else Color(0.6, 0.8, 1.0)
+		FloatingTextScript.spawn(self, "+%d" % int(flavor), start_pos, score_color, 0.8, 60.0, 24)
 
 func _on_dot_tick(player_idx: int, dot: float) -> void:
 	score_bar.update_dot(dot, player_idx)
@@ -528,7 +582,7 @@ func _poll_broadcast_log() -> void:
 		_broadcast_index += 1
 		var lbl := Label.new()
 		lbl.text = entry.get("text", "")
-		lbl.add_theme_font_size_override("font_size", 13)
+		lbl.add_theme_font_size_override("font_size", 15)
 		lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		var entry_type: String = entry.get("type", "serve")
 		lbl.add_theme_color_override("font_color", BROADCAST_COLORS.get(entry_type, Color(0.85, 0.85, 0.85)))
@@ -580,19 +634,19 @@ func _create_keyword_badge(kw_id: String, stacks: int, override_color: Color = C
 		style.bg_color = Color(0.15, 0.45, 0.2, 0.9)
 	else:
 		style.bg_color = Color(0.5, 0.15, 0.15, 0.9)
-	style.corner_radius_top_left = 4
-	style.corner_radius_top_right = 4
-	style.corner_radius_bottom_right = 4
-	style.corner_radius_bottom_left = 4
-	style.content_margin_left = 6
-	style.content_margin_right = 6
-	style.content_margin_top = 2
-	style.content_margin_bottom = 2
+	style.corner_radius_top_left = 6
+	style.corner_radius_top_right = 6
+	style.corner_radius_bottom_right = 6
+	style.corner_radius_bottom_left = 6
+	style.content_margin_left = 10
+	style.content_margin_right = 10
+	style.content_margin_top = 4
+	style.content_margin_bottom = 4
 	panel.add_theme_stylebox_override("panel", style)
 	var lbl := Label.new()
 	var kw_name = KEYWORD_NAME_MAP.get(kw_id, kw_id)
 	lbl.text = "%s ×%d" % [kw_name, stacks]
-	lbl.add_theme_font_size_override("font_size", 12)
+	lbl.add_theme_font_size_override("font_size", 16)
 	lbl.add_theme_color_override("font_color", Color(1, 1, 1))
 	panel.add_child(lbl)
 	return panel
@@ -601,3 +655,95 @@ func _display_chef_name(chef_id: String, fallback: String) -> String:
 	if CHEF_NAME_MAP.has(chef_id):
 		return CHEF_NAME_MAP[chef_id]
 	return fallback
+
+func _apply_ui_scale() -> void:
+	# 扩大卡牌滚动区域高度（容纳 1.0x 原生卡牌）
+	var opp_scroll = get_node_or_null("MainHBox/VBox/OpponentArea/OpponentScroll")
+	if opp_scroll:
+		opp_scroll.custom_minimum_size.y = 280
+
+	var player_scroll = get_node_or_null("MainHBox/VBox/PlayerArea/PlayerScroll")
+	if player_scroll:
+		player_scroll.custom_minimum_size.y = 280
+
+	# 压缩中间 Spacer（评委头像已独立浮在 CenterArea）
+	var spacer = get_node_or_null("MainHBox/VBox/Spacer")
+	if spacer:
+		spacer.custom_minimum_size.y = 10
+
+	# 播报面板缩窄，让中央有更多空间
+	if broadcast_panel:
+		broadcast_panel.custom_minimum_size.x = 200
+
+	# 计时器字体
+	if timer_label:
+		timer_label.add_theme_font_size_override("font_size", 52)
+
+	# 区域标题标签
+	for path in ["MainHBox/VBox/OpponentArea/OpponentLabel",
+				 "MainHBox/VBox/PlayerArea/PlayerLabel"]:
+		var lbl = get_node_or_null(path)
+		if lbl:
+			lbl.add_theme_font_size_override("font_size", 18)
+
+	# BattleInfoPanel 三个统计标签
+	for lbl_name in ["TechniqueLabel", "AromaLabel", "SynergyLabel"]:
+		var lbl = get_node_or_null(
+			"MainHBox/VBox/ScoreArea/BattleInfoPanel/BattleInfoRow/" + lbl_name)
+		if lbl:
+			lbl.add_theme_font_size_override("font_size", 16)
+
+	# BattleInfoPanel 高度
+	var bip = get_node_or_null("MainHBox/VBox/ScoreArea/BattleInfoPanel")
+	if bip:
+		bip.custom_minimum_size.y = 44
+
+	# 关键词行高度
+	for row_path in ["MainHBox/VBox/OpponentArea/OpponentKeywordRow",
+					 "MainHBox/VBox/PlayerArea/PlayerKeywordRow",
+					 "MainHBox/VBox/ScoreArea/EnvKeywordRow"]:
+		var row = get_node_or_null(row_path)
+		if row:
+			row.custom_minimum_size.y = 40
+
+	# 对手徽章字体
+	var name_lbl = get_node_or_null("OpponentBadge/Margin/HBox/Info/OpponentNameLabel")
+	if name_lbl:
+		name_lbl.add_theme_font_size_override("font_size", 26)
+	var title_lbl = get_node_or_null("OpponentBadge/Margin/HBox/Info/OpponentTitle")
+	if title_lbl:
+		title_lbl.add_theme_font_size_override("font_size", 15)
+
+func _update_judge_status_labels() -> void:
+	var center_area = get_node_or_null("CenterArea")
+	if center_area == null:
+		return
+	var match_state = GameManager.get_match_state()
+	if match_state == null:
+		return
+
+	var env: Dictionary = {}
+	if "environment_keywords" in match_state:
+		env = match_state.environment_keywords
+	elif match_state.has_meta("environment_keywords"):
+		env = match_state.get_meta("environment_keywords")
+
+	var greasy  : int = env.get("greasy", 0)
+	var fatigue : int = env.get("taste_fatigue", 0)
+	var messy   : int = env.get("messy", 0)
+
+	for i in range(2):
+		var lbl = center_area.get_node_or_null("JudgeStatusLabel%d" % i)
+		if lbl == null:
+			continue
+		var parts: Array[String] = []
+		if greasy  > 0: parts.append("腻口 ×%d" % greasy)
+		if fatigue > 0: parts.append("疲劳 ×%d" % fatigue)
+		if messy   > 0: parts.append("杂乱 ×%d" % messy)
+		lbl.text = "  ".join(parts)
+		if greasy > 3 or fatigue > 3:
+			lbl.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
+		elif not parts.is_empty():
+			lbl.add_theme_color_override("font_color", Color(1.0, 0.75, 0.4))
+		else:
+			lbl.remove_theme_color_override("font_color")

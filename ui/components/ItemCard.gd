@@ -14,6 +14,7 @@ signal card_unhovered()
 var item_data: Dictionary = {}
 var _is_pressing := false
 var _drag_start_pos: Vector2
+var _flavor_label: Label = null  # 风味值角标
 
 func _ready() -> void:
 	gui_input.connect(_on_gui_input)
@@ -39,6 +40,7 @@ func _setup_style() -> void:
 		style.texture_margin_right = 12
 		style.texture_margin_bottom = 12
 		add_theme_stylebox_override("panel", style)
+
 	# 底部光晕叠层（等级光效，默认隐藏）
 	if get_node_or_null("TierGlow") == null:
 		var glow := ColorRect.new()
@@ -50,6 +52,43 @@ func _setup_style() -> void:
 		glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		add_child(glow)
 		move_child(glow, 0)
+
+	# 风味值角标（右下角）
+	if get_node_or_null("FlavorLabel") == null:
+		_flavor_label = Label.new()
+		_flavor_label.name = "FlavorLabel"
+		# 使用 PRESET_BOTTOM_RIGHT 锚点，脱离 PanelContainer 的布局约束
+		_flavor_label.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+		_flavor_label.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+		_flavor_label.grow_vertical = Control.GROW_DIRECTION_BEGIN
+		_flavor_label.offset_right = -4.0
+		_flavor_label.offset_bottom = -4.0
+		_flavor_label.offset_left = -64.0
+		_flavor_label.offset_top = -24.0
+		_flavor_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		_flavor_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+		_flavor_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_flavor_label.add_theme_font_size_override("font_size", 16)
+		_flavor_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+		_flavor_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.85))
+		_flavor_label.add_theme_constant_override("shadow_offset_x", 1)
+		_flavor_label.add_theme_constant_override("shadow_offset_y", 1)
+		_flavor_label.z_index = 10
+		_flavor_label.visible = false
+		# 加到父级而非 PanelContainer 本身，避免被 Container 布局覆盖偏移
+		var overlay := Control.new()
+		overlay.name = "FlavorOverlay"
+		overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+		overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		overlay.z_index = 9
+		add_child(overlay)
+		overlay.add_child(_flavor_label)
+	else:
+		var overlay = get_node_or_null("FlavorOverlay")
+		if overlay:
+			_flavor_label = overlay.get_node_or_null("FlavorLabel")
+		if _flavor_label == null:
+			_flavor_label = get_node("FlavorLabel")
 
 func _update_view() -> void:
 	if item_data.is_empty():
@@ -80,6 +119,33 @@ func _update_view() -> void:
 	var tier = _get_tier_level()
 	_apply_tier_style(tier)
 
+	# 初始化风味角标（显示基础风味值）
+	var base_flavor: int = int(item_data.get("flavor", 0))
+	if base_flavor > 0:
+		_set_flavor_label(base_flavor, false)
+
+# 供战斗系统调用：更新角标显示，is_crit=true 时用暴击样式
+func show_flavor_overlay(value: int, is_crit: bool = false) -> void:
+	_set_flavor_label(value, is_crit)
+
+func _set_flavor_label(value: int, is_crit: bool) -> void:
+	if _flavor_label == null:
+		var overlay = get_node_or_null("FlavorOverlay")
+		if overlay:
+			_flavor_label = overlay.get_node_or_null("FlavorLabel")
+	if _flavor_label == null:
+		_flavor_label = get_node_or_null("FlavorLabel")
+	if _flavor_label == null:
+		return
+	_flavor_label.text = "🔥%d" % value
+	_flavor_label.visible = true
+	if is_crit:
+		_flavor_label.add_theme_color_override("font_color", Color(1.0, 0.35, 0.1))
+		_flavor_label.add_theme_font_size_override("font_size", 19)
+	else:
+		_flavor_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+		_flavor_label.add_theme_font_size_override("font_size", 16)
+
 func _load_icon() -> void:
 	var id: String = str(item_data.get("id", ""))
 	var item_type: String = str(item_data.get("item_type", item_data.get("type", "dish")))
@@ -108,17 +174,10 @@ func _load_icon() -> void:
 				tex = ArtDatabase.get_tool_icon(id)
 			elif ArtDatabase.has_technique_icon(id):
 				tex = ArtDatabase.get_technique_icon(id)
-			
+
 	if tex:
 		icon_rect.texture = tex
-		# 这里的核心逻辑：根据图片调整卡片高度，消除上下黑边
-		# 恢复原始逻辑，不做强制压缩，保持卡片原有尺寸感
-		# 2.5倍放大是通过 tscn 里的 Anchor 实现的，这里不需要修改 container 尺寸
-		
-		# 如果需要让卡片高度适应内容（可选，目前按照"恢复一开始状态"理解为固定/最小尺寸）
-		# 既然 tscn 里设回了 160x240，这里就不需要再动态改 custom_minimum_size.y 了
-		# 除非你想让卡片变短。
-		pass 
+		pass
 	else:
 		icon_rect.texture = null
 

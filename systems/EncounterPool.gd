@@ -110,7 +110,7 @@ var _shop_templates := {
 		"size": "medium",
 		"slots": 5,
 		"filter": {"cuisine": "chuuka"},
-		"name": "中华料理店",
+		"name": "中华菜馆",
 		"desc": "美铃的中华菜\n5个物品·正常价格",
 		"icon": "meiling",
 		"weight_base": 100,

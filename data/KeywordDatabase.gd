@@ -45,7 +45,7 @@ func _init_keywords():
 	_add("seafood", "海鲜", "tag", "海鲜食材标签。", {})
 	_add("vegetable", "素菜", "tag", "素菜食材标签。", {})
 	_add("staple", "主食", "tag", "主食标签。", {})
-	_add("sweet", "甜点", "tag", "甜食标签。", {})
+	_add("sweet", "甜品", "tag", "甜食标签。", {})
 	
 	_add("grilled", "烤制", "tag", "高温烤制。", {})
 	_add("fried", "炸制", "tag", "油炸制作。", {})

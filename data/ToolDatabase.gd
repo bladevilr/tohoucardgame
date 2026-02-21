@@ -18,15 +18,15 @@ func _init_tools():
 			{trigger="on_activate", condition="has_tag:raw", effect="technique+10", desc="处理刺身时技巧+10",
 			 keyword_effect={type="gain_keyword", keyword="knife_work", stacks=2}},
 			{trigger="on_activate", condition="has_technique:sashimi_cut", effect="aroma+8", desc="使用刺身切时香气+8"},
-			{trigger="synergy", condition="cuisine_count:japanese:3", effect="japanese_aroma+0.10", desc="≥3日料：所有日料香气+10%"}
+			{trigger="synergy", condition="cuisine_count:japanese:3", effect="japanese_aroma+0.10", desc="≥3和食：所有和食香气+10%"}
 		],
-		"日式刺身专用刀，极致锋利。生食菜品上菜时获得2层【刀工】")
+		"和食刺身专用刀，极致锋利。生食菜品上菜时获得2层【刀工】")
 
 	_add("chinese_cleaver", "中式片刀", "silver", "knife",
 		{flavor=5, technique=4},
-		[{trigger="on_activate", condition="cuisine:chinese", effect="flavor+6", desc="制作中华料理时风味+6",
+		[{trigger="on_activate", condition="cuisine:chinese", effect="flavor+6", desc="制作中华时风味+6",
 		 keyword_effect={type="gain_keyword", keyword="knife_work", stacks=1}}],
-		"中式片刀，片切两用。中餐菜品上菜时获得1层【刀工】")
+		"中式片刀，片切两用。中华菜品上菜时获得1层【刀工】")
 
 	_add("chef_knife", "主厨刀", "silver", "knife",
 		{flavor=4, technique=4, aroma=2},
@@ -71,7 +71,7 @@ func _init_tools():
 			{trigger="on_activate", condition="has_tag:soup", effect="flavor+7,aroma+5", desc="煮汤时风味+7，香气+5",
 			 keyword_effect={type="gain_keyword", keyword="aftertaste", stacks=1}}
 		],
-		"日式土锅，慢炖入味。汤类上菜时获得1层【回味】")
+		"和食土锅，慢炖入味。汤类上菜时获得1层【回味】")
 
 	_add("sous_vide_machine", "低温慢煮机", "silver", "equipment",
 		{technique=6, flavor=3},
@@ -94,12 +94,12 @@ func _init_tools():
 	_add("fierce_stove", "猛火灶", "silver", "equipment",
 		{flavor=5, aroma=4},
 		[
-			{trigger="on_activate", condition="cuisine:chinese", effect="flavor+8,cd-0.5", desc="中餐菜品风味+8，CD-0.5s",
+			{trigger="on_activate", condition="cuisine:chinese", effect="flavor+8,cd-0.5", desc="中华菜品风味+8，CD-0.5s",
 			 keyword_effect={type="gain_keyword", keyword="char_aroma", stacks=1}},
 			{trigger="on_activate", condition="has_tag:fierce_fire", effect="aroma+6", desc="猛火菜品香气+6"},
-			{trigger="synergy", condition="cuisine_count:chinese:3", effect="stir_fry_bonus+0.25", desc="≥3中餐：爆炒手法效果+25%"}
+			{trigger="synergy", condition="cuisine_count:chinese:3", effect="stir_fry_bonus+0.25", desc="≥3中华：爆炒手法效果+25%"}
 		],
-		"猛火灶台，锅气逼人。中餐菜品上菜时获得1层【焦香】")
+		"猛火灶台，锅气逼人。中华菜品上菜时获得1层【焦香】")
 
 	# === Molecular Equipment ===
 	_add("liquid_nitrogen_tank", "液氮罐", "gold", "equipment",

@@ -267,13 +267,13 @@ static func get_dishes() -> Array:
 			"description": "幻想乡芭菲。"
 		},
 		{
-			"id": "hourai_elixir_sweet", "name": "蓬莱药膳甜点", "name_cn": "蓬莱药膳甜点",
+			"id": "hourai_elixir_sweet", "name": "蓬莱药膳甜品", "name_cn": "蓬莱药膳甜品",
 			"cuisine": "kanmi", "tier": 3, "size": 2, "cooldown": 9.0,
 			"flavor": 16, "mod_slots": 2,
 			"tags": ["sweet", "mastered"],
 			"triggers": [{"event": "item_activated", "condition": "self", "effect": {"type": "first_activate_bonus", "flavor": 25, "presentation": 15}, "desc": "首次激活风味+25、卖相+15"}],
 			"on_activate": [],
-			"description": "蓬莱药膳甜点。"
+			"description": "蓬莱药膳甜品。"
 		},
 		{
 			"id": "sakuya_time_dessert", "name": "时之结晶", "name_cn": "时之结晶",
