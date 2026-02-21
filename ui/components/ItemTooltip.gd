@@ -88,9 +88,9 @@ const TERM_DEFINITIONS := {
 	"香气": "加速冷却：每10点缩短冷却5%，上限35%（70香气最快）。",
 	"开胃": "引擎机制。辣/酸菜激活时推进相邻CD 15%，前菜区额外+50%。",
 	"上瘾": "引擎机制。浓郁/鲜味菜每次+2层，每层每秒1.5分，每5秒衰减10%。",
-	"爆香": "引擎机制。烤/炒菜蓄热4次后爆发，该菜得分×3.0。",
+	"爆香": "引擎机制。烤/炒菜激活4次后爆发，该菜得分×3.0。",
 	"爽脆": "引擎机制。油炸菜25%概率双重激活，第2次得分×0.7。",
-	"清口": "引擎机制。清淡/茶菜清除50%油腻，每层+3分+全场CD加速0.3秒。",
+	"清口": "引擎机制。清淡/茶菜清除50%油腻，每清1层+3分并全场CD加速0.3秒。",
 	"提鲜": "引擎机制。鲜味菜+同菜系≥2道时，标记右侧邻居下次得分×1.8。",
 	"发酵": "引擎机制。首次激活×1.3，之后每次永久+1%（上限+30%）。",
 	"油腻（机制）": "引擎机制。同时拥有浓郁+油炸标签的菜激活时叠加油腻，每层减慢全场CD 8%，最多20层。",
@@ -511,13 +511,13 @@ func _build_effect_summary(item_data: Dictionary) -> String:
 	var has_engine_mechanic: bool = false
 
 	if "light" in tags_arr or "tea" in tags_arr:
-		lines.append("清口：清除50%油腻，每层+3分+全场加速")
+		lines.append("清口：清除50%油腻，每清1层+3分")
 		has_engine_mechanic = true
 	if "spicy" in tags_arr or "sour" in tags_arr:
 		lines.append("开胃：推进相邻菜CD 15%")
 		has_engine_mechanic = true
 	if "grilled" in tags_arr or "stir_fried" in tags_arr:
-		lines.append("爆香：蓄热4次后得分×3.0")
+		lines.append("爆香：激活4次后得分×3.0")
 		has_engine_mechanic = true
 	if "fried" in tags_arr:
 		lines.append("爽脆：25%概率双重激活×0.7")
@@ -526,13 +526,13 @@ func _build_effect_summary(item_data: Dictionary) -> String:
 		lines.append("上瘾：每次+2层，每层/秒1.5分")
 		has_engine_mechanic = true
 	if "rich" in tags_arr and "fried" in tags_arr:
-		lines.append("油腻：浓郁+油炸叠加，每层减慢CD 8%")
+		lines.append("油腻：每次叠加，每层减慢CD 8%")
 		has_engine_mechanic = true
 	if "umami_tag" in tags_arr:
 		lines.append("提鲜：同菜系≥2时，右邻下次×1.8")
 		has_engine_mechanic = true
 	if "fermented" in tags_arr:
-		lines.append("发酵：首次×1.3，每次激活+1%")
+		lines.append("发酵：首次×1.3，每次+1%")
 		has_engine_mechanic = true
 
 	var active: Array = item_data.get("on_activate", [])

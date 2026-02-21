@@ -100,7 +100,7 @@ func _build_ui():
 	_add_section_header(vbox, "引擎机制（标签自动触发）")
 	_add_keyword_row(vbox, "开胃", "辣/酸菜→推进相邻CD 15%（前菜区+50%）")
 	_add_keyword_row(vbox, "上瘾", "浓郁/鲜味菜→每次+2层，每层每秒1.5分")
-	_add_keyword_row(vbox, "爆香", "烤/炒菜→蓄热4次后爆发，得分×3.0")
+	_add_keyword_row(vbox, "爆香", "烤/炒菜→激活4次后爆发，得分×3.0")
 	_add_keyword_row(vbox, "爽脆", "油炸菜→25%概率双重激活")
 	_add_keyword_row(vbox, "清口", "清淡/茶菜→清50%油腻，每层+3分+0.3s加速")
 	_add_keyword_row(vbox, "油腻(机制)", "浓郁+油炸菜→叠油腻，每层减速8%")
