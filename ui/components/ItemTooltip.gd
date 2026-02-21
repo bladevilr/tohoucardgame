@@ -540,28 +540,29 @@ func _build_effect_summary(item_data: Dictionary) -> String:
 	if not active.is_empty():
 		lines.append("上菜: " + _describe_effect(active[0]))
 
-	# 显示trigger（除非trigger为空或只是简单的stat_bonus）
+	# 显示trigger（除非trigger是空的stat_bonus且有引擎机制覆盖）
 	var triggers: Array = item_data.get("triggers", [])
 	if not triggers.is_empty():
 		var trigger_desc: String = _describe_trigger(triggers[0])
 		if trigger_desc != "":
-			# 检查是否是简单的stat_bonus（只加属性，没有其他效果）
-			var is_simple_stat_bonus: bool = false
+			# 只有当trigger是纯stat_bonus（只加属性）且有引擎机制时才跳过
+			var is_pure_stat_bonus: bool = false
 			if triggers[0] is Dictionary:
 				var eff = triggers[0].get("effect", {})
 				if eff is Dictionary:
 					var eff_type: String = str(eff.get("type", ""))
-					# 只有当type明确是stat_bonus且没有其他关键字时才算简单
 					if eff_type == "stat_bonus":
-						var has_other_effects: bool = false
+						# 检查是否只有stat字段，没有其他效果
+						var has_non_stat_keys: bool = false
 						for key in eff.keys():
 							if key not in ["type", "flavor", "presentation", "technique", "aroma"]:
-								has_other_effects = true
+								has_non_stat_keys = true
 								break
-						is_simple_stat_bonus = not has_other_effects
+						is_pure_stat_bonus = not has_non_stat_keys
 
-			# 如果有引擎机制且trigger只是简单stat_bonus，跳过
-			if not (has_engine_mechanic and is_simple_stat_bonus):
+			# 只有纯stat_bonus且有引擎机制时才跳过，其他情况都显示
+			var should_skip: bool = is_pure_stat_bonus and has_engine_mechanic
+			if not should_skip:
 				lines.append(trigger_desc)
 
 	if lines.is_empty():
