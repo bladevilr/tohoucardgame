@@ -81,11 +81,11 @@ func _build_ui():
 
 	# ━━━ 增益关键词 ━━━
 	_add_section_header(vbox, "增益关键词（绿色）")
-	_add_keyword_row(vbox, "鲜美", "每层+3味道")
-	_add_keyword_row(vbox, "焦香", "每层+2味道")
-	_add_keyword_row(vbox, "摆盘", "每层+3卖相")
-	_add_keyword_row(vbox, "刀工", "每层+2技法")
-	_add_keyword_row(vbox, "瞩目", "下次上菜冷却-1秒（消耗）")
+	_add_keyword_row(vbox, "鲜美", "每层+3味道。5层以上时额外总分×(1+层数×3%)")
+	_add_keyword_row(vbox, "焦香", "每层+2味道。5层以上时爆香阈值-1")
+	_add_keyword_row(vbox, "摆盘", "每层+3卖相。5层以上时额外总分×(1+层数×2%)")
+	_add_keyword_row(vbox, "刀工", "每层+2技法。5层以上时CD额外-2%/层")
+	_add_keyword_row(vbox, "聚光", "下次上菜冷却-1秒（消耗）")
 	_add_keyword_row(vbox, "回味", "每层味道×1.3")
 	_add_keyword_row(vbox, "秘方", "每层味道×1.5（消耗）")
 
@@ -95,6 +95,17 @@ func _build_ui():
 	_add_keyword_row(vbox, "杂乱", "每层-2卖相")
 	_add_keyword_row(vbox, "味觉疲劳", "每层味道-15%")
 	_add_keyword_row(vbox, "沉闷", "每层冷却+0.3秒")
+
+	# ━━━ 8大引擎机制 ━━━
+	_add_section_header(vbox, "引擎机制（标签自动触发）")
+	_add_keyword_row(vbox, "开胃", "辣/酸菜→推进相邻CD 15%（前菜区+50%）")
+	_add_keyword_row(vbox, "上瘾", "浓郁/鲜味菜→每次+2层，每层每秒1.5分")
+	_add_keyword_row(vbox, "爆香", "烤/炒菜→蓄热4次后爆发，得分×3.0")
+	_add_keyword_row(vbox, "爽脆", "油炸菜→25%概率双重激活")
+	_add_keyword_row(vbox, "清口", "清淡/茶菜→清50%油腻，每层+3分+0.3s加速")
+	_add_keyword_row(vbox, "油腻(机制)", "浓郁+油炸菜→叠油腻，每层减速8%")
+	_add_keyword_row(vbox, "提鲜", "鲜味菜+同菜系≥2→右邻下次得分×1.8")
+	_add_keyword_row(vbox, "发酵", "首次×1.3，每次激活永久+1%（上限+30%）")
 
 	# ━━━ 核心机制 ━━━
 	_add_section_header(vbox, "核心机制")

@@ -50,23 +50,31 @@ const TERM_DEFINITIONS := {
 	"被动": "始终生效的持续效果，无需任何触发条件。",
 	"相邻": "棋盘上左右紧贴该菜的卡牌，换位后重新判定。",
 	"环境": "全场共享负面状态。油腻 -2 风味/层；杂乱 -2 卖相/层；味觉疲劳 -15% 倍率/层。",
-	"鲜美": "每层上菜时额外 +3 风味，不受味觉疲劳影响。",
-	"焦香": "每层额外 +2 风味，联动烧烤体系有额外触发。",
-	"摆盘": "每层 +3 卖相。卖相差值每秒扣对手 差值×0.6×技法倍率 分（持续伤害）。",
-	"刀工": "每层 +2 技法。技法倍率 = 1.0 + 技法 × 0.02（50技法 = ×2.0倍）。",
-	"回味": "下一道菜上桌时额外结算本次风味 +30%（延迟触发）。",
-	"秘方": "消耗时爆发 +50% 风味，用后清零，可多层叠加。",
-	"聚光": "每层消耗后缩短本菜冷却 -1 秒，可提前上桌。",
-	"油腻": "环境减益，每层全场 -2 风味/次。清淡菜或药膳可降层。",
-	"杂乱": "环境减益，每层全场 -2 卖相/次，双方持续伤害同时受损。",
-	"味觉疲劳": "环境减益，每层全场风味倍率 -15%，需及时清除。",
-	"沉闷": "每层使该菜冷却增加 +0.3 秒。",
+	"鲜美": "增益关键字。每层+3风味。5层以上时额外总分×(1+层数×3%)。",
+	"焦香": "增益关键字。每层+2风味。5层以上时爆香阈值-1。",
+	"摆盘": "增益关键字。每层+3卖相。5层以上时额外总分×(1+层数×2%)。",
+	"刀工": "增益关键字。每层+2技法。5层以上时CD额外-2%/层。",
+	"回味": "延迟增益。下一道菜上桌时额外结算本次风味+30%。",
+	"秘方": "消耗型。消耗时爆发+50%风味，用后清零，可多层叠加。",
+	"聚光": "消耗型。每层缩短本菜冷却-1秒，可提前上桌。",
+	"油腻": "环境减益，每层全场-2风味/次。清淡菜或药膳可降层。",
+	"杂乱": "环境减益，每层全场-2卖相/次。",
+	"味觉疲劳": "环境减益，每层全场风味倍率-15%，需及时清除。",
+	"沉闷": "每层使该菜冷却增加+0.3秒。",
 	"融合": "横跨多菜系，可触发多套体系的协同奖励。",
 	"精进": "经专项修炼，大幅强化关键字效率或倍率上限。",
 	"风味": "核心得分：每次上菜 = 风味 × 技法倍率，对胜负影响最大。",
 	"卖相": "持续伤害来源：双方卖相差越大，每秒扣分越多。",
 	"技法": "全局倍率：技法 × 0.02 + 1，同时作用于风味和持续伤害。",
-	"香气": "加速冷却：每 10 点缩短冷却 5%，上限 35%（70香气最快）。",
+	"香气": "加速冷却：每10点缩短冷却5%，上限35%（70香气最快）。",
+	"开胃": "引擎机制。辣/酸菜激活时推进相邻CD 15%，前菜区额外+50%。",
+	"上瘾": "引擎机制。浓郁/鲜味菜每次+2层，每层每秒1.5分，每5秒衰减10%。",
+	"爆香": "引擎机制。烤/炒菜蓄热4次后爆发，该菜得分×3.0。",
+	"爽脆": "引擎机制。油炸菜25%概率双重激活，第2次得分×0.7。",
+	"清口": "引擎机制。清淡/茶菜清除50%油腻，每层+3分+全场CD加速0.3秒。",
+	"提鲜": "引擎机制。鲜味菜+同菜系≥2道时，标记右侧邻居下次得分×1.8。",
+	"发酵": "引擎机制。首次激活×1.3，之后每次永久+1%（上限+30%）。",
+	"油腻（机制）": "引擎机制。同时拥有浓郁+油炸标签的菜激活时叠加油腻，每层减慢全场CD 8%，最多20层。",
 }
 
 @onready var name_label: Label = $Margin/VBox/TitleRow/NameLabel
@@ -293,15 +301,10 @@ func _collect_tooltip_terms(item_data: Dictionary) -> Array[String]:
 		for kw_key in ["add_keyword", "consume_keyword", "add_env_keyword", "clear_env_keyword", "keyword"]:
 			if effect.has(kw_key):
 				push.call(KEYWORD_TEXT.get(str(effect[kw_key]), ""))
-		var typ: String = str(effect.get("type", ""))
-		if typ in ["gain_keyword", "apply_keyword", "consume_keyword"]:
-			push.call("触发")
-
 	# 来自 triggers
 	for trigger in item_data.get("triggers", []):
 		if not (trigger is Dictionary):
 			continue
-		push.call("触发")
 		var event: String = str(trigger.get("event", "")).to_lower()
 		if event.find("adjacent") >= 0 or event.find("neighbor") >= 0:
 			push.call("相邻")
@@ -310,6 +313,28 @@ func _collect_tooltip_terms(item_data: Dictionary) -> Array[String]:
 			for kw_key in ["add_keyword", "consume_keyword", "keyword"]:
 				if eff.has(kw_key):
 					push.call(KEYWORD_TEXT.get(str(eff[kw_key]), ""))
+
+	# 标签驱动的引擎机制术语
+	var tags: Array = item_data.get("tags", [])
+	if "fermented" in tags:
+		push.call("发酵")
+	if "spicy" in tags or "sour" in tags:
+		push.call("开胃")
+	if "rich" in tags or "umami_tag" in tags:
+		push.call("上瘾")
+	if "grilled" in tags or "stir_fried" in tags:
+		push.call("爆香")
+	if "rich" in tags and "fried" in tags:
+		push.call("油腻（机制）")
+	if "fried" in tags:
+		push.call("爽脆")
+	if "light" in tags or "tea" in tags:
+		push.call("清口")
+	if "umami_tag" in tags:
+		push.call("提鲜")
+
+	# 默认展示风味说明
+	push.call("风味")
 
 	return ordered
 
