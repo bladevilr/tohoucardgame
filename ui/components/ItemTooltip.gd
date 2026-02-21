@@ -19,6 +19,25 @@ const TAG_TEXT := {
 	"grilled": "烧烤",
 	"steamed": "蒸制",
 	"stewed": "炖煮",
+	"light": "清淡",
+	"rich": "浓郁",
+	"spicy": "辛辣",
+	"sour": "酸味",
+	"sweet": "甜味",
+	"umami_tag": "鲜味",
+	"fermented": "发酵",
+	"tea": "茶饮",
+	"rice": "米饭",
+	"staple": "主食",
+	"egg": "蛋类",
+	"rare": "稀有",
+	"medicinal": "药用",
+	"numbing": "麻味",
+	"raw": "生食",
+	"crispy": "酥脆",
+	"cheese": "芝士",
+	"surprising": "惊艳",
+	"fierce_fire": "猛火",
 }
 
 const KEYWORD_TEXT := {
@@ -457,6 +476,37 @@ func _build_effect_summary(item_data: Dictionary) -> String:
 			lines = lines.slice(0, 3)
 		return "\n".join(lines)
 
+	# 技法类型：显示属性修正和描述
+	if item_type == "technique":
+		var stat_mods: Dictionary = item_data.get("stat_modifiers", {})
+		var stat_parts: Array[String] = []
+		for stat_key in GameConfig.STAT_KEYS:
+			var delta: float = float(stat_mods.get(stat_key, 0.0))
+			if absf(delta) <= 0.001:
+				continue
+			var stat_name: String = str(GameConfig.STAT_NAMES.get(stat_key, stat_key))
+			if absf(delta - roundf(delta)) <= 0.001:
+				stat_parts.append("%s%+d" % [stat_name, int(roundf(delta))])
+			else:
+				stat_parts.append("%s%+.1f" % [stat_name, delta])
+		if not stat_parts.is_empty():
+			lines.append("属性: " + "、".join(stat_parts))
+
+		var cd_mod: float = float(item_data.get("cooldown_modifier", 0.0))
+		if absf(cd_mod) > 0.001:
+			lines.append("冷却: %+.1f秒" % cd_mod)
+
+		var flavor_text: String = str(item_data.get("flavor_text", "")).strip_edges()
+		if flavor_text != "":
+			lines.append(flavor_text)
+
+		if lines.is_empty():
+			lines.append("无特殊效果")
+
+		if lines.size() > 3:
+			lines = lines.slice(0, 3)
+		return "\n".join(lines)
+
 	# 标签驱动的引擎机制（显示在效果摘要首位）
 	var tags_arr: Array = item_data.get("tags", [])
 	var has_engine_mechanic: bool = false
@@ -495,12 +545,20 @@ func _build_effect_summary(item_data: Dictionary) -> String:
 	if not triggers.is_empty():
 		var trigger_desc: String = _describe_trigger(triggers[0])
 		if trigger_desc != "":
-			# 检查是否是简单的stat_bonus（如"上菜: 风味+3"）
+			# 检查是否是简单的stat_bonus（只加属性，没有其他效果）
 			var is_simple_stat_bonus: bool = false
 			if triggers[0] is Dictionary:
 				var eff = triggers[0].get("effect", {})
-				if eff is Dictionary and eff.get("type", "") == "stat_bonus":
-					is_simple_stat_bonus = true
+				if eff is Dictionary:
+					var eff_type: String = str(eff.get("type", ""))
+					# 只有当type明确是stat_bonus且没有其他关键字时才算简单
+					if eff_type == "stat_bonus":
+						var has_other_effects: bool = false
+						for key in eff.keys():
+							if key not in ["type", "flavor", "presentation", "technique", "aroma"]:
+								has_other_effects = true
+								break
+						is_simple_stat_bonus = not has_other_effects
 
 			# 如果有引擎机制且trigger只是简单stat_bonus，跳过
 			if not (has_engine_mechanic and is_simple_stat_bonus):
