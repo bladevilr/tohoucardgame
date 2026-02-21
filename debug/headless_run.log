@@ -1,0 +1,58 @@
+Godot Engine v4.6.1.stable.steam.14d19694e - https://godotengine.org
+TextServer: Added interface "Dummy"
+TextServer: Added interface "ICU / HarfBuzz / Graphite (Built-in)"
+Unrecognized output string "misc2" in mapping:
+030000000d0f00000202000000000000,Horipad O Nintendo Switch 2 Controller,a:b1,b:b0,back:b8,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b4,leftstick:b10,lefttrigger:b6,leftx:a0,lefty:a1,misc1:b13,misc2:b14,rightshoulder:b5,rightstick:b11,righttrigger:b7,rightx:a2,righty:a3,start:b9,x:b3,y:b2,platform:Windows,
+Unrecognized output string "misc2" in mapping:
+030000000d0f00009601000000000000,Horipad Steam,a:b0,b:b1,back:b10,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b6,leftstick:b13,lefttrigger:b8,leftx:a0,lefty:a1,misc2:b2,paddle1:b5,paddle2:b15,paddle3:b18,paddle4:b19,rightshoulder:b7,rightstick:b14,righttrigger:b9,rightx:a3,righty:a4,start:b11,x:b3,y:b4,platform:Windows,
+Unrecognized output string "misc2" in mapping:
+030000007e0500006920000000000000,Nintendo Switch 2 Pro Controller,a:b0,b:b1,back:b14,dpdown:b8,dpleft:b10,dpright:b9,dpup:b11,guide:b16,leftshoulder:b12,leftstick:b15,lefttrigger:b13,leftx:a0,lefty:a1~,misc1:b17,misc2:b20,paddle1:b18,paddle2:b19,rightshoulder:b4,rightstick:b7,righttrigger:b5,rightx:a2,righty:a3~,start:b6,x:b2,y:b3,platform:Windows,
+Using "default" pen tablet driver...
+
+TextServer: Primary interface set to: "ICU / HarfBuzz / Graphite (Built-in)".
+Loading resource: res://themes/default_theme.tres
+Loading resource: res://ui/fonts/NotoSansSC-Regular.ttf
+Loading resource: res://.godot/imported/NotoSansSC-Regular.ttf-67047087924edfc282ddbefb96dc99d6.fontdata
+Loading resource: res://ui/fonts/NotoSansSC-Bold.ttf
+Loading resource: res://.godot/imported/NotoSansSC-Bold.ttf-ddf5f812cef9d7fe92dd6771fae94091.fontdata
+Loading resource: res://assets/ui/theme/button_normal.png
+Loading resource: res://.godot/imported/button_normal.png-a09cc9f14857bce0ee5e373e081b5eef.ctex
+Loading resource: res://assets/ui/theme/panel_bg.png
+Loading resource: res://.godot/imported/panel_bg.png-c1079709aac8df423eef83b8ab785df5.ctex
+CORE API HASH: 75400357
+EDITOR API HASH: 3012763406
+SceneTreeFTI: traversal method DEFAULT
+Loading resource: res://core/SignalBus.gd
+Loading resource: res://data/GameConfig.gd
+Loading resource: res://data/DishDatabase.gd
+Loading resource: res://data/KeywordDatabase.gd
+Loading resource: res://data/TechniqueDatabase.gd
+Loading resource: res://data/ToolDatabase.gd
+Loading resource: res://data/JudgeDatabase.gd
+Loading resource: res://data/CuisineDatabase.gd
+Loading resource: res://data/ArtDatabase.gd
+Loading resource: res://data/CraftingDatabase.gd
+Loading resource: res://data/IngredientDatabase.gd
+Loading resource: res://core/GameManager.gd
+Loading resource: res://systems/IngredientManager.gd
+Loading resource: res://systems/ShowdownManager.gd
+Loading resource: res://systems/CraftingManager.gd
+Loading resource: res://ui/effects/UIAnimations.gd
+Loading resource: res://ui/effects/SceneTransition.gd
+Loading resource: res://ui/effects/ParticleFactory.gd
+Loading resource: res://ui/effects/UIColors.gd
+Loading resource: res://ui/effects/ScreenFX.gd
+Loading resource: res://ui/effects/AudioBridge.gd
+Loaded system CA certificates
+Loading resource: res://ui/MainMenu.tscn
+Loading resource: res://ui/MainMenu.gd
+Loading resource: res://ui/TutorialOverlay.tscn
+Loading resource: res://ui/TutorialOverlay.gd
+Loading resource: res://assets/ui/backgrounds/main_menu_bg.png
+Loading resource: res://.godot/imported/main_menu_bg.png-efb84d140b3690366978f093f0b871ec.ctex
+Loading resource: res://ui/shaders/environment_overlay.gdshader
+纹理资源已存在，跳过生成。
+Loading resource: res://ui/shaders/background_gradient.gdshader
+XR: Clearing primary interface
+XR: Removed interface "Native mobile"
+XR: Removed interface "OpenXR"

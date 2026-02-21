@@ -1,0 +1,164 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://ui/views/CardInspector.gd" id="1"]
+
+[node name="CardInspector" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+z_index = 100
+script = ExtResource("1")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+color = Color(0, 0, 0, 0.86)
+
+[node name="Content" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 72.0
+offset_top = 40.0
+offset_right = -72.0
+offset_bottom = -40.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 24
+alignment = 1
+
+[node name="LeftArea" type="PanelContainer" parent="Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.3
+
+[node name="CardCenter" type="CenterContainer" parent="Content/LeftArea"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="RightArea" type="PanelContainer" parent="Content"]
+layout_mode = 2
+custom_minimum_size = Vector2(520, 0)
+size_flags_horizontal = 3
+
+[node name="Margin" type="MarginContainer" parent="Content/RightArea"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 18
+
+[node name="VBox" type="VBoxContainer" parent="Content/RightArea/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TitleLabel" type="Label" parent="Content/RightArea/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.6, 1)
+theme_override_font_sizes/font_size = 28
+text = "卡牌名称"
+
+[node name="TypeRow" type="HBoxContainer" parent="Content/RightArea/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CuisineLabel" type="Label" parent="Content/RightArea/Margin/VBox/TypeRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.53, 0.6, 0.8, 1)
+theme_override_font_sizes/font_size = 16
+text = "中餐"
+
+[node name="StarLabel" type="Label" parent="Content/RightArea/Margin/VBox/TypeRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "★★"
+
+[node name="ItemTypeLabel" type="Label" parent="Content/RightArea/Margin/VBox/TypeRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 1)
+theme_override_font_sizes/font_size = 14
+text = "菜品"
+
+[node name="Sep1" type="ColorRect" parent="Content/RightArea/Margin/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 1)
+color = Color(0.4, 0.4, 0.47, 0.53)
+
+[node name="StatsGrid" type="GridContainer" parent="Content/RightArea/Margin/VBox"]
+layout_mode = 2
+columns = 2
+
+[node name="Sep2" type="ColorRect" parent="Content/RightArea/Margin/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 1)
+color = Color(0.4, 0.4, 0.47, 0.53)
+
+[node name="DescriptionLabel" type="RichTextLabel" parent="Content/RightArea/Margin/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 60)
+fit_content = true
+scroll_active = false
+bbcode_enabled = true
+text = "卡牌描述"
+
+[node name="EffectsTitle" type="Label" parent="Content/RightArea/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.83, 0.55, 1)
+theme_override_font_sizes/font_size = 18
+text = "卡牌效果"
+
+[node name="EffectsText" type="RichTextLabel" parent="Content/RightArea/Margin/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 100)
+fit_content = true
+scroll_active = false
+bbcode_enabled = true
+text = "• 无特殊效果"
+
+[node name="Sep3" type="ColorRect" parent="Content/RightArea/Margin/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 1)
+color = Color(0.4, 0.4, 0.47, 0.53)
+
+[node name="IngredientTitle" type="Label" parent="Content/RightArea/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.53, 0.8, 0.53, 1)
+theme_override_font_sizes/font_size = 16
+text = "调味记录"
+
+[node name="IngredientList" type="VBoxContainer" parent="Content/RightArea/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="GlossaryTitle" type="Label" parent="Content/RightArea/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.66, 0.87, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "机制名词解释"
+
+[node name="GlossaryScroll" type="ScrollContainer" parent="Content/RightArea/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="GlossaryContainer" type="VBoxContainer" parent="Content/RightArea/Margin/VBox/GlossaryScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="CloseHint" type="Label" parent="Content/RightArea/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.66, 0.66, 0.69, 1)
+theme_override_font_sizes/font_size = 13
+text = "点击空白处或按 ESC 关闭"
+horizontal_alignment = 2

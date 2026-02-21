@@ -1,0 +1,23 @@
+# Godot
+.godot/
+*.import
+
+# Build
+build/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+*.swp
+*.swo
+*~
+
+# Claude Code session logs
+*.txt
+!docs/*.txt
+
+# Agent temp
+.agent/

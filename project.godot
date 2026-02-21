@@ -1,0 +1,68 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="东方料理对决"
+config/description="东方料理对决 - Touhou Cooking Showdown"
+run/main_scene="res://ui/MainMenu.tscn"
+config/features=PackedStringArray("4.6", "Forward Plus")
+
+[autoload]
+
+SignalBus="*res://core/SignalBus.gd"
+GameConfig="*res://data/GameConfig.gd"
+DishDatabase="*res://data/DishDatabase.gd"
+KeywordDatabase="*res://data/KeywordDatabase.gd"
+TechniqueDatabase="*res://data/TechniqueDatabase.gd"
+ToolDatabase="*res://data/ToolDatabase.gd"
+ChefDatabase="*res://data/ChefDatabase.gd"
+JudgeDatabase="*res://data/JudgeDatabase.gd"
+CuisineDatabase="*res://data/CuisineDatabase.gd"
+ArtDatabase="*res://data/ArtDatabase.gd"
+CraftingDatabase="*res://data/CraftingDatabase.gd"
+IngredientDatabase="*res://data/IngredientDatabase.gd"
+GameManager="*res://core/GameManager.gd"
+IngredientManager="*res://systems/IngredientManager.gd"
+BoardManager="*res://systems/BoardManager.gd"
+ShopManager="*res://systems/ShopManager.gd"
+ShowdownManager="*res://systems/ShowdownManager.gd"
+SynergyManager="*res://systems/SynergyManager.gd"
+TechniqueManager="*res://systems/TechniqueManager.gd"
+CraftingManager="*res://systems/CraftingManager.gd"
+EncounterManager="*res://systems/EncounterManager.gd"
+EncounterPool="*res://systems/EncounterPool.gd"
+SaveManager="*res://core/SaveManager.gd"
+OpponentDatabase="*res://data/OpponentDatabase.gd"
+UIAnimations="*res://ui/effects/UIAnimations.gd"
+SceneTransition="*res://ui/effects/SceneTransition.gd"
+ParticleFactory="*res://ui/effects/ParticleFactory.gd"
+UIColors="*res://ui/effects/UIColors.gd"
+ScreenFX="*res://ui/effects/ScreenFX.gd"
+AudioBridge="*res://ui/effects/AudioBridge.gd"
+
+[display]
+
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
+[gui]
+
+theme/custom="res://themes/default_theme.tres"
+
+[input_devices]
+
+pointing/emulate_touch_from_mouse=true
+
+[rendering]
+
+renderer/rendering_method="mobile"

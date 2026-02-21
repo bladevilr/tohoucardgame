@@ -1,0 +1,220 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://ui/CharacterSelect.gd" id="1"]
+
+[node name="CharacterSelect" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.1, 0.08, 0.14, 1)
+
+[node name="HBox" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 32.0
+offset_top = 32.0
+offset_right = -32.0
+offset_bottom = -32.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 22
+
+[node name="LeftPanel" type="PanelContainer" parent="HBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(430, 0)
+
+[node name="LeftVBox" type="VBoxContainer" parent="HBox/LeftPanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="SelectTitle" type="Label" parent="HBox/LeftPanel/LeftVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.86, 0.4, 1)
+theme_override_font_sizes/font_size = 30
+text = "选择厨师"
+horizontal_alignment = 1
+
+[node name="SelectTip" type="Label" parent="HBox/LeftPanel/LeftVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.78, 0.86, 1)
+text = "点击左侧头像查看详细定位"
+horizontal_alignment = 1
+
+[node name="HSep" type="ColorRect" parent="HBox/LeftPanel/LeftVBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 2)
+color = Color(1, 0.835, 0.31, 0.32)
+
+[node name="ChefScroll" type="ScrollContainer" parent="HBox/LeftPanel/LeftVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="ChefGrid" type="GridContainer" parent="HBox/LeftPanel/LeftVBox/ChefScroll"]
+layout_mode = 2
+size_flags_horizontal = 4
+columns = 2
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
+
+[node name="RightPanel" type="PanelContainer" parent="HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RightVBox" type="VBoxContainer" parent="HBox/RightPanel"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="ChefName" type="Label" parent="HBox/RightPanel/RightVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.86, 0.4, 1)
+theme_override_font_sizes/font_size = 38
+text = "请选择一位厨师"
+
+[node name="CuisineLabel" type="Label" parent="HBox/RightPanel/RightVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = ""
+
+[node name="ToolLabel" type="Label" parent="HBox/RightPanel/RightVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = ""
+
+[node name="PortraitRow" type="HBoxContainer" parent="HBox/RightPanel/RightVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+
+[node name="ChefPortraitPanel" type="PanelContainer" parent="HBox/RightPanel/RightVBox/PortraitRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(360, 0)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ChefPortrait" type="TextureRect" parent="HBox/RightPanel/RightVBox/PortraitRow/ChefPortraitPanel"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+expand_mode = 1
+stretch_mode = 5
+
+[node name="SkillPanel" type="PanelContainer" parent="HBox/RightPanel/RightVBox/PortraitRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(320, 0)
+size_flags_vertical = 3
+
+[node name="SkillVBox" type="VBoxContainer" parent="HBox/RightPanel/RightVBox/PortraitRow/SkillPanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="SkillTitle" type="Label" parent="HBox/RightPanel/RightVBox/PortraitRow/SkillPanel/SkillVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.835, 0.31, 1)
+theme_override_font_sizes/font_size = 20
+text = ""
+
+[node name="SkillTrigger" type="Label" parent="HBox/RightPanel/RightVBox/PortraitRow/SkillPanel/SkillVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.7, 0.85, 1)
+theme_override_font_sizes/font_size = 17
+text = ""
+
+[node name="SkillEffect" type="Label" parent="HBox/RightPanel/RightVBox/PortraitRow/SkillPanel/SkillVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 17
+text = ""
+autowrap_mode = 2
+
+[node name="Sep2" type="ColorRect" parent="HBox/RightPanel/RightVBox/PortraitRow/SkillPanel/SkillVBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 1)
+color = Color(1, 0.835, 0.31, 0.3)
+
+[node name="StatsTitle" type="Label" parent="HBox/RightPanel/RightVBox/PortraitRow/SkillPanel/SkillVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.835, 0.31, 1)
+theme_override_font_sizes/font_size = 18
+text = "基础属性加成"
+
+[node name="StatsGrid" type="GridContainer" parent="HBox/RightPanel/RightVBox/PortraitRow/SkillPanel/SkillVBox"]
+layout_mode = 2
+columns = 2
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 6
+
+[node name="FlavorStat" type="Label" parent="HBox/RightPanel/RightVBox/PortraitRow/SkillPanel/SkillVBox/StatsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.42, 0.208, 1)
+text = ""
+
+[node name="PresentStat" type="Label" parent="HBox/RightPanel/RightVBox/PortraitRow/SkillPanel/SkillVBox/StatsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.914, 0.118, 0.612, 1)
+text = ""
+
+[node name="TechStat" type="Label" parent="HBox/RightPanel/RightVBox/PortraitRow/SkillPanel/SkillVBox/StatsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.486, 0.302, 1, 1)
+text = ""
+
+[node name="AromaStat" type="Label" parent="HBox/RightPanel/RightVBox/PortraitRow/SkillPanel/SkillVBox/StatsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.902, 0.463, 1)
+text = ""
+
+[node name="Sep3" type="ColorRect" parent="HBox/RightPanel/RightVBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 1)
+color = Color(1, 0.835, 0.31, 0.3)
+
+[node name="StrategyTitle" type="Label" parent="HBox/RightPanel/RightVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.835, 0.31, 1)
+theme_override_font_sizes/font_size = 18
+text = "推荐玩法"
+
+[node name="StrategyLabel" type="Label" parent="HBox/RightPanel/RightVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.74, 0.74, 0.84, 1)
+theme_override_font_sizes/font_size = 16
+text = ""
+autowrap_mode = 2
+
+[node name="Spacer" type="Control" parent="HBox/RightPanel/RightVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ConfirmButton" type="Button" parent="HBox/RightPanel/RightVBox"]
+layout_mode = 2
+size_flags_horizontal = 4
+custom_minimum_size = Vector2(260, 54)
+disabled = true
+text = "确认选择"
+
+[node name="BackButton" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = -66.0
+offset_right = 150.0
+offset_bottom = -20.0
+grow_vertical = 0
+text = "返回"

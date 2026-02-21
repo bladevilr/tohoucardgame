@@ -1,0 +1,123 @@
+[
+  {
+    "id": "chahan",
+    "name": "蛋炒饭",
+    "cuisine": "chuuka",
+    "tier": 0,
+    "size": 1,
+    "cooldown": 3.0,
+    "base_stats": {"flavor": 6, "presentation": 2, "technique": 3, "aroma": 4},
+    "tags": ["rice", "stir_fried"],
+    "on_activate": [],
+    "triggers": [{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "char_aroma", "keyword_stacks": 1}}]
+  },
+  {
+    "id": "gyoza",
+    "name": "煎饺",
+    "cuisine": "chuuka",
+    "tier": 0,
+    "size": 1,
+    "cooldown": 3.5,
+    "base_stats": {"flavor": 5, "presentation": 3, "technique": 4, "aroma": 4},
+    "tags": ["meat", "fried"],
+    "on_activate": [],
+    "triggers": []
+  },
+  {
+    "id": "mapo_tofu",
+    "name": "麻婆豆腐",
+    "cuisine": "chuuka",
+    "tier": 0,
+    "size": 1,
+    "cooldown": 4.0,
+    "base_stats": {"flavor": 8, "presentation": 2, "technique": 3, "aroma": 5},
+    "tags": ["vegetable", "spicy", "rich"],
+    "on_activate": [],
+    "triggers": [{"event": "item_activated", "condition": "self", "effect": {"add_env_keyword": "greasy", "stacks": 1}}]
+  },
+  {
+    "id": "xiaolongbao",
+    "name": "小笼包",
+    "cuisine": "chuuka",
+    "tier": 0,
+    "size": 1,
+    "cooldown": 3.5,
+    "base_stats": {"flavor": 6, "presentation": 5, "technique": 5, "aroma": 3},
+    "tags": ["meat", "steamed", "mastered"],
+    "on_activate": [],
+    "triggers": []
+  },
+  {
+    "id": "congee",
+    "name": "白粥",
+    "cuisine": "chuuka",
+    "tier": 0,
+    "size": 1,
+    "cooldown": 3.0,
+    "base_stats": {"flavor": 4, "presentation": 1, "technique": 2, "aroma": 3},
+    "tags": ["rice", "light", "staple"],
+    "on_activate": [],
+    "triggers": [{"event": "item_activated", "condition": "self", "effect": {"clear_env_keyword": "greasy", "stacks": 1}}]
+  },
+  {
+    "id": "baozi",
+    "name": "肉包子",
+    "cuisine": "chuuka",
+    "tier": 0,
+    "size": 1,
+    "cooldown": 3.0,
+    "base_stats": {"flavor": 5, "presentation": 2, "technique": 3, "aroma": 4},
+    "tags": ["meat", "steamed"],
+    "on_activate": [],
+    "triggers": []
+  },
+  {
+    "id": "hotpot_base",
+    "name": "火锅底料",
+    "cuisine": "chuuka",
+    "tier": 0,
+    "size": 1,
+    "cooldown": 3.5,
+    "base_stats": {"flavor": 6, "presentation": 1, "technique": 2, "aroma": 6},
+    "tags": ["spicy", "rich"],
+    "on_activate": [],
+    "triggers": [{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "char_aroma", "keyword_stacks": 1, "add_env_keyword": "greasy", "env_stacks": 1}}]
+  },
+  {
+    "id": "scallion_pancake",
+    "name": "葱油饼",
+    "cuisine": "chuuka",
+    "tier": 0,
+    "size": 1,
+    "cooldown": 3.0,
+    "base_stats": {"flavor": 5, "presentation": 2, "technique": 4, "aroma": 5},
+    "tags": ["vegetable", "fried"],
+    "on_activate": [],
+    "triggers": [{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "char_aroma", "keyword_stacks": 1}}]
+  },
+  {
+    "id": "wonton_soup",
+    "name": "馄饨汤",
+    "cuisine": "chuuka",
+    "tier": 0,
+    "size": 1,
+    "cooldown": 3.5,
+    "base_stats": {"flavor": 6, "presentation": 3, "technique": 3, "aroma": 4},
+    "tags": ["meat", "steamed", "light"],
+    "on_activate": [],
+    "triggers": [{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "umami", "keyword_stacks": 1}}]
+  },
+  {
+    "id": "youtiao",
+    "name": "油条",
+    "cuisine": "chuuka",
+    "tier": 0,
+    "size": 1,
+    "cooldown": 2.5,
+    "base_stats": {"flavor": 4, "presentation": 2, "technique": 3, "aroma": 5},
+    "tags": ["fried", "staple"],
+    "on_activate": [],
+    "triggers": [{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "char_aroma", "keyword_stacks": 1, "add_env_keyword": "greasy", "env_stacks": 1}}]
+  },
+___PLACEHOLDER_2___
+]

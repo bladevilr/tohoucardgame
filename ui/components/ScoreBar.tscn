@@ -1,0 +1,77 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://ui/components/ScoreBar.gd" id="1"]
+
+[node name="ScoreBar" type="VBoxContainer"]
+script = ExtResource("1")
+theme_override_constants/separation = 4
+
+[node name="ScoreRow" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="P2Score" type="Label" parent="ScoreRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+horizontal_alignment = 2
+text = "0"
+
+[node name="BarContainer" type="HBoxContainer" parent="ScoreRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 4.0
+theme_override_constants/separation = 4
+
+[node name="P2Bar" type="ProgressBar" parent="ScoreRow/BarContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+custom_minimum_size = Vector2(0, 22)
+max_value = 100.0
+value = 50.0
+fill_mode = 1
+show_percentage = false
+
+[node name="P1Bar" type="ProgressBar" parent="ScoreRow/BarContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+custom_minimum_size = Vector2(0, 22)
+max_value = 100.0
+value = 50.0
+show_percentage = false
+
+[node name="P1Score" type="Label" parent="ScoreRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+text = "0"
+
+[node name="DetailRow" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="DiffLabel" type="Label" parent="DetailRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 17
+horizontal_alignment = 1
+text = ""
+
+[node name="InfoRow" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="DotLabel" type="Label" parent="InfoRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 15
+text = "卖相压制: --"
+
+[node name="EnvLabel" type="Label" parent="InfoRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 15
+horizontal_alignment = 2
+text = "环境: --"

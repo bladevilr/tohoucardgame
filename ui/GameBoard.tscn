@@ -1,0 +1,279 @@
+[gd_scene format=3 uid="uid://dicy40l5viia0"]
+
+[ext_resource type="Script" uid="uid://dqlmyf2afoen6" path="res://ui/GameBoard.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://cpgsuw3fpj278" path="res://assets/ui/backgrounds/gameplay_bg_cropped.png" id="2_bg"]
+[ext_resource type="PackedScene" path="res://ui/components/JudgePanel.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://ui/components/BackpackDrawer.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://ui/overlays/VideoOverlay.tscn" id="5"]
+
+[node name="GameBoard" type="Control" unique_id=285156184]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Background" type="TextureRect" parent="." unique_id=1838580874]
+texture_filter = 2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="HeaderCover" type="ColorRect" parent="." unique_id=87135471]
+visible = false
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+grow_horizontal = 2
+color = Color(0.05, 0.05, 0.08, 0)
+
+[node name="ContentLayer" type="VBoxContainer" parent="." unique_id=1990830461]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 120.0
+offset_right = -260.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 0
+
+[node name="TopBar" type="PanelContainer" parent="ContentLayer" unique_id=919215041]
+visible = false
+layout_mode = 2
+
+[node name="MerchantZone" type="VBoxContainer" parent="ContentLayer" unique_id=1268990370]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="SelectionBubbleContainer" type="HBoxContainer" parent="ContentLayer/MerchantZone" unique_id=913300266]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+theme_override_constants/separation = 32
+alignment = 1
+
+[node name="MerchantPortraitBorder" type="PanelContainer" parent="ContentLayer/MerchantZone" unique_id=2082546874]
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="MerchantPortrait" type="TextureRect" parent="ContentLayer/MerchantZone/MerchantPortraitBorder" unique_id=1161165483]
+custom_minimum_size = Vector2(140, 140)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ShopRow" type="HBoxContainer" parent="ContentLayer/MerchantZone" unique_id=237019254]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="MerchantTabs" type="VBoxContainer" parent="ContentLayer/MerchantZone/ShopRow" unique_id=1964363985]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="ShopScroll" type="ScrollContainer" parent="ContentLayer/MerchantZone/ShopRow" unique_id=116664912]
+layout_mode = 2
+size_flags_horizontal = 3
+horizontal_scroll_mode = 2
+vertical_scroll_mode = 0
+
+[node name="ShopItems" type="HBoxContainer" parent="ContentLayer/MerchantZone/ShopRow/ShopScroll" unique_id=894855723]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="ActionsColumn" type="VBoxContainer" parent="ContentLayer/MerchantZone/ShopRow" unique_id=1798820417]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+alignment = 1
+
+[node name="RefreshButton" type="Button" parent="ContentLayer/MerchantZone/ShopRow/ActionsColumn" unique_id=390025646]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+text = "刷新"
+
+[node name="PlayerZone" type="VBoxContainer" parent="ContentLayer" unique_id=1116319592]
+layout_mode = 2
+size_flags_vertical = 3
+alignment = 2
+
+[node name="BoardArea" type="HBoxContainer" parent="ContentLayer/PlayerZone" unique_id=1860954868]
+layout_mode = 2
+size_flags_vertical = 3
+alignment = 1
+
+[node name="BoardContainer" type="PanelContainer" parent="ContentLayer/PlayerZone/BoardArea" unique_id=788801655]
+layout_mode = 2
+size_flags_vertical = 8
+custom_minimum_size = Vector2(0, 330)
+
+[node name="BoardSlots" type="HBoxContainer" parent="ContentLayer/PlayerZone/BoardArea/BoardContainer" unique_id=561706612]
+layout_mode = 2
+theme_override_constants/separation = 0
+alignment = 1
+
+[node name="ToolArea" type="VBoxContainer" parent="ContentLayer/PlayerZone/BoardArea" unique_id=1024207308]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+alignment = 1
+
+[node name="ToolSlots" type="HBoxContainer" parent="ContentLayer/PlayerZone/BoardArea/ToolArea" unique_id=1540091650]
+layout_mode = 2
+alignment = 1
+
+[node name="LeftSidebar" type="PanelContainer" parent="." unique_id=1752950025]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 8.0
+offset_top = -90.0
+offset_right = 140.0
+offset_bottom = 90.0
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="LeftSidebar" unique_id=971376527]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="DayLabel" type="Label" parent="LeftSidebar/VBox" unique_id=1340320804]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.12, 0.08, 1)
+theme_override_font_sizes/font_size = 18
+text = "第1天"
+horizontal_alignment = 1
+
+[node name="PrestigeLabel" type="Label" parent="LeftSidebar/VBox" unique_id=633913243]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.35, 0.2, 0.1, 1)
+theme_override_font_sizes/font_size = 14
+text = "声望: 5"
+horizontal_alignment = 1
+
+[node name="GoldLabel" type="Label" parent="LeftSidebar/VBox" unique_id=1039634249]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.35, 0.2, 0.1, 1)
+theme_override_font_sizes/font_size = 14
+text = "金币: 10"
+horizontal_alignment = 1
+
+[node name="JudgeDrawer" type="Control" parent="." unique_id=1250178298]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="JudgeTab" type="Button" parent="JudgeDrawer" unique_id=641630528]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -60.0
+offset_top = 100.0
+offset_bottom = 220.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 18
+text = "裁
+判"
+
+[node name="JudgeSlidePanel" type="PanelContainer" parent="JudgeDrawer" unique_id=1975615252]
+visible = false
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_top = 180.0
+offset_right = 320.0
+offset_bottom = 280.0
+grow_horizontal = 0
+size_flags_vertical = 0
+
+[node name="JudgePanel" parent="JudgeDrawer/JudgeSlidePanel" unique_id=299189806 instance=ExtResource("3")]
+layout_mode = 2
+
+[node name="PortraitLayer" type="Control" parent="." unique_id=534570037]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ChefPortraitFrame" type="PanelContainer" parent="PortraitLayer" unique_id=1395111528]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -240.0
+offset_top = -340.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_horizontal = 0
+grow_vertical = 0
+
+[node name="ChefPortrait" type="TextureRect" parent="PortraitLayer/ChefPortraitFrame" unique_id=2072738981]
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 6
+
+[node name="ControlsLayer" type="Control" parent="." unique_id=1251839601]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ReadyButton" type="Button" parent="ControlsLayer" unique_id=1370902053]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -400.0
+offset_top = -385.0
+offset_right = -250.0
+offset_bottom = -350.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_font_sizes/font_size = 18
+text = "下一阶段"
+
+[node name="BackpackDrawer" parent="." unique_id=1513957843 instance=ExtResource("4")]
+visible = false
+z_index = 30
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -240.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="VideoOverlay" parent="." unique_id=820693646 instance=ExtResource("5")]
+visible = false
+layout_mode = 1

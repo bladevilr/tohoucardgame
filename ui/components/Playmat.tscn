@@ -1,0 +1,36 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Shader" path="res://ui/shaders/mat_pattern.gdshader" id="1"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_mat"]
+shader = ExtResource("1")
+shader_parameter/bg_color = Color(0.14, 0.12, 0.18, 1)
+shader_parameter/pattern_color = Color(0.28, 0.25, 0.35, 0.6)
+shader_parameter/scale = 30.0
+
+[node name="Playmat" type="PanelContainer"]
+custom_minimum_size = Vector2(1000, 280)
+offset_right = 1000.0
+offset_bottom = 280.0
+
+[node name="MatSurface" type="ColorRect" parent="."]
+layout_mode = 2
+material = SubResource("ShaderMaterial_mat")
+
+[node name="Border" type="ReferenceRect" parent="."]
+layout_mode = 2
+border_color = Color(0.4, 0.35, 0.5, 1)
+border_width = 4.0
+editor_only = false
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="SlotContainer" type="HBoxContainer" parent="Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
