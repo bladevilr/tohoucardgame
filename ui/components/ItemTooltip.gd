@@ -421,8 +421,7 @@ func _build_tag_line(item_data: Dictionary) -> String:
 			continue
 		if TAG_TEXT.has(s):
 			parts.append(TAG_TEXT[s])
-		if parts.size() >= 2:
-			break
+		# 移除数量限制，显示所有标签
 
 	if parts.is_empty():
 		return "普通料理"
