@@ -218,13 +218,14 @@ func _setup_judge_avatar() -> void:
 		avatar.name = "JudgeAvatar%d" % i
 		center_area.add_child(avatar)
 
-		# 左右并排放置，x_offset 为相对于屏幕中心的偏移
-		var x_offset = -spacing / 2 if i == 0 else spacing / 2
-		avatar.set_anchors_preset(Control.PRESET_CENTER)
-		avatar.offset_left   = x_offset - 100.0
-		avatar.offset_top    = -220.0
-		avatar.offset_right  = x_offset + 100.0
-		avatar.offset_bottom = -20.0
+		# 上下排列在左侧的预留空白列中 (x = 20 到 200)
+		# 屏幕高度为1080，竖直中心 540。上下各偏移 140 像素以拉开距离
+		var y_offset = -140.0 if i == 0 else 140.0
+		avatar.set_anchors_preset(Control.PRESET_CENTER_LEFT)
+		avatar.offset_left   = 30.0
+		avatar.offset_top    = y_offset - 90.0
+		avatar.offset_right  = 190.0 # 160 px wide
+		avatar.offset_bottom = y_offset + 90.0
 
 		if avatar.has_method("setup"):
 			avatar.setup(judge_id)
@@ -239,11 +240,11 @@ func _setup_judge_avatar() -> void:
 		var judge_data = JudgeDatabase.get_judge_v2(judge_id) if GameConfig.BATTLE_SYSTEM_V2 else JudgeDatabase.get_judge(judge_id)
 		name_lbl.text = str(judge_data.get("name", judge_id))
 		
-		name_lbl.set_anchors_preset(Control.PRESET_CENTER)
-		name_lbl.offset_left   = x_offset - 100.0
-		name_lbl.offset_top    = -248.0
-		name_lbl.offset_right  = x_offset + 100.0
-		name_lbl.offset_bottom = -224.0
+		name_lbl.set_anchors_preset(Control.PRESET_CENTER_LEFT)
+		name_lbl.offset_left   = 10.0
+		name_lbl.offset_top    = y_offset - 120.0
+		name_lbl.offset_right  = 210.0
+		name_lbl.offset_bottom = y_offset - 90.0
 		name_lbl.mouse_filter  = Control.MOUSE_FILTER_IGNORE
 		name_lbl.add_theme_color_override("font_color", Color(1.0, 0.95, 0.8))
 		name_lbl.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.9))
