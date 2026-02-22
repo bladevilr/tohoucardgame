@@ -255,19 +255,34 @@ func _resolve_icon_texture() -> Texture2D:
 			if item_id != "":
 				return ArtDatabase.get_tool_icon(item_id)
 		"event":
+			var event_icon := str(item_data.get("icon", ""))
+			if event_icon != "":
+				var chef_portrait := ArtDatabase.get_chef_portrait(event_icon)
+				if chef_portrait:
+					return chef_portrait
+			var reimu_portrait := ArtDatabase.get_chef_portrait("reimu")
+			if reimu_portrait:
+				return reimu_portrait
 			return _load_texture_from_paths([
-				"res://assets/ui/chefs/%s.png" % str(item_data.get("icon", "")),
-				"res://assets/merchants/%s.png" % str(item_data.get("icon", "")),
-				"res://assets/ui/chefs/reimu.png",
+				"res://assets/merchants/%s.png" % event_icon,
 			])
 		"reward":
 			var reward_icon: String = str(item_data.get("icon", ""))
-			return _load_texture_from_paths([
+			var reward_tex := _load_texture_from_paths([
 				"res://assets/ui/rewards/%s.png" % reward_icon,
-				"res://assets/ui/dishes/%s.png" % reward_icon,
-				"res://assets/ui/tools/%s.png" % reward_icon,
-				"res://assets/ui/ingredients/%s.png" % reward_icon,
 			])
+			if reward_tex:
+				return reward_tex
+			if reward_icon != "":
+				reward_tex = ArtDatabase.get_dish_icon(reward_icon)
+				if reward_tex:
+					return reward_tex
+				reward_tex = ArtDatabase.get_tool_icon(reward_icon)
+				if reward_tex:
+					return reward_tex
+				reward_tex = ArtDatabase.get_ingredient_icon(reward_icon)
+				if reward_tex:
+					return reward_tex
 	return null
 
 func _load_texture_from_paths(paths: Array[String]) -> Texture2D:
