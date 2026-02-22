@@ -31,13 +31,6 @@ const KEYWORD_NAME_MAP := {
 	"messy": "杂乱",
 	"taste_fatigue": "味觉疲劳",
 	"dull": "寡淡",
-	# 新引擎机制
-	"appetizing": "开胃",
-	"addictive": "上瘾",
-	"sizzling": "爆香",
-	"crisp": "爽脆",
-	"refreshing": "清口",
-	"fermented": "发酵",
 }
 
 const BUFF_KEYWORDS := ["umami", "char_aroma", "plating", "knife_work", "aftertaste", "secret_recipe", "spotlight"]
@@ -89,6 +82,16 @@ var _broadcast_index: int = 0
 var _judge_state_panel: VBoxContainer = null  # V2 评委状态面板
 
 func _ready() -> void:
+	# --- 修正z-index防止卡牌遮挡裁判头像 ---
+	var center_area = get_node_or_null("CenterArea")
+	if center_area:
+		center_area.z_index = 10
+	
+	# 隐藏中间无用的冗杂信息面板
+	var battle_info = get_node_or_null("MainHBox/VBox/ScoreArea/BattleInfoPanel")
+	if battle_info:
+		battle_info.visible = false
+
 	_apply_aura_shader()
 	_setup_chef_portrait()
 	_setup_opponent_badge()
@@ -229,9 +232,13 @@ func _setup_judge_avatar() -> void:
 		# 评委名字标签（头像正上方）
 		var name_lbl := Label.new()
 		name_lbl.name = "JudgeNameLabel%d" % i
-		name_lbl.add_theme_font_size_override("font_size", 17)
+		name_lbl.add_theme_font_size_override("font_size", 19)
 		name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		name_lbl.text = judge_id
+		
+		# 使用中文名字
+		var judge_data = JudgeDatabase.get_judge_v2(judge_id) if GameConfig.BATTLE_SYSTEM_V2 else JudgeDatabase.get_judge(judge_id)
+		name_lbl.text = str(judge_data.get("name", judge_id))
+		
 		name_lbl.set_anchors_preset(Control.PRESET_CENTER)
 		name_lbl.offset_left   = x_offset - 100.0
 		name_lbl.offset_top    = -248.0
@@ -244,23 +251,10 @@ func _setup_judge_avatar() -> void:
 		name_lbl.add_theme_constant_override("shadow_offset_y", 1)
 		center_area.add_child(name_lbl)
 
-		# 评委状态标签（头像正下方，分两行：debuff 和环境）
-		var status_lbl := Label.new()
-		status_lbl.name = "JudgeStatusLabel%d" % i
-		status_lbl.add_theme_font_size_override("font_size", 16)
-		status_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		status_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		status_lbl.text = ""
-		status_lbl.set_anchors_preset(Control.PRESET_CENTER)
-		status_lbl.offset_left   = x_offset - 110.0
-		status_lbl.offset_top    = -18.0   # 紧贴头像下沿（offset_bottom = -20）
-		status_lbl.offset_right  = x_offset + 110.0
-		status_lbl.offset_bottom = 42.0    # 60px 高度容纳两行
-		status_lbl.mouse_filter  = Control.MOUSE_FILTER_IGNORE
-		status_lbl.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.85))
-		status_lbl.add_theme_constant_override("shadow_offset_x", 1)
-		status_lbl.add_theme_constant_override("shadow_offset_y", 1)
-		center_area.add_child(status_lbl)
+		# 清空旧版冗长状态标（饱腹/心情/需求等已精简）
+		# 仅保留变量站位，不渲染文本以防界面杂乱
+		pass
+
 
 	# 保存第一个评委头像的引用（用于动画）
 	judge_avatar = center_area.get_node_or_null("JudgeAvatar0")
@@ -311,61 +305,10 @@ func _setup_board_display(player_idx: int, container: HBoxContainer) -> void:
 # ============================================================
 
 func _setup_v2_judge_panel():
-	"""创建 V2 评委状态显示面板"""
-	_judge_state_panel = VBoxContainer.new()
-	_judge_state_panel.name = "JudgeStatePanel"
-
-	# 添加到 judge_avatar 旁边
-	if judge_avatar and judge_avatar.get_parent():
-		judge_avatar.get_parent().add_child(_judge_state_panel)
-		_judge_state_panel.position = judge_avatar.position + Vector2(0, judge_avatar.size.y + 10)
-
-	# 创建状态标签
-	var satiety_label: Label = Label.new()
-	satiety_label.name = "SatietyLabel"
-	satiety_label.text = "饱腹: 0/100"
-	_judge_state_panel.add_child(satiety_label)
-
-	var mood_label: Label = Label.new()
-	mood_label.name = "MoodLabel"
-	mood_label.text = "心情: 0"
-	_judge_state_panel.add_child(mood_label)
-
-	var needs_label: Label = Label.new()
-	needs_label.name = "NeedsLabel"
-	needs_label.text = "需求: 无"
-	needs_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	needs_label.custom_minimum_size = Vector2(200, 0)
-	_judge_state_panel.add_child(needs_label)
+	pass
 
 func _update_v2_judge_panel(event: Dictionary):
-	"""更新 V2 评委状态显示"""
-	if not _judge_state_panel:
-		return
-
-	# 从 event 中读取评委状态（ShowdownResolverV2 需要在 event 中包含这些信息）
-	var satiety: int = event.get("satiety", 0)
-	var mood: int = event.get("mood", 0)
-	var needs: Array = event.get("needs", [])
-
-	var satiety_label: Label = _judge_state_panel.get_node_or_null("SatietyLabel")
-	if satiety_label:
-		satiety_label.text = "饱腹: %d" % satiety
-
-	var mood_label: Label = _judge_state_panel.get_node_or_null("MoodLabel")
-	if mood_label:
-		var mood_text: String = "😊" if mood > 0 else "😐" if mood == 0 else "😠"
-		mood_label.text = "心情: %s (%d)" % [mood_text, mood]
-
-	var needs_label: Label = _judge_state_panel.get_node_or_null("NeedsLabel")
-	if needs_label:
-		if needs.is_empty():
-			needs_label.text = "需求: 无"
-		else:
-			var need_names: Array = []
-			for n in needs:
-				need_names.append(n.get("type", ""))
-			needs_label.text = "需求: " + ", ".join(need_names)
+	pass
 
 func _on_tick(elapsed: float) -> void:
 	var remaining = maxf(0.0, GameConfig.SHOWDOWN_DURATION - elapsed)
@@ -491,18 +434,25 @@ func _on_item_served(player_idx: int, item_idx: int, result: Dictionary) -> void
 			proj.launch(start_pos, target, flavor, served_item)
 
 			# 延迟反应
+			var current_env = {}
+			var ms = GameManager.get_match_state()
+			if ms != null and "environment_keywords" in ms:
+				current_env = ms.environment_keywords.duplicate()
+
 			var delay = 0.5 + i * 0.1
 			get_tree().create_timer(delay).timeout.connect(func():
 				if avatar.has_method("react_to_impact"):
-					avatar.react_to_impact(flavor)
+					avatar.react_to_impact(flavor, current_env)
 			)
 
 	# 浮动得分数字：暴击用橙红大字，普通保持金色/蓝色
+	# 为了“造成伤害在菜品头上冒出”的效果，起点提高并附加强向上漂移
+	var float_start_pos = card.global_position + Vector2(card.size.x * 0.5 * card.scale.x, -20.0)
 	if is_crit:
-		FloatingTextScript.spawn(self, "暴击！+%d" % int(flavor), start_pos, Color(1.0, 0.3, 0.1), 1.0, 90.0, 34)
+		FloatingTextScript.spawn(self, "暴击！+%d" % int(flavor), float_start_pos, Color(1.0, 0.3, 0.1), 1.0, 90.0, 34)
 	else:
 		var score_color = Color(1.0, 0.86, 0.35) if flavor > 30.0 else Color(0.6, 0.8, 1.0)
-		FloatingTextScript.spawn(self, "+%d" % int(flavor), start_pos, score_color, 0.8, 60.0, 24)
+		FloatingTextScript.spawn(self, "+%d" % int(flavor), float_start_pos, score_color, 0.8, 60.0, 24)
 
 func _on_dot_tick(player_idx: int, dot: float) -> void:
 	score_bar.update_dot(dot, player_idx)

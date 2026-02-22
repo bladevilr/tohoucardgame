@@ -1,23 +1,24 @@
-﻿extends RefCounted
+extends RefCounted
 class_name YataiPool
 
-## 屋台カード・プー�?(Street Stall / Grill)
-## 使用�? ミスティ�?/ 美鈴 / 魔理�?
-## キーワード生�? char_aroma, greasy, burst
+## 屋台カード・プール (Street Stall / Grill)
+## 使用者: ミスティア / 美鈴 / 魔理沙
+## 設計方針: 爆香連鎖エンジン — 焦香蓄積→閾値爆発 / 油膩双刃剣 / 隣接加速
+## キーワード生成: char_aroma, greasy, umami
 
 static func get_dishes() -> Array:
 	return [
-		# ===== BRONZE (Tier 0) =====
+		# ===== BRONZE (Tier 0) — 引擎型小菜 =====
 		{
 			"id": "yatai_yakitori", "name": "烤鸡串", "name_cn": "烤鸡串",
 			"cuisine": "yatai", "tier": 0, "size": 1, "cooldown": 2.5,
 			"flavor": 5, "mod_slots": 2,
 			"tags": ["meat", "grilled"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"accumulate": {"counter_id": "sizzle_yatai_yakitori", "increment": 1, "threshold": 3, "reset_counter": true, "on_threshold": {"flavor": 30}}}, "desc": "每激活3次，获得30风味"}
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "char_aroma", "keyword_stacks": 1, "accumulate": {"counter_id": "sizzle_yatai_yakitori", "increment": 1, "threshold": 3, "reset_counter": true, "on_threshold": {"flavor": 25, "reduce_cooldown_adjacent": 1.0}}}, "desc": "获得1层焦香；每激活3次，爆发25风味并加速相邻0.5秒"}
 			],
 			"on_activate": [],
-			"description": "烤鸡串。"
+			"description": "酱汁反复刷涂的炭烤鸡肉串。"
 		},
 		{
 			"id": "yaki_tomorokoshi", "name": "烤玉米", "name_cn": "烤玉米",
@@ -33,7 +34,7 @@ static func get_dishes() -> Array:
 				"desc": "获得1层焦香，并向右传递1层焦香"
 			}],
 			"on_activate": [],
-			"description": "烤玉米。"
+			"description": "刷满酱油的炭烤甜玉米，焦香诱人。"
 		},
 		{
 			"id": "yatai_takoyaki", "name": "章鱼烧", "name_cn": "章鱼烧",
@@ -44,30 +45,37 @@ static func get_dishes() -> Array:
 				"event": "item_activated", "condition": "self",
 				"effect": {
 					"add_keyword": "char_aroma", "keyword_stacks": 1,
-					"random_chance": 0.3,
-					"on_success": {"add_keyword": "plating", "keyword_stacks": 1}
+					"random_chance": 0.35,
+					"on_success": {"add_keyword": "plating", "keyword_stacks": 1, "reduce_cooldown_self": 1.0}
 				},
-				"desc": "获得1层焦香，30%概率额外获得1层摆盘"
+				"desc": "获得1层焦香；35%概率额外获得1层摆盘并自身CD-1秒"
 			}],
 			"on_activate": [],
-			"description": "章鱼烧。"
+			"description": "外酥内软的章鱼烧，撒满柴鱼花。"
 		},
 		{
 			"id": "ikayaki", "name": "烤鱿鱼", "name_cn": "烤鱿鱼",
 			"cuisine": "yatai", "tier": 0, "size": 1, "cooldown": 3.0,
 			"flavor": 5, "mod_slots": 2,
 			"tags": ["seafood", "grilled"],
-			"triggers": [{
-				"event": "item_activated", "condition": "self",
-				"effect": {
-					"add_keyword": "char_aroma", "keyword_stacks": 1,
-					"if_adjacent_has_tag": "yatai",
-					"then_bonus": {"reduce_cooldown_self": 0.3}
+			"triggers": [
+				{
+					"event": "item_activated", "condition": "self",
+					"effect": {
+						"add_keyword": "char_aroma", "keyword_stacks": 1,
+						"if_adjacent_has_tag": "grilled",
+						"then_bonus": {"reduce_cooldown_self": 1.0}
+					},
+					"desc": "获得1层焦香；若相邻有烤物，自身CD-1秒"
 				},
-				"desc": "获得1层焦香；若相邻有夜市菜品，减少0.3秒冷却"
-			}],
+				{
+					"event": "adjacent_activate",
+					"effect": {"add_keyword": "char_aroma", "keyword_stacks": 1},
+					"desc": "相邻菜品激活时，获得1层焦香"
+				}
+			],
 			"on_activate": [],
-			"description": "烤鱿鱼。"
+			"description": "整条鱿鱼刷酱在铁板上烤至卷曲。"
 		},
 		{
 			"id": "yaki_imo", "name": "烤红薯", "name_cn": "烤红薯",
@@ -77,36 +85,38 @@ static func get_dishes() -> Array:
 			"triggers": [{
 				"event": "item_activated", "condition": "self",
 				"effect": {
-					"accumulate": {
-						"counter_id": "sweetness",
-						"increment": 1,
-						"threshold": 2,
-						"on_threshold": {"add_keyword": "aftertaste", "keyword_stacks": 3, "reset_counter": true}
+					"add_keyword": "aftertaste", "keyword_stacks": 1,
+					"delayed_trigger": {
+						"delay_ticks": 20,
+						"effect": {"add_keyword": "aftertaste", "keyword_stacks": 2, "flavor": 8}
 					}
 				},
-				"desc": "每激活2次，获得3层回味"
+				"desc": "获得1层回味；2秒后额外获得2层回味和8风味"
 			}],
 			"on_activate": [],
-			"description": "烤红薯。"
+			"description": "炭火慢烤的红薯，甜蜜绵软。"
 		},
 		{
 			"id": "hashimaki", "name": "筷卷", "name_cn": "筷卷",
 			"cuisine": "yatai", "tier": 0, "size": 1, "cooldown": 2.5,
 			"flavor": 4, "mod_slots": 2,
 			"tags": ["fried", "staple"],
-			"triggers": [{
-				"event": "item_activated", "condition": "self",
-				"effect": {
-					"copy_adjacent_keyword": {
-						"target": "left",
-						"keyword": "any",
-						"stacks": 1
-					}
+			"triggers": [
+				{
+					"event": "item_activated", "condition": "self",
+					"effect": {
+						"copy_adjacent_keyword": {"target": "left", "keyword": "any", "stacks": 1}
+					},
+					"desc": "复制左侧料理的1层关键词"
 				},
-				"desc": "复制左侧料理的1层关键词"
-			}],
+				{
+					"event": "adjacent_activate",
+					"effect": {"reduce_cooldown_self": 1.0},
+					"desc": "相邻菜品激活时，自身CD-1秒"
+				}
+			],
 			"on_activate": [],
-			"description": "筷卷。"
+			"description": "用筷子卷起的铁板烧面糊卷。"
 		},
 		{
 			"id": "yaki_onigiri", "name": "烤饭团", "name_cn": "烤饭团",
@@ -118,12 +128,13 @@ static func get_dishes() -> Array:
 				"effect": {
 					"add_keyword": "char_aroma", "keyword_stacks": 1,
 					"if_position": "leftmost",
-					"then_bonus": {"add_keyword": "umami", "keyword_stacks": 1}
+					"then": {"add_keyword": "umami", "keyword_stacks": 1, "flavor": 5},
+					"else": {}
 				},
-				"desc": "获得1层焦香；若在最左侧，额外获得1层鲜美"
+				"desc": "获得1层焦香；若在最左侧，额外获得1层鲜美和5风味"
 			}],
 			"on_activate": [],
-			"description": "烤饭团。"
+			"description": "酱油刷面烤出焦壳的三角饭团。"
 		},
 		{
 			"id": "taiyaki", "name": "鲷鱼烧", "name_cn": "鲷鱼烧",
@@ -134,26 +145,26 @@ static func get_dishes() -> Array:
 				"event": "item_activated", "condition": "self",
 				"effect": {
 					"if_keyword_gte": {"keyword": "char_aroma", "stacks": 2},
-					"then": {"consume_keyword": "char_aroma", "per_stack_presentation_bonus": 3.0},
+					"then": {"type": "consume_keyword", "keyword": "char_aroma", "stacks": 2, "per_stack_bonus": {"presentation": 4}},
 					"else": {"add_keyword": "char_aroma", "keyword_stacks": 1}
 				},
-				"desc": "若焦香≥2层，消耗焦香并每层+3摆盘；否则获得1层焦香"
+				"desc": "若焦香≥2层，消耗2层焦香并每层+4卖相；否则获得1层焦香"
 			}],
 			"on_activate": [],
-			"description": "鲷鱼烧。"
+			"description": "鲷鱼形状的铜板烧红豆饼。"
 		},
 
-		# ===== SILVER (Tier 1) =====
+		# ===== SILVER (Tier 1) — 条件加成 + CD操控 =====
 		{
 			"id": "yatai_ramen", "name": "夜市拉面", "name_cn": "夜市拉面",
 			"cuisine": "yatai", "tier": 1, "size": 2, "cooldown": 5.5,
 			"flavor": 10, "mod_slots": 2,
 			"tags": ["noodle", "rich", "umami_tag"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "umami", "keyword_stacks": 1, "add_keyword_2": "char_aroma", "keyword_stacks_2": 1}, "desc": "获得1层鲜美和1层焦香"}
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "umami", "keyword_stacks": 1, "add_keyword_2": "char_aroma", "keyword_stacks_2": 1, "reduce_cooldown_adjacent": 1.0}, "desc": "获得1层鲜美和1层焦香，相邻CD-1秒"}
 			],
 			"on_activate": [],
-			"description": "夜市拉面。"
+			"description": "深夜屋台飘来的浓郁豚骨拉面香。"
 		},
 		{
 			"id": "kushikatsu", "name": "炸串", "name_cn": "炸串",
@@ -161,10 +172,10 @@ static func get_dishes() -> Array:
 			"flavor": 8, "mod_slots": 2,
 			"tags": ["meat", "fried", "rich"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "char_aroma", "keyword_stacks": 1, "accumulate": {"counter_id": "fry_kushikatsu", "increment": 1, "threshold": 2, "reset_counter": true, "on_threshold": {"add_environment": "greasy", "environment_stacks": 1}}}, "desc": "获得1层焦香；每激活2次，添加1层油腻环境"}
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "char_aroma", "keyword_stacks": 1, "accumulate": {"counter_id": "fry_kushikatsu", "increment": 1, "threshold": 2, "reset_counter": true, "on_threshold": {"add_environment": "greasy", "environment_stacks": 1, "flavor": 15}}}, "desc": "获得1层焦香；每激活2次，获得15风味但添加1层油腻"}
 			],
 			"on_activate": [],
-			"description": "炸串。"
+			"description": "裹面包糠炸至金黄的一口炸串。"
 		},
 		{
 			"id": "okonomiyaki", "name": "大阪烧", "name_cn": "大阪烧",
@@ -172,10 +183,10 @@ static func get_dishes() -> Array:
 			"flavor": 9, "mod_slots": 2,
 			"tags": ["seafood", "grilled", "rich"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"type": "stat_bonus", "flavor": 8, "technique": 5}, "desc": "获得8风味和5技巧加成"}
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "char_aroma", "keyword_stacks": 1, "if_adjacent_has_tag": "grilled", "then_bonus": {"flavor": 10, "add_keyword": "plating", "keyword_stacks": 1}}, "desc": "获得1层焦香；若相邻有夜市(烧烤)，额外+10风味和1层摆盘"}
 			],
 			"on_activate": [],
-			"description": "大阪烧。"
+			"description": "海鲜蔬菜面糊煎成的铁板大阪烧。"
 		},
 		{
 			"id": "grilled_lamprey", "name": "烤八目鳗", "name_cn": "烤八目鳗",
@@ -183,10 +194,10 @@ static func get_dishes() -> Array:
 			"flavor": 9, "mod_slots": 2,
 			"tags": ["seafood", "grilled", "rich"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "char_aroma", "keyword_stacks": 1, "chain_right": {"range": 1, "effect": {"add_keyword": "umami", "keyword_stacks": 1}}}, "desc": "获得1层焦香，并向右传递1层鲜美"}
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "char_aroma", "keyword_stacks": 1, "chain_right": {"range": 1, "effect": {"add_keyword": "umami", "keyword_stacks": 1}}, "chain_left": {"range": 1, "effect": {"add_keyword": "char_aroma", "keyword_stacks": 1}}}, "desc": "获得1层焦香，向右传1层鲜美，向左传1层焦香"}
 			],
 			"on_activate": [],
-			"description": "烤八目鳗。"
+			"description": "炭火炙烤的八目鳗，肉质紧实鲜美。"
 		},
 		{
 			"id": "teppan_yasai", "name": "铁板烤蔬菜", "name_cn": "铁板烤蔬菜",
@@ -194,10 +205,10 @@ static func get_dishes() -> Array:
 			"flavor": 6, "mod_slots": 2,
 			"tags": ["vegetable", "grilled"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"clear_environment": "greasy", "clear_amount": 1, "bonus_on_clear": {"type": "gain_keyword", "keyword": "char_aroma"}}, "desc": "清除1层油腻环境，成功时获得焦香"}
+				{"event": "item_activated", "condition": "self", "effect": {"clear_environment": "greasy", "clear_amount": 2, "bonus_on_clear": {"type": "gain_keyword", "keyword": "char_aroma"}, "reduce_cooldown_adjacent": 1.0}, "desc": "清除2层油腻，成功时获得焦香；相邻CD-1秒"}
 			],
 			"on_activate": [],
-			"description": "铁板烤蔬菜。"
+			"description": "铁板高温快烤的新鲜时蔬。"
 		},
 		{
 			"id": "monjayaki", "name": "文字烧", "name_cn": "文字烧",
@@ -205,10 +216,10 @@ static func get_dishes() -> Array:
 			"flavor": 7, "mod_slots": 2,
 			"tags": ["grilled", "seafood"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"random_chance": 0.4, "on_success": {"flavor_mult": 1.5}}, "desc": "40%概率风味×1.5"}
+				{"event": "item_activated", "condition": "self", "effect": {"random_chance": 0.4, "on_success": {"flavor_mult": 1.5, "add_keyword": "char_aroma", "keyword_stacks": 1}}, "desc": "40%概率风味×1.5并获得1层焦香"}
 			],
 			"on_activate": [],
-			"description": "文字烧。"
+			"description": "半熟黏稠的东京风铁板烧。"
 		},
 		{
 			"id": "karaage", "name": "炸鸡", "name_cn": "炸鸡",
@@ -216,10 +227,10 @@ static func get_dishes() -> Array:
 			"flavor": 8, "mod_slots": 2,
 			"tags": ["meat", "fried", "rich"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "char_aroma", "keyword_stacks": 1, "add_environment": "greasy", "environment_stacks": 1}, "desc": "获得1层焦香，添加1层油腻环境"}
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "char_aroma", "keyword_stacks": 2, "add_environment": "greasy", "environment_stacks": 1, "reduce_cooldown_self": 1.0}, "desc": "获得2层焦香和1层油腻环境；自身CD-1秒"}
 			],
 			"on_activate": [],
-			"description": "炸鸡。"
+			"description": "炸至外酥内嫩多汁的日式炸鸡块。"
 		},
 		{
 			"id": "yakisoba", "name": "日式炒面", "name_cn": "日式炒面",
@@ -227,10 +238,10 @@ static func get_dishes() -> Array:
 			"flavor": 7, "mod_slots": 2,
 			"tags": ["noodle", "stir_fried"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"clear_environment": "greasy", "clear_amount": 2, "bonus_on_clear": {"type": "stat_bonus", "flavor": 15}}, "desc": "清除2层油腻环境，成功时获得15风味加成"}
+				{"event": "item_activated", "condition": "self", "effect": {"clear_environment": "greasy", "clear_amount": 2, "bonus_on_clear": {"type": "stat_bonus", "flavor": 15}, "add_keyword": "char_aroma", "keyword_stacks": 1}, "desc": "获得1层焦香；清除2层油腻，成功时+15风味"}
 			],
 			"on_activate": [],
-			"description": "日式炒面。"
+			"description": "浓厚酱汁炒制的日式铁板炒面。"
 		},
 		{
 			"id": "negima", "name": "葱鸡串", "name_cn": "葱鸡串",
@@ -238,23 +249,25 @@ static func get_dishes() -> Array:
 			"flavor": 7, "mod_slots": 2,
 			"tags": ["meat", "grilled"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"if_adjacent_has_tag": "grilled", "then_bonus": {"type": "stat_bonus", "flavor": 10}}, "desc": "若相邻有烤物，获得10风味加成"}
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "char_aroma", "keyword_stacks": 1, "if_adjacent_has_tag": "grilled", "then_bonus": {"flavor": 10, "reduce_cooldown_self": 1.0}}, "desc": "获得1层焦香；若相邻有夜市(烧烤)，+10风味并自身CD-1秒"},
+				{"event": "adjacent_activate", "condition": {"has_tag": "grilled"}, "effect": {"reduce_cooldown_self": 1.0}, "desc": "相邻夜市(烧烤)激活时，自身CD-1秒"}
 			],
 			"on_activate": [],
-			"description": "葱鸡串。"
+			"description": "鸡肉与大葱交替串烤的经典串物。"
 		},
 
-		# ===== GOLD (Tier 2) =====
+		# ===== GOLD (Tier 2) — 阈值引爆 + 环境处理 =====
 		{
 			"id": "motsunabe", "name": "内脏锅", "name_cn": "内脏锅",
 			"cuisine": "yatai", "tier": 2, "size": 3, "cooldown": 7.0,
 			"flavor": 15, "mod_slots": 2,
 			"tags": ["meat", "stewed", "rich", "umami_tag"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"type": "first_activate_bonus", "flavor": 25, "extra": {"add_keyword": "umami", "keyword_stacks": 2}}, "desc": "首次激活获得25风味和2层鲜美"}
+				{"event": "item_activated", "condition": "self", "effect": {"type": "first_activate_bonus", "flavor": 25, "extra": {"add_keyword": "umami", "keyword_stacks": 2, "add_keyword_2": "char_aroma", "keyword_stacks_2": 1}}, "desc": "首次激活获得25风味、2层鲜美和1层焦香"},
+				{"event": "item_activated", "condition": "self", "effect": {"convert_keyword": {"from": "greasy", "to": "umami", "ratio": 1.0}}, "desc": "每次激活将油腻转化为鲜美"}
 			],
 			"on_activate": [],
-			"description": "内脏锅。"
+			"description": "内脏与蔬菜在味噌汤中翻滚的博多名锅。"
 		},
 		{
 			"id": "robatayaki_moriawase", "name": "炉端烧拼盘", "name_cn": "炉端烧拼盘",
@@ -262,10 +275,10 @@ static func get_dishes() -> Array:
 			"flavor": 14, "mod_slots": 2,
 			"tags": ["seafood", "grilled", "mastered"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "char_aroma", "keyword_stacks": 2, "chain_right": {"range": 1, "effect": {"add_keyword": "char_aroma", "keyword_stacks": 1}}}, "desc": "获得2层焦香，并向右传递1层焦香"}
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "char_aroma", "keyword_stacks": 2, "chain_right": {"range": 2, "effect": {"add_keyword": "char_aroma", "keyword_stacks": 1}}, "reduce_cooldown_adjacent": 1.0}, "desc": "获得2层焦香，向右2格各传1层焦香，相邻CD-1秒"}
 			],
 			"on_activate": [],
-			"description": "炉端烧拼盘。"
+			"description": "炉端炭火慢烤的海鲜拼盘。"
 		},
 		{
 			"id": "jingisukan", "name": "成吉思汗烤肉", "name_cn": "成吉思汗烤肉",
@@ -273,10 +286,10 @@ static func get_dishes() -> Array:
 			"flavor": 14, "mod_slots": 2,
 			"tags": ["meat", "grilled"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "char_aroma", "keyword_stacks": 2, "add_environment": "greasy", "environment_stacks": 1}, "desc": "获得2层焦香，添加1层油腻环境"}
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "char_aroma", "keyword_stacks": 2, "add_environment": "greasy", "environment_stacks": 1, "if_keyword_gte": {"keyword": "char_aroma", "stacks": 4}, "then": {"flavor_mult": 1.5}, "else": {}}, "desc": "获得2层焦香和1层油腻；若焦香≥4层，风味×1.5"}
 			],
 			"on_activate": [],
-			"description": "成吉思汗烤肉。"
+			"description": "北海道名物，铁帽烤架上的鲜嫩羊肉。"
 		},
 		{
 			"id": "kinoko_hoiru", "name": "锡纸烤蘑菇", "name_cn": "锡纸烤蘑菇",
@@ -284,10 +297,11 @@ static func get_dishes() -> Array:
 			"flavor": 10, "mod_slots": 2,
 			"tags": ["vegetable", "grilled", "umami_tag"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "umami", "keyword_stacks": 2, "reduce_cooldown_adjacent": 0.3}, "desc": "获得2层鲜美，减少相邻料理0.3秒冷却"}
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "umami", "keyword_stacks": 2, "reduce_cooldown_adjacent": 1.0}, "desc": "获得2层鲜美，相邻CD-1秒"},
+				{"event": "adjacent_activate", "effect": {"add_keyword": "umami", "keyword_stacks": 1}, "desc": "相邻菜品激活时，获得1层鲜美"}
 			],
 			"on_activate": [],
-			"description": "锡纸烤蘑菇。"
+			"description": "锡纸包裹的菌菇在炭火上慢蒸。"
 		},
 		{
 			"id": "wagyu_steak", "name": "和牛牛排", "name_cn": "和牛牛排",
@@ -295,10 +309,10 @@ static func get_dishes() -> Array:
 			"flavor": 16, "mod_slots": 2,
 			"tags": ["meat", "grilled", "rich", "mastered"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"if_keyword_gte": {"keyword": "char_aroma", "stacks": 3}, "then": {"flavor_mult": 1.6}, "else": {"add_keyword": "char_aroma", "keyword_stacks": 2}}, "desc": "若焦香≥3层，风味×1.6；否则获得2层焦香"}
+				{"event": "item_activated", "condition": "self", "effect": {"if_keyword_gte": {"keyword": "char_aroma", "stacks": 3}, "then": {"flavor_mult": 1.8, "add_keyword": "plating", "keyword_stacks": 2}, "else": {"add_keyword": "char_aroma", "keyword_stacks": 2}}, "desc": "若焦香≥3层，风味×1.8并获得2层摆盘；否则获得2层焦香"}
 			],
 			"on_activate": [],
-			"description": "和牛牛排。"
+			"description": "大理石纹路的和牛在铁板上滋滋作响。"
 		},
 		{
 			"id": "hiroshima_yaki", "name": "广岛烧", "name_cn": "广岛烧",
@@ -306,10 +320,10 @@ static func get_dishes() -> Array:
 			"flavor": 13, "mod_slots": 2,
 			"tags": ["noodle", "grilled", "rich"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"accumulate": {"counter_id": "hiroshima_layers", "increment": 1, "threshold": 3, "reset_counter": true, "on_threshold": {"flavor": 40, "add_keyword": "char_aroma", "keyword_stacks": 2}}}, "desc": "每激活3次，获得40风味和2层焦香"}
+				{"event": "item_activated", "condition": "self", "effect": {"accumulate": {"counter_id": "hiroshima_layers", "increment": 1, "threshold": 3, "reset_counter": true, "on_threshold": {"flavor": 40, "add_keyword": "char_aroma", "keyword_stacks": 2, "haste_adjacent": 1.5, "haste_mult": 2.0}}}, "desc": "每激活3次，爆发40风味、2层焦香，相邻加速1.5秒"}
 			],
 			"on_activate": [],
-			"description": "广岛烧。"
+			"description": "面条蛋饼蔬菜层层叠放的广岛烧。"
 		},
 		{
 			"id": "horumon_yaki", "name": "烤内脏", "name_cn": "烤内脏",
@@ -317,10 +331,10 @@ static func get_dishes() -> Array:
 			"flavor": 11, "mod_slots": 2,
 			"tags": ["meat", "grilled", "rich"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"convert_keyword": {"from": "greasy", "to": "char_aroma", "ratio": 1.0}}, "desc": "将油腻转化为焦香（1:1比例）"}
+				{"event": "item_activated", "condition": "self", "effect": {"convert_keyword": {"from": "greasy", "to": "char_aroma", "ratio": 1.0}, "add_keyword": "char_aroma", "keyword_stacks": 1}, "desc": "将油腻转化为焦香（1:1），额外获得1层焦香"}
 			],
 			"on_activate": [],
-			"description": "烤内脏。"
+			"description": "炭火炙烤的牛内脏，越嚼越香。"
 		},
 		{
 			"id": "tsukune", "name": "鸡肉丸串", "name_cn": "鸡肉丸串",
@@ -328,10 +342,10 @@ static func get_dishes() -> Array:
 			"flavor": 12, "mod_slots": 2,
 			"tags": ["meat", "grilled"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "char_aroma", "keyword_stacks": 2, "if_adjacent_has_tag": "grilled", "then_bonus": {"type": "stat_bonus", "flavor": 12}}, "desc": "获得2层焦香；若相邻有烤物，额外获得12风味"}
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "char_aroma", "keyword_stacks": 2, "if_adjacent_has_tag": "grilled", "then_bonus": {"flavor": 12, "reduce_cooldown_adjacent": 1.0}}, "desc": "获得2层焦香；若相邻有夜市(烧烤)，+12风味并相邻CD-1秒"}
 			],
 			"on_activate": [],
-			"description": "鸡肉丸串。"
+			"description": "手打鸡肉泥捏成的串烤丸子。"
 		},
 		{
 			"id": "sanma_shioyaki", "name": "盐烤秋刀鱼", "name_cn": "盐烤秋刀鱼",
@@ -339,23 +353,24 @@ static func get_dishes() -> Array:
 			"flavor": 13, "mod_slots": 2,
 			"tags": ["seafood", "grilled", "rich"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"clear_environment": "greasy", "clear_amount": 2, "bonus_on_clear": {"type": "gain_keyword", "keyword": "umami"}}, "desc": "清除2层油腻环境，成功时获得鲜美"}
+				{"event": "item_activated", "condition": "self", "effect": {"clear_environment": "greasy", "clear_amount": 2, "bonus_on_clear": {"type": "gain_keyword", "keyword": "umami"}, "add_keyword": "char_aroma", "keyword_stacks": 1, "if_position": "rightmost", "then": {"flavor": 15}, "else": {}}, "desc": "获得1层焦香；清除2层油腻→获得鲜美；最右侧时额外+15风味"}
 			],
 			"on_activate": [],
-			"description": "盐烤秋刀鱼。"
+			"description": "撒粗盐炭烤的肥美秋刀鱼。"
 		},
 
-		# ===== DIAMOND (Tier 3) =====
+		# ===== DIAMOND (Tier 3) — 多条件引爆器 =====
 		{
 			"id": "sparrow_night_feast", "name": "夜雀之宴", "name_cn": "夜雀之宴",
 			"cuisine": "yatai", "tier": 3, "size": 3, "cooldown": 10.0,
 			"flavor": 22, "mod_slots": 2,
 			"tags": ["seafood", "grilled", "mastered"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"type": "first_activate_bonus", "flavor": 50, "extra": {"add_keyword": "char_aroma", "keyword_stacks": 3, "add_keyword_2": "umami", "keyword_stacks_2": 2}}, "desc": "首次激活获得50风味、3层焦香和2层鲜美"}
+				{"event": "item_activated", "condition": "self", "effect": {"type": "first_activate_bonus", "flavor": 50, "extra": {"add_keyword": "char_aroma", "keyword_stacks": 3, "add_keyword_2": "umami", "keyword_stacks_2": 2}}, "desc": "首次激活获得50风味、3层焦香和2层鲜美"},
+				{"event": "item_activated", "condition": "self", "effect": {"if_keyword_gte": {"keyword": "char_aroma", "stacks": 4}, "then": {"flavor_mult": 1.5, "reduce_cooldown_adjacent": 1.0}, "else": {}}, "desc": "焦香≥4层时风味×1.5并相邻CD-1秒"}
 			],
 			"on_activate": [],
-			"description": "夜雀之宴。"
+			"description": "夜雀屋台的秘传炭烤海鲜盛宴。"
 		},
 		{
 			"id": "teppanyaki_course", "name": "铁板烧全席", "name_cn": "铁板烧全席",
@@ -363,10 +378,10 @@ static func get_dishes() -> Array:
 			"flavor": 20, "mod_slots": 2,
 			"tags": ["meat", "seafood", "grilled", "rich", "mastered"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "char_aroma", "keyword_stacks": 3, "chain_right": {"range": 1, "effect": {"add_keyword": "char_aroma", "keyword_stacks": 2}}}, "desc": "获得3层焦香，并向右传递2层焦香"}
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "char_aroma", "keyword_stacks": 3, "chain_right": {"range": 2, "effect": {"add_keyword": "char_aroma", "keyword_stacks": 2}}, "haste_adjacent": 2.0, "haste_mult": 2.0}, "desc": "获得3层焦香，向右2格各传2层焦香，相邻加速2秒（×2）"}
 			],
 			"on_activate": [],
-			"description": "铁板烧全席。"
+			"description": "主厨在铁板前现场表演的烤物全席。"
 		},
 		{
 			"id": "magma_grill", "name": "岩浆烧烤", "name_cn": "岩浆烧烤",
@@ -374,10 +389,10 @@ static func get_dishes() -> Array:
 			"flavor": 24, "mod_slots": 2,
 			"tags": ["meat", "grilled", "rich"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"if_keyword_gte": {"keyword": "char_aroma", "stacks": 5}, "then": {"flavor_mult": 2.0}, "else": {"add_keyword": "char_aroma", "keyword_stacks": 3}}, "desc": "若焦香≥5层，风味×2.0；否则获得3层焦香"}
+				{"event": "item_activated", "condition": "self", "effect": {"if_keyword_gte": {"keyword": "char_aroma", "stacks": 5}, "then": {"flavor_mult": 2.5, "chain_right": {"range": 2, "effect": {"add_keyword": "char_aroma", "keyword_stacks": 2}}, "slow": 2.0, "slow_mult": 0.5}, "else": {"add_keyword": "char_aroma", "keyword_stacks": 3, "add_environment": "greasy", "environment_stacks": 1}}, "desc": "焦香≥5层：风味×2.5，右传2层焦香，减速对手2秒；否则+3层焦香+1层油腻"}
 			],
 			"on_activate": [],
-			"description": "岩浆烧烤。"
+			"description": "以灼热岩石为热源的极致烧烤。"
 		},
 		{
 			"id": "phoenix_rebirth_skewer", "name": "不死鸟之串", "name_cn": "不死鸟之串",
@@ -385,10 +400,10 @@ static func get_dishes() -> Array:
 			"flavor": 18, "mod_slots": 2,
 			"tags": ["meat", "grilled", "mastered"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"accumulate": {"counter_id": "phoenix_rebirth", "increment": 1, "threshold": 2, "reset_counter": true, "on_threshold": {"flavor": 60, "add_keyword": "char_aroma", "keyword_stacks": 3}}}, "desc": "每激活2次，获得60风味和3层焦香"}
+				{"event": "item_activated", "condition": "self", "effect": {"accumulate": {"counter_id": "phoenix_rebirth", "increment": 1, "threshold": 2, "reset_counter": true, "on_threshold": {"flavor": 60, "add_keyword": "char_aroma", "keyword_stacks": 3, "reduce_cooldown_adjacent": 1.0}}}, "desc": "每激活2次，爆发60风味、3层焦香并相邻CD-1秒"}
 			],
 			"on_activate": [],
-			"description": "不死鸟之串。"
+			"description": "炭火中涅槃重生的传说之串。"
 		},
 		{
 			"id": "mystia_secret_grill", "name": "米斯蒂娅的秘传烧烤", "name_cn": "米斯蒂娅的秘传烧烤",
@@ -396,10 +411,10 @@ static func get_dishes() -> Array:
 			"flavor": 21, "mod_slots": 2,
 			"tags": ["seafood", "grilled", "mastered", "umami_tag"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "char_aroma", "keyword_stacks": 3, "add_keyword_2": "umami", "keyword_stacks_2": 3, "reduce_cooldown_adjacent": 0.5}, "desc": "获得3层焦香和3层鲜美，减少相邻料理0.5秒冷却"}
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "char_aroma", "keyword_stacks": 3, "add_keyword_2": "umami", "keyword_stacks_2": 3, "reduce_cooldown_adjacent": 1.0, "slow": 1.5, "slow_mult": 0.5}, "desc": "获得3层焦香和3层鲜美，相邻CD-1秒，减速对手1.5秒"}
 			],
 			"on_activate": [],
-			"description": "米斯蒂娅的秘传烧烤。"
+			"description": "米斯蒂娅独创的秘制酱烤海鲜。"
 		},
 		{
 			"id": "meiling_wok_fire", "name": "美铃的火焰锅", "name_cn": "美铃的火焰锅",
@@ -407,10 +422,9 @@ static func get_dishes() -> Array:
 			"flavor": 23, "mod_slots": 2,
 			"tags": ["meat", "stir_fried", "rich", "umami_tag"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"clear_environment": "greasy", "clear_amount": 3, "bonus_on_clear": {"type": "stat_bonus", "flavor": 40}, "add_keyword": "char_aroma", "keyword_stacks": 3}, "desc": "获得3层焦香；清除3层油腻环境，成功时获得40风味"}
+				{"event": "item_activated", "condition": "self", "effect": {"clear_environment": "greasy", "clear_amount": 5, "bonus_on_clear": {"type": "stat_bonus", "flavor": 50}, "add_keyword": "char_aroma", "keyword_stacks": 3, "haste_adjacent": 2.0, "haste_mult": 2.0}, "desc": "获得3层焦香；清除5层油腻→+50风味；相邻加速2秒（×2）"}
 			],
 			"on_activate": [],
-			"description": "美铃的火焰锅。"
+			"description": "美铃以中华锅技驾驭的火焰炒菜。"
 		},
 	]
-

@@ -47,10 +47,33 @@ func _on_showdown_v2_finished():
 	match_state.set_meta("showdown_analysis_v2", result)
 	# 写入分数供 ResultScreen 和 ScoreBar 读取
 	match_state.showdown_scores = [result.score_a, result.score_b]
+
+	# 从V2真实数据构建 showdown_analysis
+	var item_contributions: Array = [{}, {}]
+	for p_idx in range(2):
+		var runtimes: Array = _resolver_v2.get_item_runtimes(p_idx)
+		for rt in runtimes:
+			var slot_idx: int = int(rt.get("slot_idx", 0))
+			var item: Dictionary = rt.get("item", {})
+			item_contributions[p_idx][slot_idx] = {
+				"name": str(item.get("name", "???")),
+				"total_score": 0.0,
+				"trigger_count": int(rt.get("activate_count", 0)),
+				"base_flavor": float(item.get("flavor", 0)),
+			}
+
+	# 从 timeline 汇总每个(player, slot_idx)的累计得分
+	for entry in result.timeline:
+		var p_idx: int = int(entry.get("player", 0))
+		var slot_idx: int = int(entry.get("slot_idx", 0))
+		var score: float = float(entry.get("score", 0.0))
+		if item_contributions[p_idx].has(slot_idx):
+			item_contributions[p_idx][slot_idx]["total_score"] += score
+
 	match_state.set_meta("showdown_analysis", {
 		"technique_mults": [1.0, 1.0],
 		"dot_totals": [0.0, 0.0],
-		"item_contributions": [{}, {}],
+		"item_contributions": item_contributions,
 		"clash_penalties": [],
 	})
 

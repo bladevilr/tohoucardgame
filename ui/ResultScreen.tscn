@@ -111,7 +111,7 @@ horizontal_alignment = 2
 
 [node name="Judge" type="Label" parent="Center/MainPanel/Margin/VBox/ScoreBoard/PlayerCol/ScoreRows"]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.9, 0.4, 1)
+theme_override_colors/font_color = Color(0.95, 0.78, 0.45, 1)
 text = "+0"
 horizontal_alignment = 2
 
@@ -209,7 +209,7 @@ text = "+0"
 
 [node name="Judge" type="Label" parent="Center/MainPanel/Margin/VBox/ScoreBoard/OpponentCol/ScoreRows"]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.9, 0.4, 1)
+theme_override_colors/font_color = Color(0.95, 0.78, 0.45, 1)
 text = "+0"
 
 [node name="HSeparator2" type="HSeparator" parent="Center/MainPanel/Margin/VBox/ScoreBoard/OpponentCol"]
@@ -221,22 +221,33 @@ theme_override_font_sizes/font_size = 34
 text = "0"
 horizontal_alignment = 1
 
-[node name="AnalysisPanel" type="VBoxContainer" parent="Center/MainPanel/Margin/VBox"]
+[node name="AnalysisScroll" type="ScrollContainer" parent="Center/MainPanel/Margin/VBox"]
 layout_mode = 2
+custom_minimum_size = Vector2(0, 200)
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="AnalysisPanel" type="VBoxContainer" parent="Center/MainPanel/Margin/VBox/AnalysisScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_constants/separation = 8
 
-[node name="ContribTitle" type="Label" parent="Center/MainPanel/Margin/VBox/AnalysisPanel"]
+[node name="ContribTitle" type="Label" parent="Center/MainPanel/Margin/VBox/AnalysisScroll/AnalysisPanel"]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.9, 0.6, 1)
+theme_override_colors/font_color = Color(0.88, 0.82, 0.7, 1)
 theme_override_font_sizes/font_size = 18
-text = "菜品贡献"
+text = "- 本局菜单数据复盘 -"
 horizontal_alignment = 1
 
-[node name="ContribList" type="VBoxContainer" parent="Center/MainPanel/Margin/VBox/AnalysisPanel"]
+[node name="StatsGrid" type="VBoxContainer" parent="Center/MainPanel/Margin/VBox/AnalysisScroll/AnalysisPanel"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ContribList" type="VBoxContainer" parent="Center/MainPanel/Margin/VBox/AnalysisScroll/AnalysisPanel"]
 layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="ClashLabel" type="Label" parent="Center/MainPanel/Margin/VBox/AnalysisPanel"]
+[node name="ClashLabel" type="Label" parent="Center/MainPanel/Margin/VBox/AnalysisScroll/AnalysisPanel"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.98, 0.72, 0.22, 1)
 theme_override_font_sizes/font_size = 16

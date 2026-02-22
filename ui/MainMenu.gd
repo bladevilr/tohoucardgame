@@ -5,7 +5,7 @@ const TextureGeneratorTool = preload("res://tools/TextureGenerator.gd")
 
 @onready var background: TextureRect = $Background
 @onready var deco_frame: PanelContainer = $DecoFrame
-@onready var title_label: Label = $DecoFrame/VBox/TitleLabel
+@onready var title_label: RichTextLabel = $DecoFrame/VBox/TitleLabel
 @onready var subtitle_label: Label = $DecoFrame/VBox/SubtitleLabel
 @onready var desc_label: Label = $DecoFrame/VBox/DescLabel
 @onready var start_button: Button = $DecoFrame/VBox/StartButton
@@ -25,6 +25,8 @@ func _ready():
 	_show_nickname_tag()
 	_apply_responsive_layout()
 	get_viewport().size_changed.connect(_apply_responsive_layout)
+	if title_label:
+		title_label.draw.connect(_on_title_draw)
 	_animate_intro()
 
 func _apply_frame_style() -> void:
@@ -124,7 +126,6 @@ func _animate_intro() -> void:
 		if leaderboard_button:
 			anims.call("slide_in_from_bottom", leaderboard_button, 24.0, 0.3, 0.6)
 		anims.call("slide_in_from_bottom", quit_button, 24.0, 0.3, 0.7)
-		anims.call("pulse", title_label, 1.03, 1.6)
 	else:
 		deco_frame.modulate.a = 1.0
 		title_label.modulate.a = 1.0
@@ -197,3 +198,22 @@ func _on_tutorial():
 
 func _on_quit():
 	get_tree().quit()
+
+func _on_title_draw() -> void:
+	if title_label == null:
+		return
+	
+	var label_size := title_label.size
+	var center_x := label_size.x * 0.5
+	var center_y := label_size.y * 0.5
+	
+	# "喂猪" is on the left of the center in the overall text
+	var x_start: float = center_x - 85.0
+	var x_end: float = center_x - 10.0
+	var mid_y: float = center_y + 4.0
+
+	var line_color := Color(0.85, 0.3, 0.3, 0.95)
+	
+	title_label.draw_line(Vector2(x_start, mid_y - 6.0), Vector2(x_end, mid_y + 4.0), line_color, 3.0, true)
+	title_label.draw_line(Vector2(x_start + 4.0, mid_y + 4.0), Vector2(x_end - 4.0, mid_y - 5.0), line_color, 3.0, true)
+	title_label.draw_line(Vector2(x_start - 3.0, mid_y + 10.0), Vector2(x_end + 3.0, mid_y - 8.0), line_color, 2.0, true)

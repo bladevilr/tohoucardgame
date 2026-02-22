@@ -81,31 +81,20 @@ func _build_ui():
 
 	# ━━━ 增益关键词 ━━━
 	_add_section_header(vbox, "增益关键词（绿色）")
-	_add_keyword_row(vbox, "鲜美", "每层+3味道。5层以上时额外总分×(1+层数×3%)")
-	_add_keyword_row(vbox, "焦香", "每层+2味道。5层以上时爆香阈值-1")
-	_add_keyword_row(vbox, "摆盘", "每层+3卖相。5层以上时额外总分×(1+层数×2%)")
-	_add_keyword_row(vbox, "刀工", "每层+2技法。5层以上时CD额外-2%/层")
-	_add_keyword_row(vbox, "聚光", "下次上菜冷却-1秒（消耗）")
-	_add_keyword_row(vbox, "回味", "每层味道×1.3")
-	_add_keyword_row(vbox, "秘方", "每层味道×1.5（消耗）")
+	_add_keyword_row(vbox, "鲜美", "每持有 1 层，上菜时额外增加 3 点基础风味。（5层以上按层数提供额外百分比加成）")
+	_add_keyword_row(vbox, "焦香", "每持有 1 层，上菜时额外增加 2 点基础风味。")
+	_add_keyword_row(vbox, "摆盘", "每持有 1 层，上菜时额外增加 3 点基础卖相。（5层以上按层数提供额外百分比加成）")
+	_add_keyword_row(vbox, "刀工", "每持有 1 层，额外增加 2 点自身技法属性。（5层以上按层数提供额外冷却减免）")
+	_add_keyword_row(vbox, "聚光", "获得时直接消耗所有层数，每消耗 1 层当前冷却时间减少 1 秒。")
+	_add_keyword_row(vbox, "回味", "每持有 1 层，下一道菜上桌时将会额外产生本次风味得分 30% 的加分。")
+	_add_keyword_row(vbox, "秘方", "一旦上菜立即消耗所有层数，每消耗 1 层使该次上菜的风味得分加成 50%。")
 
 	# ━━━ 环境关键词 ━━━
 	_add_section_header(vbox, "环境关键词（红色·双方共享）")
-	_add_keyword_row(vbox, "油腻", "每层-2味道（清淡菜品可清除）")
-	_add_keyword_row(vbox, "杂乱", "每层-2卖相")
-	_add_keyword_row(vbox, "味觉疲劳", "每层味道-15%")
-	_add_keyword_row(vbox, "沉闷", "每层冷却+0.3秒")
-
-	# ━━━ 8大引擎机制 ━━━
-	_add_section_header(vbox, "引擎机制（标签自动触发）")
-	_add_keyword_row(vbox, "开胃", "辣/酸菜→推进相邻CD 15%（前菜区+50%）")
-	_add_keyword_row(vbox, "上瘾", "浓郁/鲜味菜→每次+2层，每层每秒1.5分")
-	_add_keyword_row(vbox, "爆香", "烤/炒菜→激活4次后爆发，得分×3.0")
-	_add_keyword_row(vbox, "爽脆", "油炸菜→25%概率双重激活")
-	_add_keyword_row(vbox, "清口", "清淡/茶菜→清50%油腻，每层+3分+0.3s加速")
-	_add_keyword_row(vbox, "油腻(机制)", "浓郁+油炸菜→叠油腻，每层减速8%")
-	_add_keyword_row(vbox, "提鲜", "鲜味菜+同菜系≥2→右邻下次得分×1.8")
-	_add_keyword_row(vbox, "发酵", "首次×1.3，每次激活永久+1%（上限+30%）")
+	_add_keyword_row(vbox, "油腻", "环境状态。每 1 层使全场上菜或者打出效果时的分值减少 2 点风味。")
+	_add_keyword_row(vbox, "杂乱", "环境状态。每 1 层使全场的总卖相被扣除 2 点。")
+	_add_keyword_row(vbox, "味觉疲劳", "环境状态。每 1 层使全最终风味得分倍率降低 15%。")
+	_add_keyword_row(vbox, "沉闷", "负面状态。持有它的菜品每 1 层冷却增加 0.3 秒。")
 
 	# ━━━ 核心机制 ━━━
 	_add_section_header(vbox, "核心机制")

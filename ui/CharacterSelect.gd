@@ -3,7 +3,7 @@ extends Control
 var _selected_chef: String = ""
 var _chef_buttons: Dictionary = {}
 
-@onready var background: ColorRect = $Background
+@onready var background: TextureRect = $Background
 @onready var left_panel: PanelContainer = $HBox/LeftPanel
 @onready var right_panel: PanelContainer = $HBox/RightPanel
 @onready var chef_grid: GridContainer = $HBox/LeftPanel/LeftVBox/ChefScroll/ChefGrid
@@ -63,7 +63,7 @@ const CUISINE_NAMES := {
 	"chuuka": "中华",
 	"youshoku": "洋食",
 	"yatai": "夜市",
-	"kanmi": "甜品",
+	"kanmi": "甘味",
 	"yakuzen": "药膳",
 }
 
@@ -73,27 +73,47 @@ const TRIGGER_NAMES := {
 	"on_shop_refresh": "刷新商店时",
 	"on_activate": "上菜时",
 	"on_enchant": "附魔时",
-	"on_score_calc": "计分时",
-	"on_prestige_damage": "声望受损时",
+	"on_score_calc": "结算得分时",
+	"on_prestige_damage": "受到声望伤害时",
 }
 
+const TRIGGER_HELP_TEXT := {
+	"passive": "效果全局常驻生效，无需满足额外条件。",
+	"on_showdown_start": "仅在对决开场时触发一次。",
+	"on_shop_refresh": "在商店阶段执行刷新时触发。",
+	"on_activate": "当菜品上菜成功时触发。",
+	"on_enchant": "当食材完成附魔时触发。",
+	"on_score_calc": "在得分结算阶段生效。",
+	"on_prestige_damage": "当受到声望伤害时触发。",
+}
+
+const CHEF_TRAITS := {
+	"mystia": "高频上菜型。处理快、节奏强，适合用次数压制对手。",
+	"sakuya": "开场提速型。提前触发关键菜品，中后期爆发稳定。",
+	"youmu": "小菜连动型。触发次数多，适合滚雪球和连段。",
+	"meiling": "焦香强化型。重点围绕“焦香”叠层和收益放大。",
+	"marisa": "随机增益型。波动较大但上限高，适合运营和抉择。",
+	"reimu": "经济运营型。刷新成本优势，擅长长局资源管理。",
+	"alice": "摆盘收益型。卖相和连续输出稳定，容错率高。",
+	"patchouli": "多关键词联动型。成型后强度高，但前期需要构筑。",
+	"reisen": "节奏干扰型。通过冷却/状态干扰获取对局优势。",
+}
 const STRATEGY_TEXT := {
-	"mystia": "夜市+和食联动，走高频上菜，压制对手节奏。",
-	"sakuya": "洋食+甜品，开局冷却优势，偏中后期大菜爆发。",
-	"youmu": "和食+洋食，小菜高频触发，稳定滚雪球。",
-	"meiling": "中华+夜市，焦香联动打高风味，前中期压制强。",
-	"marisa": "夜市+药膳，随机增益波动大，适合搏上限。",
-	"reimu": "和食+药膳，经济稳健，适合运营与控制。",
-	"alice": "洋食+甜品，卖相体系强，持续得分稳定。",
-	"patchouli": "洋食+中华，依靠多关键字联动，后期潜力高。",
-	"reisen": "甜品+药膳，控制向打法，拖节奏打反制。",
+	"mystia": "夜市+和食联动，优先堆上菜频率，用次数滚起节奏。",
+	"sakuya": "洋食+甘味成型后爆发强，前期注重过渡和关键菜冷却。",
+	"youmu": "依赖小菜高频触发，先保证连段稳定，再补终结能力。",
+	"meiling": "围绕焦香词条构筑，中期发力明显，适合主动压制。",
+	"marisa": "随机增益波动较大，运营时优先保底，再追求上限。",
+	"reimu": "刷新与资源管理优势明显，适合稳扎稳打的运营路线。",
+	"alice": "摆盘收益稳定，优先保证卖相与出菜节奏的平衡。",
+	"patchouli": "关键词联动上限高，前期先凑核心组合，后期强度兑现。",
+	"reisen": "干扰能力强，围绕控节奏打反手，拖到优势回合收割。",
 }
 
 const GOLD := Color("#FFD66B")
 const DEFAULT_CUISINE_COLOR := Color("#3A2D50")
 
 func _ready() -> void:
-	_apply_background_shader()
 	_style_panels()
 	_build_chef_grid()
 	chef_portrait.texture = null
@@ -146,75 +166,79 @@ func _apply_responsive_layout() -> void:
 
 func _style_panels() -> void:
 	var left_style := StyleBoxFlat.new()
-	left_style.bg_color = Color(0.08, 0.09, 0.14, 0.90)
-	left_style.border_width_left = 1
-	left_style.border_width_top = 1
-	left_style.border_width_right = 1
-	left_style.border_width_bottom = 1
-	left_style.border_color = Color(0.38, 0.44, 0.62, 0.75)
-	left_style.corner_radius_top_left = 14
-	left_style.corner_radius_top_right = 14
-	left_style.corner_radius_bottom_right = 14
-	left_style.corner_radius_bottom_left = 14
-	left_style.content_margin_left = 12
-	left_style.content_margin_right = 12
-	left_style.content_margin_top = 12
-	left_style.content_margin_bottom = 12
+	left_style.bg_color = Color(0.12, 0.11, 0.15, 0.85)
+	left_style.border_width_left = 2
+	left_style.border_width_top = 2
+	left_style.border_width_right = 2
+	left_style.border_width_bottom = 2
+	left_style.border_color = Color(0.40, 0.35, 0.50, 0.75)
+	left_style.corner_radius_top_left = 16
+	left_style.corner_radius_top_right = 16
+	left_style.corner_radius_bottom_right = 16
+	left_style.corner_radius_bottom_left = 16
+	left_style.shadow_color = Color(0, 0, 0, 0.4)
+	left_style.shadow_size = 8
+	left_style.content_margin_left = 16
+	left_style.content_margin_right = 16
+	left_style.content_margin_top = 16
+	left_style.content_margin_bottom = 16
 	left_panel.add_theme_stylebox_override("panel", left_style)
 
 	var right_style := StyleBoxFlat.new()
-	right_style.bg_color = Color(0.08, 0.09, 0.14, 0.90)
-	right_style.border_width_left = 1
-	right_style.border_width_top = 1
-	right_style.border_width_right = 1
-	right_style.border_width_bottom = 1
-	right_style.border_color = Color(0.38, 0.44, 0.62, 0.75)
-	right_style.corner_radius_top_left = 14
-	right_style.corner_radius_top_right = 14
-	right_style.corner_radius_bottom_right = 14
-	right_style.corner_radius_bottom_left = 14
-	right_style.content_margin_left = 18
-	right_style.content_margin_right = 18
-	right_style.content_margin_top = 18
-	right_style.content_margin_bottom = 18
+	right_style.bg_color = Color(0.12, 0.11, 0.15, 0.85)
+	right_style.border_width_left = 2
+	right_style.border_width_top = 2
+	right_style.border_width_right = 2
+	right_style.border_width_bottom = 2
+	right_style.border_color = Color(0.40, 0.35, 0.50, 0.75)
+	right_style.corner_radius_top_left = 16
+	right_style.corner_radius_top_right = 16
+	right_style.corner_radius_bottom_right = 16
+	right_style.corner_radius_bottom_left = 16
+	right_style.shadow_color = Color(0, 0, 0, 0.4)
+	right_style.shadow_size = 8
+	right_style.content_margin_left = 24
+	right_style.content_margin_right = 24
+	right_style.content_margin_top = 24
+	right_style.content_margin_bottom = 24
 	right_panel.add_theme_stylebox_override("panel", right_style)
 
 	var portrait_panel: PanelContainer = chef_portrait.get_parent() as PanelContainer
 	if portrait_panel:
 		var portrait_style := StyleBoxFlat.new()
-		portrait_style.bg_color = Color(0.06, 0.06, 0.10, 0.78)
-		portrait_style.border_width_left = 1
-		portrait_style.border_width_top = 1
-		portrait_style.border_width_right = 1
-		portrait_style.border_width_bottom = 1
-		portrait_style.border_color = Color(0.46, 0.42, 0.58, 0.82)
-		portrait_style.corner_radius_top_left = 10
-		portrait_style.corner_radius_top_right = 10
-		portrait_style.corner_radius_bottom_right = 10
-		portrait_style.corner_radius_bottom_left = 10
-		portrait_style.content_margin_left = 8
-		portrait_style.content_margin_top = 8
-		portrait_style.content_margin_right = 8
-		portrait_style.content_margin_bottom = 8
+		portrait_style.bg_color = Color(0.06, 0.05, 0.08, 0.6)
+		portrait_style.border_width_left = 2
+		portrait_style.border_width_top = 2
+		portrait_style.border_width_right = 2
+		portrait_style.border_width_bottom = 2
+		portrait_style.border_color = Color(0.40, 0.35, 0.50, 0.5)
+		portrait_style.corner_radius_top_left = 12
+		portrait_style.corner_radius_top_right = 12
+		portrait_style.corner_radius_bottom_right = 12
+		portrait_style.corner_radius_bottom_left = 12
+		portrait_style.content_margin_left = 12
+		portrait_style.content_margin_top = 12
+		portrait_style.content_margin_right = 12
+		portrait_style.content_margin_bottom = 12
 		portrait_panel.add_theme_stylebox_override("panel", portrait_style)
 
 	var skill_panel: PanelContainer = $HBox/RightPanel/RightVBox/PortraitRow/SkillPanel as PanelContainer
 	if skill_panel:
 		var skill_style := StyleBoxFlat.new()
-		skill_style.bg_color = Color(0.07, 0.07, 0.11, 0.86)
-		skill_style.corner_radius_top_left = 10
-		skill_style.corner_radius_top_right = 10
-		skill_style.corner_radius_bottom_right = 10
-		skill_style.corner_radius_bottom_left = 10
-		skill_style.border_width_left = 1
-		skill_style.border_width_top = 1
-		skill_style.border_width_right = 1
-		skill_style.border_width_bottom = 1
-		skill_style.border_color = Color(0.36, 0.4, 0.58, 0.75)
-		skill_style.content_margin_left = 12
-		skill_style.content_margin_top = 12
-		skill_style.content_margin_right = 12
-		skill_style.content_margin_bottom = 12
+		skill_style.bg_color = Color(0.06, 0.05, 0.08, 0.6)
+		skill_style.corner_radius_top_left = 12
+		skill_style.corner_radius_top_right = 12
+		skill_style.corner_radius_bottom_right = 12
+		skill_style.corner_radius_bottom_left = 12
+		skill_style.border_width_left = 2
+		skill_style.border_width_top = 2
+		skill_style.border_width_right = 2
+		skill_style.border_width_bottom = 2
+		skill_style.border_color = Color(0.40, 0.35, 0.50, 0.5)
+		skill_style.content_margin_left = 16
+		skill_style.content_margin_top = 16
+		skill_style.content_margin_right = 16
+		skill_style.content_margin_bottom = 16
 		skill_panel.add_theme_stylebox_override("panel", skill_style)
 
 	var confirm_style := StyleBoxFlat.new()
@@ -274,23 +298,28 @@ func _apply_chef_button_style(btn: Button, chef: Dictionary) -> void:
 		bg_color = CUISINE_COLORS.get(cuisines[0], DEFAULT_CUISINE_COLOR)
 
 	var normal := StyleBoxFlat.new()
-	normal.bg_color = bg_color.darkened(0.42)
+	normal.bg_color = bg_color.darkened(0.5)
+	normal.bg_color.a = 0.5
 	normal.border_width_left = 2
 	normal.border_width_top = 2
 	normal.border_width_right = 2
 	normal.border_width_bottom = 2
-	normal.border_color = bg_color.lightened(0.18)
-	normal.corner_radius_top_left = 10
-	normal.corner_radius_top_right = 10
-	normal.corner_radius_bottom_right = 10
-	normal.corner_radius_bottom_left = 10
+	normal.border_color = bg_color.lightened(0.2)
+	normal.border_color.a = 0.6
+	normal.corner_radius_top_left = 14
+	normal.corner_radius_top_right = 14
+	normal.corner_radius_bottom_right = 14
+	normal.corner_radius_bottom_left = 14
 
 	var hover: StyleBoxFlat = normal.duplicate() as StyleBoxFlat
-	hover.bg_color = bg_color.darkened(0.25)
+	hover.bg_color = bg_color.darkened(0.3)
+	hover.bg_color.a = 0.7
 	hover.border_color = GOLD
+	hover.border_color.a = 0.9
 
 	var pressed: StyleBoxFlat = normal.duplicate() as StyleBoxFlat
 	pressed.bg_color = bg_color.darkened(0.15)
+	pressed.bg_color.a = 0.85
 	pressed.border_color = GOLD
 
 	btn.add_theme_stylebox_override("normal", normal)
@@ -313,16 +342,20 @@ func _update_selected_button_styles() -> void:
 			if cuisines.size() > 0:
 				c = CUISINE_COLORS.get(cuisines[0], DEFAULT_CUISINE_COLOR)
 			var selected := StyleBoxFlat.new()
-			selected.bg_color = c.darkened(0.14)
+			selected.bg_color = c.darkened(0.2)
+			selected.bg_color.a = 0.9
 			selected.border_width_left = 3
 			selected.border_width_top = 3
 			selected.border_width_right = 3
 			selected.border_width_bottom = 3
 			selected.border_color = GOLD
-			selected.corner_radius_top_left = 10
-			selected.corner_radius_top_right = 10
-			selected.corner_radius_bottom_right = 10
-			selected.corner_radius_bottom_left = 10
+			selected.corner_radius_top_left = 14
+			selected.corner_radius_top_right = 14
+			selected.corner_radius_bottom_right = 14
+			selected.corner_radius_bottom_left = 14
+			selected.shadow_color = GOLD
+			selected.shadow_color.a = 0.5
+			selected.shadow_size = 6
 			btn.add_theme_stylebox_override("normal", selected)
 			btn.add_theme_stylebox_override("hover", selected)
 			btn.add_theme_stylebox_override("pressed", selected)
@@ -346,18 +379,29 @@ func _on_chef_preview(chef_id: String) -> void:
 	var cuisine_texts: Array[String] = []
 	for c in cuisines:
 		cuisine_texts.append(CUISINE_NAMES.get(c, str(c)))
-	cuisine_label.text = "擅长菜系: " + (" / ".join(cuisine_texts) if not cuisine_texts.is_empty() else "无")
+	cuisine_label.text = "擅长菜系: " + (" / ".join(cuisine_texts) if not cuisine_texts.is_empty() else "暂无")
 
 	var tool_slots: int = int(chef.get("tool_slots", 3))
-	var skill_effect: Dictionary = chef.get("skill", {}).get("effect", {})
-	if skill_effect.has("max_tools"):
-		tool_slots = int(skill_effect.get("max_tools", tool_slots))
+	var skill_effect_data: Dictionary = chef.get("skill", {}).get("effect", {})
+	if skill_effect_data.has("max_tools"):
+		tool_slots = int(skill_effect_data.get("max_tools", tool_slots))
 	tool_label.text = "厨具栏位: %d" % tool_slots
 
 	var skill: Dictionary = chef.get("skill", {})
+	var trigger_key: String = str(skill.get("trigger", ""))
+	var trigger_name: String = TRIGGER_NAMES.get(trigger_key, trigger_key)
+	var trigger_help: String = TRIGGER_HELP_TEXT.get(trigger_key, "")
 	skill_title.text = "技能: " + SKILL_NAMES.get(chef_id, _safe_skill_name(skill))
-	skill_trigger.text = "触发: " + TRIGGER_NAMES.get(str(skill.get("trigger", "")), str(skill.get("trigger", "")))
-	skill_effect.text = "效果: " + _describe_skill_effect(skill_effect)
+	skill_trigger.text = "触发时机: %s%s" % [
+		trigger_name,
+		("\n" + trigger_help) if trigger_help != "" else ""
+	]
+	var skill_desc_raw: String = str(skill.get("description", "")).strip_edges()
+	var mechanical_text: String = _describe_skill_effect(skill_effect_data)
+	if skill_desc_raw != "":
+		skill_effect.text = "机制效果:\n%s\n\n技能特点: %s" % [mechanical_text, skill_desc_raw]
+	else:
+		skill_effect.text = "机制效果:\n%s" % mechanical_text
 
 	var base_stats: Dictionary = chef.get("base_stats", {})
 	flavor_stat.text = "风味: +%d" % int(base_stats.get("flavor", 0))
@@ -365,7 +409,7 @@ func _on_chef_preview(chef_id: String) -> void:
 	tech_stat.text = "技法: +%d" % int(base_stats.get("technique", 0))
 	aroma_stat.text = "香气: +%d" % int(base_stats.get("aroma", 0))
 
-	strategy_label.text = STRATEGY_TEXT.get(chef_id, "围绕双菜系做联动，优先成型一条主轴。")
+	strategy_label.text = _build_chef_overview(chef_id, cuisines, base_stats, skill.get("effect", {}))
 	_update_selected_button_styles()
 
 func _safe_skill_name(skill: Dictionary) -> String:
@@ -378,43 +422,105 @@ func _safe_skill_name(skill: Dictionary) -> String:
 
 func _describe_skill_effect(effect: Dictionary) -> String:
 	if effect.is_empty():
-		return "提供稳定的流派增益。"
+		return "- 提供稳定的流派增益。"
 
 	var parts: Array[String] = []
 	if effect.has("yatai_cd_reduction"):
-		parts.append("夜市菜品冷却-%d%%" % int(float(effect["yatai_cd_reduction"]) * 100.0))
+		parts.append("- 夜市菜品冷却-%d%%" % int(float(effect["yatai_cd_reduction"]) * 100.0))
 	if effect.get("night_blindness_on_opponent", false):
-		parts.append("开局对手获得夜盲")
+		parts.append("- 开局使对手获得负面状态：夜盲")
 	if effect.has("all_dish_cd_reduction"):
-		parts.append("全菜品冷却-%ss" % str(effect["all_dish_cd_reduction"]))
+		parts.append("- 全菜品冷却-%ss" % str(effect["all_dish_cd_reduction"]))
 	if effect.has("small_dish_reactivate_chance"):
-		parts.append("小型菜品%d%%概率再次触发" % int(float(effect["small_dish_reactivate_chance"]) * 100.0))
+		parts.append("- 小型菜品%d%%概率再次触发" % int(float(effect["small_dish_reactivate_chance"]) * 100.0))
 	if effect.has("char_aroma_effect_mult"):
-		parts.append("焦香效果提升%d%%" % int((float(effect["char_aroma_effect_mult"]) - 1.0) * 100.0))
+		parts.append("- 焦香效果提升%d%%" % int((float(effect["char_aroma_effect_mult"]) - 1.0) * 100.0))
 	if effect.has("char_aroma_bonus_mult"):
-		parts.append("焦香额外加成x%s" % str(effect["char_aroma_bonus_mult"]))
+		parts.append("- 焦香额外加成x%s" % str(effect["char_aroma_bonus_mult"]))
 	if effect.has("extra_random_keyword_chance"):
-		parts.append("上菜%d%%概率获得随机关键字" % int(float(effect["extra_random_keyword_chance"]) * 100.0))
+		parts.append("- 上菜%d%%概率获得随机关键词" % int(float(effect["extra_random_keyword_chance"]) * 100.0))
 	if effect.has("free_refresh_per_day"):
-		parts.append("每天前%d次刷新免费" % int(effect["free_refresh_per_day"]))
+		parts.append("- 每天前%d次刷新免费" % int(effect["free_refresh_per_day"]))
 	if effect.has("donation_gold_chance"):
-		parts.append("事件%d%%概率额外金币" % int(float(effect["donation_gold_chance"]) * 100.0))
+		parts.append("- 事件%d%%概率额外获得金币" % int(float(effect["donation_gold_chance"]) * 100.0))
 	if effect.has("plating_effect_mult"):
-		parts.append("摆盘效果提升%d%%" % int((float(effect["plating_effect_mult"]) - 1.0) * 100.0))
+		parts.append("- 摆盘效果提升%d%%" % int((float(effect["plating_effect_mult"]) - 1.0) * 100.0))
+	if effect.has("plating_output_bonus"):
+		parts.append("- 摆盘追加输出加成+%d%%" % int(float(effect["plating_output_bonus"]) * 100.0))
 	if effect.get("five_element_bonus", false):
-		parts.append("集齐关键字时全属性提升")
+		parts.append("- 集齐五元素关键词时触发额外加成")
 	if effect.has("element_cycle_bonus"):
-		parts.append("元素联动加成x%s" % str(effect["element_cycle_bonus"]))
+		parts.append("- 元素联动加成x%s" % str(effect["element_cycle_bonus"]))
 	if effect.has("opponent_random_cd_increase"):
-		parts.append("开局随机提高对手冷却")
+		parts.append("- 开局随机提高对手冷却")
 	if effect.get("lunatic_red_eyes", false):
-		parts.append("上菜概率附加味觉疲劳")
+		parts.append("- 上菜时有概率附加负面环境")
 	if effect.has("max_tools"):
-		parts.append("厨具上限+%d" % (int(effect["max_tools"]) - 3))
+		parts.append("- 厨具上限+%d" % (int(effect["max_tools"]) - 3))
+	if effect.get("swap_min_max_attrs", false):
+		parts.append("- 每道菜的最高属性和最低属性互换")
 
 	if parts.is_empty():
-		return "提供稳定的流派增益。"
-	return "；".join(parts)
+		return "- 提供稳定的流派增益。"
+	return "\n".join(parts)
+
+func _build_chef_overview(chef_id: String, cuisines: Array, base_stats: Dictionary, skill_effect: Dictionary) -> String:
+	var cuisine_names: Array[String] = []
+	for c in cuisines:
+		cuisine_names.append(CUISINE_NAMES.get(str(c), str(c)))
+	var cuisine_line: String = "菜系定位：%s" % (" / ".join(cuisine_names) if not cuisine_names.is_empty() else "未知")
+
+	var trait_line: String = "角色特点：%s" % CHEF_TRAITS.get(
+		chef_id,
+		"围绕双菜系做联动，优先成型一条主轴。"
+	)
+	var stats_line: String = "属性倾向：" + _summarize_stat_profile(base_stats)
+	var skill_line: String = "技能标签：" + _summarize_skill_archetype(skill_effect)
+	var advice_line: String = "上手建议：%s" % STRATEGY_TEXT.get(
+		chef_id,
+		"先确定一条主轴流派，再用副流派补强短板。"
+	)
+	return "\n".join([trait_line, cuisine_line, stats_line, skill_line, advice_line])
+
+func _summarize_stat_profile(base_stats: Dictionary) -> String:
+	var labels := [
+		{"key": "flavor", "name": "风味"},
+		{"key": "presentation", "name": "卖相"},
+		{"key": "technique", "name": "技法"},
+		{"key": "aroma", "name": "香气"},
+	]
+	var high_name: String = "均衡"
+	var high_value: int = -999
+	var low_name: String = "均衡"
+	var low_value: int = 999
+	for entry in labels:
+		var v: int = int(base_stats.get(entry["key"], 0))
+		if v > high_value:
+			high_value = v
+			high_name = entry["name"]
+		if v < low_value:
+			low_value = v
+			low_name = entry["name"]
+	if high_name == low_name:
+		return "%s均衡：%d" % [high_name, high_value]
+	return "强项%s(%d)，弱项%s(%d)" % [high_name, high_value, low_name, low_value]
+
+func _summarize_skill_archetype(effect: Dictionary) -> String:
+	if effect.is_empty():
+		return "稳定型：无特定约束。"
+	if effect.has("free_refresh_per_day") or effect.has("donation_gold_chance"):
+		return "经济运营型：缓解资源压力"
+	if effect.has("all_dish_cd_reduction") or effect.has("small_dish_reactivate_chance") or effect.has("yatai_cd_reduction"):
+		return "节奏控制型：上菜频率高"
+	if effect.has("char_aroma_effect_mult") or effect.has("plating_effect_mult") or effect.has("plating_output_bonus"):
+		return "收益放大型：核心关键词强化"
+	if effect.has("opponent_random_cd_increase") or effect.get("lunatic_red_eyes", false):
+		return "干扰压制型：限制对手节奏"
+	if effect.get("five_element_bonus", false) or effect.has("element_cycle_bonus"):
+		return "联动成型型：依赖关键词组合"
+	if effect.get("swap_min_max_attrs", false):
+		return "特殊机制型：改变属性结构"
+	return "综合增强型：灵活适配"
 
 func _display_chef_name(chef_id: String, fallback: String) -> String:
 	if CHEF_NAMES.has(chef_id):
@@ -451,8 +557,5 @@ func _hover_card(card: Control, hovered: bool) -> void:
 		anims.call("hover_reset", card, 0.12)
 
 func _apply_background_shader() -> void:
-	var shader = load("res://ui/shaders/background_gradient.gdshader")
-	if shader:
-		var mat := ShaderMaterial.new()
-		mat.shader = shader
-		background.material = mat
+	pass
+

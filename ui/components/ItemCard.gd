@@ -7,7 +7,7 @@ signal card_hovered(item_data)
 signal card_unhovered()
 
 @onready var icon_rect: TextureRect = %Icon
-@onready var cd_bar: ProgressBar = %CDBar
+@onready var cd_overlay: ColorRect = get_node_or_null("%CDDarkOverlay")
 @onready var selection_overlay: ColorRect = %SelectionOverlay
 # 移除所有文本Label的引用
 
@@ -15,6 +15,8 @@ var item_data: Dictionary = {}
 var _is_pressing := false
 var _drag_start_pos: Vector2
 var _flavor_label: Label = null  # 风味值角标
+var _star_label: Label = null    # 星级角标
+var _max_cd: float = 1.0
 
 func _ready() -> void:
 	gui_input.connect(_on_gui_input)
@@ -63,16 +65,18 @@ func _setup_style() -> void:
 		_flavor_label.grow_vertical = Control.GROW_DIRECTION_BEGIN
 		_flavor_label.offset_right = -4.0
 		_flavor_label.offset_bottom = -4.0
-		_flavor_label.offset_left = -64.0
-		_flavor_label.offset_top = -24.0
+		_flavor_label.offset_left = -80.0
+		_flavor_label.offset_top = -36.0
 		_flavor_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		_flavor_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 		_flavor_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		_flavor_label.add_theme_font_size_override("font_size", 16)
-		_flavor_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
-		_flavor_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.85))
-		_flavor_label.add_theme_constant_override("shadow_offset_x", 1)
-		_flavor_label.add_theme_constant_override("shadow_offset_y", 1)
+		_flavor_label.add_theme_font_size_override("font_size", 24)
+		_flavor_label.add_theme_color_override("font_color", Color(1.0, 0.88, 0.3))
+		_flavor_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1.0))
+		_flavor_label.add_theme_constant_override("shadow_offset_x", 2)
+		_flavor_label.add_theme_constant_override("shadow_offset_y", 2)
+		_flavor_label.add_theme_constant_override("outline_size", 6)
+		_flavor_label.add_theme_color_override("font_outline_color", Color(0.1, 0.05, 0.0, 1.0))
 		_flavor_label.z_index = 10
 		_flavor_label.visible = false
 		# 加到父级而非 PanelContainer 本身，避免被 Container 布局覆盖偏移
@@ -105,12 +109,11 @@ func _update_view() -> void:
 	# 下面这些文本更新的代码全部移除，因为界面上已经不想看到它们了
 	# name_label... price_label...
 
-	# 冷却条
+	# 冷却机制初始化
 	var cd = float(item_data.get("cooldown", 0.0))
-	if cd_bar:
-		cd_bar.visible = cd > 0
-		cd_bar.max_value = max(0.1, cd)
-		cd_bar.value = cd
+	_max_cd = max(0.1, cd)
+	if cd_overlay:
+		cd_overlay.visible = false
 
 	# 图标加载
 	_load_icon()
@@ -118,6 +121,9 @@ func _update_view() -> void:
 	# 稀有度颜色 + 边框 + 光晕
 	var tier = _get_tier_level()
 	_apply_tier_style(tier)
+
+	# 星级显示
+	_update_star_display()
 
 	# 初始化风味角标（显示基础风味值）
 	var base_flavor: int = int(item_data.get("flavor", 0))
@@ -140,11 +146,11 @@ func _set_flavor_label(value: int, is_crit: bool) -> void:
 	_flavor_label.text = "🔥%d" % value
 	_flavor_label.visible = true
 	if is_crit:
-		_flavor_label.add_theme_color_override("font_color", Color(1.0, 0.35, 0.1))
-		_flavor_label.add_theme_font_size_override("font_size", 19)
+		_flavor_label.add_theme_color_override("font_color", Color(1.0, 0.4, 0.15))
+		_flavor_label.add_theme_font_size_override("font_size", 32)
 	else:
-		_flavor_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
-		_flavor_label.add_theme_font_size_override("font_size", 16)
+		_flavor_label.add_theme_color_override("font_color", Color(1.0, 0.88, 0.3))
+		_flavor_label.add_theme_font_size_override("font_size", 24)
 
 func _load_icon() -> void:
 	var id: String = str(item_data.get("id", ""))
@@ -209,14 +215,32 @@ func _apply_tier_style(level: int) -> void:
 	var d: Array = TIER_DATA[clampi(level, 0, TIER_DATA.size() - 1)]
 	self.modulate = d[0]
 
+	# 星级覆盖边框颜色
+	var star = int(item_data.get("star_level", 1))
+	var border_color: Color = d[1]
+	var glow_color: Color = d[2]
+	var glow_alpha: float = d[3]
+	var border_width: int = 2 if level > 0 else 0
+
+	if star >= 3:
+		border_color = Color(1.0, 0.35, 0.1, 1.0)  # 橙红
+		glow_color = Color(1.0, 0.4, 0.15)
+		glow_alpha = 0.55
+		border_width = 3
+	elif star >= 2:
+		border_color = Color(1.0, 0.82, 0.0, 1.0)  # 金色
+		glow_color = Color(1.0, 0.85, 0.2)
+		glow_alpha = 0.40
+		border_width = 3
+
 	# 边框：用 StyleBoxFlat 叠在 StyleBoxTexture 上方（通过 focus 槽或直接覆盖）
 	var border_style := StyleBoxFlat.new()
 	border_style.bg_color = Color(0, 0, 0, 0)  # 透明背景
-	border_style.border_width_left = 2 if level > 0 else 0
-	border_style.border_width_top = 2 if level > 0 else 0
-	border_style.border_width_right = 2 if level > 0 else 0
-	border_style.border_width_bottom = 2 if level > 0 else 0
-	border_style.border_color = d[1]
+	border_style.border_width_left = border_width
+	border_style.border_width_top = border_width
+	border_style.border_width_right = border_width
+	border_style.border_width_bottom = border_width
+	border_style.border_color = border_color
 	border_style.corner_radius_top_left = 8
 	border_style.corner_radius_top_right = 8
 	border_style.corner_radius_bottom_left = 8
@@ -226,10 +250,42 @@ func _apply_tier_style(level: int) -> void:
 	# 底部光晕
 	var glow := get_node_or_null("TierGlow") as ColorRect
 	if glow:
-		if level > 0:
-			glow.color = Color(d[2][0], d[2][1], d[2][2], d[3])
+		if level > 0 or star >= 2:
+			glow.color = Color(glow_color.r, glow_color.g, glow_color.b, glow_alpha)
 		else:
 			glow.color = Color(0, 0, 0, 0)
+
+func _update_star_display() -> void:
+	var star = int(item_data.get("star_level", 1))
+	if star < 1:
+		star = 1
+
+	# 创建或获取星级标签
+	if _star_label == null:
+		_star_label = get_node_or_null("StarLabel")
+	if _star_label == null:
+		_star_label = Label.new()
+		_star_label.name = "StarLabel"
+		_star_label.set_anchors_preset(Control.PRESET_TOP_LEFT)
+		_star_label.offset_left = 6.0
+		_star_label.offset_top = 4.0
+		_star_label.offset_right = 100.0
+		_star_label.offset_bottom = 30.0
+		_star_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_star_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1.0))
+		_star_label.add_theme_constant_override("shadow_offset_x", 1)
+		_star_label.add_theme_constant_override("shadow_offset_y", 1)
+		_star_label.add_theme_constant_override("outline_size", 4)
+		_star_label.add_theme_color_override("font_outline_color", Color(0.1, 0.05, 0.0, 1.0))
+		_star_label.z_index = 11
+		add_child(_star_label)
+
+	var star_text = GameConfig.STAR_NAMES.get(star, "★")
+	var star_color = GameConfig.STAR_COLORS.get(star, Color(0.8, 0.8, 0.8))
+	_star_label.text = star_text
+	_star_label.add_theme_color_override("font_color", star_color)
+	_star_label.add_theme_font_size_override("font_size", 18 if star < 3 else 16)
+	_star_label.visible = true
 
 func _on_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
@@ -282,4 +338,14 @@ func _on_mouse_exited() -> void:
 	SignalBus.item_unhovered.emit()
 
 func update_cd(val: float) -> void:
-	if cd_bar: cd_bar.value = val
+	if cd_overlay:
+		if val <= 0.0:
+			cd_overlay.visible = false
+		else:
+			cd_overlay.visible = true
+			var ratio = clampf(val / _max_cd, 0.0, 1.0)
+			# 从下往上扫：改变 offset_top
+			# Ratio 1.0 = 全部遮盖 (offset_top = 0)
+			# Ratio 0.0 = 完全不遮盖 (offset_top = height)
+			var parent_height = cd_overlay.get_parent().size.y
+			cd_overlay.offset_top = parent_height * (1.0 - ratio)

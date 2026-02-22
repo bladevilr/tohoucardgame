@@ -128,7 +128,8 @@ func setup():
 
 			var chef = ChefDatabase.get_chef(player.chef_id)
 			if not chef.is_empty() and chef.get("id", "") == "sakuya":
-				base_cd = maxf(0.5, base_cd - 1.0)
+				base_cd = maxf(1.0, base_cd - 1.0)
+			base_cd = maxf(1.0, base_cd)
 
 			var runtime = {
 				"item": item,
@@ -230,7 +231,7 @@ func tick(delta: float):
 			if runtime.current_cd <= 0:
 				_activate_item(p_idx, runtime)
 				var new_cd = runtime.base_cd * (1.0 - _aroma_reductions[p_idx]) + env_cd_penalty
-				runtime.current_cd = maxf(0.5, new_cd)
+				runtime.current_cd = maxf(1.0, new_cd)
 
 	_apply_presentation_dot(delta)
 	_match_state.showdown_scores = _scores.duplicate()
@@ -389,13 +390,17 @@ func _activate_item(player_idx: int, runtime: Dictionary):
 	# 缩减自身
 	var cd_self := float(context.get("cd_reduction_self", 0.0))
 	if cd_self > 0.0:
-		runtime.current_cd = maxf(0.0, runtime.current_cd - cd_self)
+		runtime.current_cd = maxf(1.0, runtime.current_cd - cd_self)
 	# 缩减相邻
 	var cd_adj := float(context.get("cd_reduction_adjacent", 0.0))
 	if cd_adj > 0.0:
 		for other in _item_runtimes[player_idx]:
 			if abs(int(other.slot_idx) - slot_idx) == 1:
-				other.current_cd = maxf(0.0, other.current_cd - cd_adj)
+				other.current_cd = maxf(1.0, other.current_cd - cd_adj)
+	# 增加自身冷却
+	var cd_inc := float(context.get("cd_increase_self", 0.0))
+	if cd_inc > 0.0:
+		runtime.current_cd += cd_inc
 	# 加速自身
 	if context.has("haste_self"):
 		var h = context["haste_self"]

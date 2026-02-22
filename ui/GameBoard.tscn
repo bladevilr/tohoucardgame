@@ -66,11 +66,32 @@ alignment = 1
 layout_mode = 2
 size_flags_horizontal = 4
 
-[node name="MerchantPortrait" type="TextureRect" parent="ContentLayer/MerchantZone/MerchantPortraitBorder" unique_id=1161165483]
-custom_minimum_size = Vector2(140, 140)
+[node name="ShopHeader" type="HBoxContainer" parent="ContentLayer/MerchantZone/MerchantPortraitBorder"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="MerchantPortrait" type="TextureRect" parent="ContentLayer/MerchantZone/MerchantPortraitBorder/ShopHeader" unique_id=1161165483]
+custom_minimum_size = Vector2(180, 180)
 layout_mode = 2
 expand_mode = 1
 stretch_mode = 5
+
+[node name="ShopInfo" type="VBoxContainer" parent="ContentLayer/MerchantZone/MerchantPortraitBorder/ShopHeader"]
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="ShopNameLabel" type="Label" parent="ContentLayer/MerchantZone/MerchantPortraitBorder/ShopHeader/ShopInfo"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(1, 0.92, 0.65, 1)
+
+[node name="ShopDescLabel" type="Label" parent="ContentLayer/MerchantZone/MerchantPortraitBorder/ShopHeader/ShopInfo"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.7, 0.7, 0.75, 1)
+autowrap_mode = 3
 
 [node name="ShopRow" type="HBoxContainer" parent="ContentLayer/MerchantZone" unique_id=237019254]
 layout_mode = 2

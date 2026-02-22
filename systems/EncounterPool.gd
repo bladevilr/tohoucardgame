@@ -1,4 +1,4 @@
-extends Node
+﻿extends Node
 
 ## 遭遇池系统 — 多维度商店设计
 ##
@@ -33,6 +33,144 @@ const ICON_FALLBACK_BY_ID: Dictionary = {
 	"aya": "marisa",
 	"tenshi": "youmu",
 	"koishi": "alice",
+	"nitori": "sakuya",
+	"rinnosuke": "reimu",
+	"cirno": "reimu",
+}
+
+# 角色专属商店池 — 每个角色只能刷出池内的商店/事件
+const CHEF_SHOP_POOL := {
+	"mystia": [
+		# 主菜系: 夜市 (全尺寸)
+		"small_yatai", "medium_yatai", "large_yatai",
+		# 副菜系: 中华 (小/中)
+		"small_chuuka", "medium_chuuka",
+		# 标签: 焦香
+		"tag_char_aroma",
+		# 通用
+		"shop_ingredient_small", "shop_ingredient_medium", "shop_tool",
+		"shop_mixed_small", "shop_lowgrade",
+		# 事件
+		"event_shrine", "event_gamble", "event_training", "event_treasure",
+	],
+	"youmu": [
+		# 主菜系: 和食 (全尺寸)
+		"small_washoku", "medium_washoku", "large_washoku",
+		# 副菜系: 洋食 (中)
+		"medium_youshoku",
+		# 标签: 清淡、鲜美
+		"tag_light", "tag_umami",
+		# 通用
+		"shop_ingredient_small", "shop_ingredient_medium", "shop_technique",
+		"shop_lowgrade",
+		# 事件
+		"event_shrine", "event_training", "event_treasure",
+	],
+	"sakuya": [
+		# 主菜系: 洋食 (全尺寸)
+		"small_youshoku", "medium_youshoku", "large_youshoku",
+		# 副菜系: 甘味 (中)
+		"medium_kanmi",
+		# 标签: 鲜美
+		"tag_umami",
+		# 通用
+		"shop_ingredient_medium", "shop_technique", "shop_tool",
+		"shop_highgrade",
+		# 事件
+		"event_shrine", "event_training", "event_treasure",
+	],
+	"meiling": [
+		# 主菜系: 中华 (全尺寸)
+		"small_chuuka", "medium_chuuka", "large_chuuka",
+		# 副菜系: 夜市 (小/中)
+		"small_yatai", "medium_yatai",
+		# 标签: 鲜美、焦香
+		"tag_umami", "tag_char_aroma",
+		# 通用
+		"shop_ingredient_small", "shop_ingredient_medium", "shop_tool",
+		"shop_mixed_small",
+		# 事件
+		"event_shrine", "event_training", "event_treasure",
+	],
+	"marisa": [
+		# 主菜系: 夜市 (小/中)
+		"small_yatai", "medium_yatai",
+		# 副菜系: 和食 (小)
+		"small_washoku",
+		# 标签: 焦香
+		"tag_char_aroma",
+		# 通用 (强化食材和混合)
+		"shop_ingredient_small", "shop_ingredient_medium",
+		"shop_mixed_small", "shop_mixed_large",
+		"shop_lowgrade", "shop_tool",
+		# 事件
+		"event_shrine", "event_gamble", "event_training", "event_treasure",
+	],
+	"reimu": [
+		# 主菜系: 和食 (全尺寸)
+		"small_washoku", "medium_washoku", "large_washoku",
+		# 副菜系: 药膳 (中)
+		"medium_yakuzen",
+		# 标签: 清淡
+		"tag_light",
+		# 通用
+		"shop_ingredient_small", "shop_ingredient_medium",
+		"shop_technique", "shop_mixed_small",
+		# 事件 (灵梦强化神社)
+		"event_shrine", "event_gamble", "event_training", "event_treasure",
+	],
+	"alice": [
+		# 主菜系: 甘味 (全尺寸)
+		"small_kanmi", "medium_kanmi", "large_kanmi",
+		# 副菜系: 洋食 (中)
+		"medium_youshoku",
+		# 标签: 甜蜜
+		"tag_sweet",
+		# 通用
+		"shop_ingredient_medium", "shop_technique", "shop_tool",
+		"shop_highgrade",
+		# 事件
+		"event_shrine", "event_training", "event_treasure",
+	],
+	"patchouli": [
+		# 主菜系: 药膳 (全尺寸)
+		"small_yakuzen", "medium_yakuzen", "large_yakuzen",
+		# 副菜系: 甘味 (中)
+		"medium_kanmi",
+		# 标签: 清淡
+		"tag_light",
+		# 通用 (强化技法)
+		"shop_ingredient_medium", "shop_technique",
+		"shop_mixed_small", "shop_highgrade",
+		# 事件
+		"event_shrine", "event_training", "event_treasure",
+	],
+	"reisen": [
+		# 主菜系: 甘味 (全尺寸)
+		"small_kanmi", "medium_kanmi", "large_kanmi",
+		# 副菜系: 药膳 (小/中)
+		"small_yakuzen", "medium_yakuzen",
+		# 标签: 甜蜜
+		"tag_sweet",
+		# 通用
+		"shop_ingredient_small", "shop_ingredient_medium", "shop_tool",
+		"shop_mixed_small",
+		# 事件
+		"event_shrine", "event_training", "event_treasure",
+	],
+	"seija": [
+		# 主菜系: 中华 (全尺寸)
+		"small_chuuka", "medium_chuuka", "large_chuuka",
+		# 副菜系: 夜市 (小)
+		"small_yatai",
+		# 标签: 焦香
+		"tag_char_aroma",
+		# 通用 (强化黑市和混合)
+		"shop_ingredient_small", "shop_mixed_small", "shop_mixed_large",
+		"shop_lowgrade", "shop_blackmarket",
+		# 事件
+		"event_gamble", "event_training", "event_treasure",
+	],
 }
 
 # 商店配置模板
@@ -74,6 +212,45 @@ var _shop_templates := {
 		"icon": "meiling",
 		"weight_base": 80,
 		"unlock_day": 1,
+		"price_mult": 0.7,
+		"tier_max_offset": 0,
+	},
+	"small_youshoku": {
+		"type": "shop",
+		"size": "small",
+		"slots": 3,
+		"filter": {"cuisine": "youshoku"},
+		"name": "洋食简餐",
+		"desc": "简单的西式料理\n3个物品·价格便宜",
+		"icon": "sakuya",
+		"weight_base": 70,
+		"unlock_day": 2,
+		"price_mult": 0.7,
+		"tier_max_offset": 0,
+	},
+	"small_kanmi": {
+		"type": "shop",
+		"size": "small",
+		"slots": 3,
+		"filter": {"cuisine": "kanmi"},
+		"name": "甜品小铺",
+		"desc": "小巧的甜品店\n3个物品·价格便宜",
+		"icon": "reisen",
+		"weight_base": 70,
+		"unlock_day": 2,
+		"price_mult": 0.7,
+		"tier_max_offset": 0,
+	},
+	"small_yakuzen": {
+		"type": "shop",
+		"size": "small",
+		"slots": 3,
+		"filter": {"cuisine": "yakuzen"},
+		"name": "草药小摊",
+		"desc": "简单的药膳料理\n3个物品·价格便宜",
+		"icon": "ichirin",
+		"weight_base": 60,
+		"unlock_day": 2,
 		"price_mult": 0.7,
 		"tier_max_offset": 0,
 	},
@@ -195,6 +372,45 @@ var _shop_templates := {
 		"icon": "ichirin",
 		"weight_base": 60,
 		"unlock_day": 6,
+		"price_mult": 1.2,
+		"tier_max_offset": 1,
+	},
+	"large_yatai": {
+		"type": "shop",
+		"size": "large",
+		"slots": 7,
+		"filter": {"cuisine": "yatai"},
+		"name": "人间之里庙会",
+		"desc": "盛大的夜市庙会\n7个物品·价格稍贵",
+		"icon": "keine",
+		"weight_base": 60,
+		"unlock_day": 5,
+		"price_mult": 1.2,
+		"tier_max_offset": 1,
+	},
+	"large_washoku": {
+		"type": "shop",
+		"size": "large",
+		"slots": 7,
+		"filter": {"cuisine": "washoku"},
+		"name": "白玉楼正宴",
+		"desc": "妖梦的正式和食宴\n7个物品·价格稍贵",
+		"icon": "youmu",
+		"weight_base": 60,
+		"unlock_day": 5,
+		"price_mult": 1.2,
+		"tier_max_offset": 1,
+	},
+	"large_chuuka": {
+		"type": "shop",
+		"size": "large",
+		"slots": 7,
+		"filter": {"cuisine": "chuuka"},
+		"name": "红美铃的满汉全席",
+		"desc": "美铃的中华大宴\n7个物品·价格稍贵",
+		"icon": "meiling",
+		"weight_base": 60,
+		"unlock_day": 5,
 		"price_mult": 1.2,
 		"tier_max_offset": 1,
 	},
@@ -419,13 +635,20 @@ var _shop_templates := {
 }
 
 func generate_three_choices(player: PlayerState, day: int) -> Array:
-	"""生成3个随机遭遇选项"""
+	"""生成3个随机遭遇选项（按角色卡池筛选）"""
 	var eligible: Array[Dictionary] = []
-	var player_chef: String = player.chef_id
-	var main_cuisine: String = str(CHEF_MAIN_CUISINE.get(player_chef, ""))
+	if player == null:
+		return _get_fallback_choices()
+	var player_chef: String = str(player.chef_id)
+	var pool: Array = CHEF_SHOP_POOL.get(player_chef, [])
+	if pool.is_empty():
+		# 未配置角色：允许全部模板
+		pool = _shop_templates.keys()
 
-	# 筛选符合条件的遭遇并计算权重
-	for key in _shop_templates:
+	# 仅从角色卡池中筛选
+	for key in pool:
+		if not _shop_templates.has(key):
+			continue
 		var config: Dictionary = _shop_templates[key].duplicate(true)
 		config["_key"] = key
 		config["icon"] = _resolve_icon_id(str(config.get("icon", "reimu")))
@@ -433,16 +656,7 @@ func generate_three_choices(player: PlayerState, day: int) -> Array:
 		if not _is_encounter_available(config, player, day):
 			continue
 
-		# 计算动态权重
-		var weight: float = float(config.get("weight_base", 50))
-
-		# 如果是玩家主菜系的商店，提升权重
-		if config.get("type") == "shop":
-			var filter: Dictionary = config.get("filter", {})
-			if filter.has("cuisine") and filter.cuisine == main_cuisine:
-				weight *= 2.0  # 主菜系商店权重翻倍
-
-		config["_final_weight"] = weight
+		config["_final_weight"] = float(config.get("weight_base", 50))
 		eligible.append(config)
 
 	if eligible.is_empty():
@@ -473,8 +687,10 @@ func generate_three_choices(player: PlayerState, day: int) -> Array:
 				shop_candidate = e
 				break
 		if shop_candidate.is_empty():
-			# eligible中也没有shop了，从全模板中取一个基础shop
-			for key in _shop_templates:
+			# eligible中也没有shop了，从角色池中取一个基础shop
+			for key in pool:
+				if not _shop_templates.has(key):
+					continue
 				var tmpl: Dictionary = _shop_templates[key]
 				if tmpl.get("type", "") == "shop" and day >= tmpl.get("unlock_day", 1):
 					shop_candidate = tmpl.duplicate(true)

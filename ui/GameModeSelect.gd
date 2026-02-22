@@ -30,16 +30,20 @@ func _build_ui() -> void:
 	var vp := get_viewport_rect().size
 	_ui_scale = clampf(minf(vp.x / 1920.0, vp.y / 1080.0), 0.55, 1.0)
 	_is_compact = vp.x < 980.0
-	# 背景（与 CharacterSelect 一致：ColorRect + 渐变 shader）
-	var bg := ColorRect.new()
-	bg.color = Color(0.05, 0.04, 0.09)
-	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	add_child(bg)
-	var shader = load("res://ui/shaders/background_gradient.gdshader")
-	if shader:
-		var mat := ShaderMaterial.new()
-		mat.shader = shader
-		bg.material = mat
+	# 背景（与 CharacterSelect 统一使用高级环境图）
+	var bg_tex = load("res://assets/ui/backgrounds/character_select_bg.png")
+	if bg_tex:
+		var bg_rect = TextureRect.new()
+		bg_rect.texture = bg_tex
+		bg_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		bg_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		bg_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+		add_child(bg_rect)
+	else:
+		var bg := ColorRect.new()
+		bg.color = Color(0.05, 0.04, 0.09)
+		bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+		add_child(bg)
 
 	# 顶部标题
 	var title_lbl := Label.new()
@@ -146,29 +150,48 @@ func _make_mode_card(mode_name: String, tag: String, desc: String,
 	card.mouse_entered.connect(func(): _on_card_hover(card, accent, true))
 	card.mouse_exited.connect(func(): _on_card_hover(card, accent, false))
 
-	var normal := StyleBoxFlat.new()
-	normal.bg_color = PANEL_BG
-	normal.border_width_left = 2
-	normal.border_width_top = 2
-	normal.border_width_right = 2
-	normal.border_width_bottom = 2
-	normal.border_color = accent.darkened(0.35)
-	normal.corner_radius_top_left = 14
-	normal.corner_radius_top_right = 14
-	normal.corner_radius_bottom_right = 14
-	normal.corner_radius_bottom_left = 14
-	var card_padding := maxf(16.0, 32.0 * _ui_scale)
+	var wood_tex = load("res://assets/ui/ui_panel_wood.png")
+
+	var normal: StyleBox
+	if wood_tex:
+		var tex_style = StyleBoxTexture.new()
+		tex_style.texture = wood_tex
+		tex_style.texture_margin_left = 64
+		tex_style.texture_margin_top = 64
+		tex_style.texture_margin_right = 64
+		tex_style.texture_margin_bottom = 64
+		tex_style.modulate_color = Color(0.85, 0.8, 0.9, 0.98) # 微暗以衬托文字
+		normal = tex_style
+	else:
+		var flat = StyleBoxFlat.new()
+		flat.bg_color = PANEL_BG
+		flat.border_width_left = 2; flat.border_width_top = 2
+		flat.border_width_right = 2; flat.border_width_bottom = 2
+		flat.border_color = accent.darkened(0.35)
+		flat.corner_radius_top_left = 14; flat.corner_radius_top_right = 14
+		flat.corner_radius_bottom_right = 14; flat.corner_radius_bottom_left = 14
+		normal = flat
+
+	var card_padding := maxf(24.0, 40.0 * _ui_scale)
 	normal.content_margin_left = card_padding
 	normal.content_margin_top = card_padding
 	normal.content_margin_right = card_padding
 	normal.content_margin_bottom = card_padding
 	card.add_theme_stylebox_override("normal", normal)
 
-	var hover: StyleBoxFlat = normal.duplicate() as StyleBoxFlat
-	hover.border_color = accent
-	hover.bg_color = Color(0.10, 0.12, 0.18, 0.95)
-	hover.shadow_color = accent * Color(1, 1, 1, 0.22)
-	hover.shadow_size = int(round(maxf(10.0, 20.0 * _ui_scale)))
+	var hover: StyleBox
+	if normal is StyleBoxTexture:
+		var tex_hover = normal.duplicate() as StyleBoxTexture
+		tex_hover.modulate_color = Color(1.0, 1.0, 1.1, 1.0) # 提亮
+		hover = tex_hover
+	else:
+		var flat_hover = normal.duplicate() as StyleBoxFlat
+		flat_hover.border_color = accent
+		flat_hover.bg_color = Color(0.10, 0.12, 0.18, 0.95)
+		flat_hover.shadow_color = accent * Color(1, 1, 1, 0.22)
+		flat_hover.shadow_size = int(round(maxf(10.0, 20.0 * _ui_scale)))
+		hover = flat_hover
+
 	card.add_theme_stylebox_override("hover", hover)
 	card.add_theme_stylebox_override("pressed", hover)
 

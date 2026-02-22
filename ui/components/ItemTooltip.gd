@@ -38,6 +38,8 @@ const TAG_TEXT := {
 	"cheese": "芝士",
 	"surprising": "惊艳",
 	"fierce_fire": "猛火",
+	"divine": "神圣",
+	"greasy": "油腻",
 }
 
 const KEYWORD_TEXT := {
@@ -52,14 +54,25 @@ const KEYWORD_TEXT := {
 	"messy": "杂乱",
 	"taste_fatigue": "味觉疲劳",
 	"dull": "沉闷",
+	"burst": "爆发",
 }
 
 const INGREDIENT_SPECIAL_TEXT := {
+	"appetize_right_20": "右侧相邻菜品上菜时额外+20风味",
 	"clear_greasy_1": "开场清除1层油腻",
+	"score_right_raw_30": "右侧生食菜品上菜时额外+30风味",
+	"fermented_growth_boost": "发酵类效果成长速度提升",
+	"umami_on_3rd_activate": "每第3次上菜时额外获得1层鲜美",
+	"dessert_zone_bonus": "甜品区菜品获得额外加成",
+	"addiction_double_stack": "与上瘾类效果联动时叠层翻倍",
 	"add_env_greasy_2": "首次上菜时给环境增加2层油腻",
+	"first_activate_bonus_50": "首次上菜额外+50风味",
 	"clear_all_env_1": "开场各清除1层环境减益",
+	"sizzle_threshold_minus_1": "爆香类爆发阈值-1",
+	"all_scores_mult_1_5": "该菜品最终得分×1.5",
 	"double_next_activate": "首次上菜风味倍率翻倍",
 	"grant_secret_recipe": "开场获得1层秘方",
+	"refreshing_full_clear": "开场清除全部沉闷与味觉疲劳",
 	"grant_char_aroma_3": "开场获得3层焦香",
 }
 
@@ -69,31 +82,24 @@ const TERM_DEFINITIONS := {
 	"被动": "始终生效的持续效果，无需任何触发条件。",
 	"相邻": "棋盘上左右紧贴该菜的卡牌，换位后重新判定。",
 	"环境": "全场共享负面状态。油腻 -2 风味/层；杂乱 -2 卖相/层；味觉疲劳 -15% 倍率/层。",
-	"鲜美": "增益关键字。每层+3风味。5层以上时额外总分×(1+层数×3%)。",
-	"焦香": "增益关键字。每层+2风味。5层以上时爆香阈值-1。",
-	"摆盘": "增益关键字。每层+3卖相。5层以上时额外总分×(1+层数×2%)。",
-	"刀工": "增益关键字。每层+2技法。5层以上时CD额外-2%/层。",
-	"回味": "延迟增益。下一道菜上桌时额外结算本次风味+30%。",
-	"秘方": "消耗型。消耗时爆发+50%风味，用后清零，可多层叠加。",
-	"聚光": "消耗型。每层缩短本菜冷却-1秒，可提前上桌。",
-	"油腻": "环境减益，每层全场-2风味/次。清淡菜或药膳可降层。",
-	"杂乱": "环境减益，每层全场-2卖相/次。",
-	"味觉疲劳": "环境减益，每层全场风味倍率-15%，需及时清除。",
-	"沉闷": "每层使该菜冷却增加+0.3秒。",
+	"鲜美": "正面效果。叠加生效：每拥有 1 层，该菜品每次上菜时额外增加 3 点基础风味。当层数达到 5 层或以上时，还会根据层数获得额外的总分百分比加成。",
+	"焦香": "正面效果。叠加生效：每拥有 1 层，该菜品每次上菜时额外增加 2 点基础风味。",
+	"摆盘": "正面效果。叠加生效：每拥有 1 层，该菜品每次上菜时额外增加 3 点基础卖相。当层数达到 5 层或以上时，还会根据层数获得额外的总分百分比加成。",
+	"刀工": "正面效果。叠加生效：每拥有 1 层，该菜品额外增加 2 点基础技法属性。当层数达到 5 层或以上时，还会根据层数额外减少自身的上菜冷却时间。",
+	"回味": "延迟效果。叠加生效：每拥有 1 层，当下一道菜上桌时，会额外产生相当于本次风味得分 30% 的加分。",
+	"秘方": "一次性爆发。上菜时消耗所有层数，每消耗 1 层使本次上菜的风味得分极大地增加 50%。",
+	"聚光": "特殊状态。获得时立即消耗所有层数，每消耗 1 层使该菜品当前的冷却时间立刻缩短 1 秒。",
+	"油腻": "全场共享的负面状态。每增加 1 层，全场所有菜品及其效果导致的风味得分固定减少 2 点。",
+	"杂乱": "全场共享的负面状态。每增加 1 层，全场所有菜品带来的卖相得分固定减少 2 点。",
+	"味觉疲劳": "全场共享的负面状态。每增加 1 层，全场的最终风味得分倍率降低 15%。",
+	"沉闷": "负面状态。每叠加 1 层，该菜品的冷却时间增加 0.3 秒。",
+	"爆发": "条件触发效果。当该菜品累计完成要求次数的上菜后，会额外触发一次强力的效果。触发后计数清零重新开始计算。",
 	"融合": "横跨多菜系，可触发多套体系的协同奖励。",
 	"精进": "经专项修炼，大幅强化关键字效率或倍率上限。",
 	"风味": "核心得分：每次上菜 = 风味 × 技法倍率，对胜负影响最大。",
 	"卖相": "持续伤害来源：双方卖相差越大，每秒扣分越多。",
 	"技法": "全局倍率：技法 × 0.02 + 1，同时作用于风味和持续伤害。",
 	"香气": "加速冷却：每10点缩短冷却5%，上限35%（70香气最快）。",
-	"开胃": "引擎机制。辣/酸菜激活时推进相邻CD 15%，前菜区额外+50%。",
-	"上瘾": "引擎机制。浓郁/鲜味菜每次+2层，每层每秒1.5分，每5秒衰减10%。",
-	"爆香": "引擎机制。烤/炒菜激活4次后爆发，该菜得分×3.0。",
-	"爽脆": "引擎机制。油炸菜25%概率双重激活，第2次得分×0.7。",
-	"清口": "引擎机制。清淡/茶菜清除50%油腻，每清1层+3分并全场CD加速0.3秒。",
-	"提鲜": "引擎机制。鲜味菜+同菜系≥2道时，标记右侧邻居下次得分×1.8。",
-	"发酵": "引擎机制。首次激活×1.3，之后每次永久+1%（上限+30%）。",
-	"油腻（机制）": "引擎机制。同时拥有浓郁+油炸标签的菜激活时叠加油腻，每层减慢全场CD 8%，最多20层。",
 }
 
 @onready var name_label: Label = $Margin/VBox/TitleRow/NameLabel
@@ -221,7 +227,13 @@ func show_item(item_data: Dictionary, mouse_pos: Vector2) -> void:
 	desc_label.text = description if description != "" else ""
 	desc_label.visible = description != ""
 
-	hint_label.text = "右键查看详情"
+	var item_type_str: String = str(item_data.get("item_type", item_data.get("type", "dish")))
+	if item_type_str == "ingredient":
+		hint_label.text = "【用法】点击背包中的食材后再点目标菜品，或直接拖拽到目标菜品附魔\n（拖到顶部出售区可出售）\n右键查看详情"
+		hint_label.add_theme_color_override("font_color", Color(0.6, 0.9, 0.6))
+	else:
+		hint_label.text = "右键查看详情"
+		hint_label.add_theme_color_override("font_color", Color(0.65, 0.65, 0.65))
 
 	reset_size()
 	global_position = mouse_pos + Vector2(20, 20)
@@ -336,28 +348,17 @@ func _collect_tooltip_terms(item_data: Dictionary) -> Array[String]:
 			for kw_key in ["add_keyword", "consume_keyword", "keyword"]:
 				if eff.has(kw_key):
 					push.call(KEYWORD_TEXT.get(str(eff[kw_key]), ""))
+			if eff.has("accumulate"):
+				push.call("爆发")
 
-	# 标签驱动的引擎机制术语
-	var tags: Array = item_data.get("tags", [])
-	if "fermented" in tags:
-		push.call("发酵")
-	if "spicy" in tags or "sour" in tags:
-		push.call("开胃")
-	if "rich" in tags or "umami_tag" in tags:
-		push.call("上瘾")
-	if "grilled" in tags or "stir_fried" in tags:
-		push.call("爆香")
-	if "rich" in tags and "fried" in tags:
-		push.call("油腻（机制）")
-	if "fried" in tags:
-		push.call("爽脆")
-	if "light" in tags or "tea" in tags:
-		push.call("清口")
-	if "umami_tag" in tags:
-		push.call("提鲜")
+	# (V1 标签驱动引擎机制已作为显式触发器重构，此处不再自动注入名词)
 
 	# 默认展示风味说明
 	push.call("风味")
+	
+	# 如果描述或者属性里有提到卖相
+	if str(item_data.get("description", "")).find("卖相") >= 0 or int(item_data.get("base_stats", {}).get("presentation", 0)) > 0:
+		push.call("卖相")
 
 	return ordered
 
@@ -506,63 +507,19 @@ func _build_effect_summary(item_data: Dictionary) -> String:
 			lines = lines.slice(0, 3)
 		return "\n".join(lines)
 
-	# 标签驱动的引擎机制（显示在效果摘要首位）
-	var tags_arr: Array = item_data.get("tags", [])
-	var has_engine_mechanic: bool = false
-
-	if "light" in tags_arr or "tea" in tags_arr:
-		lines.append("清口：清除50%油腻，每清1层+3分")
-		has_engine_mechanic = true
-	if "spicy" in tags_arr or "sour" in tags_arr:
-		lines.append("开胃：推进相邻菜CD 15%")
-		has_engine_mechanic = true
-	if "grilled" in tags_arr or "stir_fried" in tags_arr:
-		lines.append("爆香：激活4次后得分×3.0")
-		has_engine_mechanic = true
-	if "fried" in tags_arr:
-		lines.append("爽脆：25%概率双重激活×0.7")
-		has_engine_mechanic = true
-	if "rich" in tags_arr or "umami_tag" in tags_arr:
-		lines.append("上瘾：每次+2层，每层/秒1.5分")
-		has_engine_mechanic = true
-	if "rich" in tags_arr and "fried" in tags_arr:
-		lines.append("油腻：每次叠加，每层减慢CD 8%")
-		has_engine_mechanic = true
-	if "umami_tag" in tags_arr:
-		lines.append("提鲜：同菜系≥2时，右邻下次×1.8")
-		has_engine_mechanic = true
-	if "fermented" in tags_arr:
-		lines.append("发酵：首次×1.3，每次+1%")
-		has_engine_mechanic = true
-
 	var active: Array = item_data.get("on_activate", [])
 	if not active.is_empty():
-		lines.append("上菜: " + _describe_effect(active[0]))
+		var effect_text = _describe_effect(active[0])
+		if effect_text != "":
+			lines.append("上菜: " + effect_text)
 
-	# 显示trigger（除非trigger是空的stat_bonus且有引擎机制覆盖）
 	var triggers: Array = item_data.get("triggers", [])
 	if not triggers.is_empty():
-		var trigger_desc: String = _describe_trigger(triggers[0])
-		if trigger_desc != "":
-			# 只有当trigger是纯stat_bonus（只加属性）且有引擎机制时才跳过
-			var is_pure_stat_bonus: bool = false
-			if triggers[0] is Dictionary:
-				var eff = triggers[0].get("effect", {})
-				if eff is Dictionary:
-					var eff_type: String = str(eff.get("type", ""))
-					if eff_type == "stat_bonus":
-						# 检查是否只有stat字段，没有其他效果
-						var has_non_stat_keys: bool = false
-						for key in eff.keys():
-							if key not in ["type", "flavor", "presentation", "technique", "aroma"]:
-								has_non_stat_keys = true
-								break
-						is_pure_stat_bonus = not has_non_stat_keys
-
-			# 只有纯stat_bonus且有引擎机制时才跳过，其他情况都显示
-			var should_skip: bool = is_pure_stat_bonus and has_engine_mechanic
-			if not should_skip:
-				lines.append(trigger_desc)
+		for trigger in triggers:
+			if trigger is Dictionary:
+				var trigger_desc: String = _describe_trigger(trigger)
+				if trigger_desc != "":
+					lines.append(trigger_desc)
 
 	if lines.is_empty():
 		lines.append("无特殊效果")
@@ -658,6 +615,19 @@ func _describe_trigger(trigger: Dictionary) -> String:
 
 	var desc: String = str(trigger.get("desc", ""))
 	if desc != "":
+		# Replace raw english tags that might have leaked into descriptions
+		for key in TAG_TEXT:
+			if desc.find("(" + key + ")") >= 0:
+				desc = desc.replace("(" + key + ")", "(%s)" % TAG_TEXT[key])
+		
+		# Clarify cooldown mechanics
+		desc = desc.replace("自身CD-", "自身当前冷却缩短")
+		desc = desc.replace("全场CD-", "全场当前冷却缩短")
+		desc = desc.replace("CD-", "当前冷却缩短")
+		desc = desc.replace("自身CD+", "自身当前冷却增加")
+		desc = desc.replace("全场CD+", "全场当前冷却增加")
+		desc = desc.replace("CD+", "当前冷却增加")
+		
 		return prefix + desc
 	if trigger.has("effect") and trigger.get("effect") is Dictionary:
 		return prefix + _describe_effect(trigger.get("effect"))

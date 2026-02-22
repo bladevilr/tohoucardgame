@@ -118,9 +118,22 @@ func try_accept_drop(item_data: Dictionary, source_card: Control) -> bool:
 		source_index = int(source_card.get_meta("source_index", -1))
 		
 	var item_type = str(item_data.get("item_type", ""))
-	if item_type == "tool" or item_type == "ingredient":
+	if item_type == "tool":
 		_shake_reject()
 		return false
+	if item_type == "ingredient":
+		# 食材只允许从背包拖到棋盘上的真实菜品格进行附魔
+		if source_type != "backpack" or (not _occupied) or _is_reference:
+			_shake_reject()
+			return false
+		var drag_data_ing = {
+			"type": "item_card",
+			"item_data": item_data,
+			"source_type": source_type,
+			"source_index": source_index
+		}
+		item_dropped.emit(slot_idx, drag_data_ing)
+		return true
 
 	# Only board-to-board moves can target occupied slots (for swap/move resolution).
 	if (_occupied or _is_reference) and source_type != "board":

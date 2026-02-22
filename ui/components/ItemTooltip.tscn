@@ -29,7 +29,7 @@ theme_override_constants/separation = 8
 [node name="NameLabel" type="Label" parent="Margin/VBox/TitleRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(1, 0.9, 0.6, 1)
+theme_override_colors/font_color = Color(0.9, 0.84, 0.68, 1)
 theme_override_font_sizes/font_size = 17
 text = "菜品名"
 

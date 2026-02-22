@@ -7,13 +7,6 @@ extends Node
 
 # Shop inventories per merchant type
 var _shops: Dictionary = {
-	"dish": [],
-	"chuuka": [],      # 中华
-	"washoku": [],     # 和食
-	"yatai": [],       # 夜市
-	"youshoku": [],    # 洋食
-	"kanmi": [],       # 甜品
-	"yakuzen": [],     # 药膳
 	"ingredient": [],
 	"technique": [],
 	"tool": [],
@@ -21,13 +14,6 @@ var _shops: Dictionary = {
 }
 
 var _frozen: Dictionary = {
-	"dish": [],
-	"chuuka": [],
-	"washoku": [],
-	"yatai": [],
-	"youshoku": [],
-	"kanmi": [],
-	"yakuzen": [],
 	"ingredient": [],
 	"technique": [],
 	"tool": [],
@@ -37,7 +23,6 @@ var _frozen: Dictionary = {
 var _blackmarket_available: bool = false
 
 # === 商店栏位配置 ===
-const SHOP_SLOTS_DISH := 5
 const SHOP_SLOTS_INGREDIENT := 3
 const SHOP_SLOTS_TECHNIQUE := 2
 const SHOP_SLOTS_TOOL := 2
@@ -77,17 +62,7 @@ func _get_tier_weights(day: int) -> Dictionary:
 	return TIER_WEIGHTS_BY_DAY[best_key]
 
 func generate_shop(player: PlayerState, day: int):
-	"""Generate all merchant inventories for the day."""
-	_shops.dish = _generate_dish_shop(day)
-
-	# 生成各菜系商店
-	_shops.chuuka = _generate_cuisine_shop(day, "chuuka")
-	_shops.washoku = _generate_cuisine_shop(day, "washoku")
-	_shops.yatai = _generate_cuisine_shop(day, "yatai")
-	_shops.youshoku = _generate_cuisine_shop(day, "youshoku")
-	_shops.kanmi = _generate_cuisine_shop(day, "kanmi")
-	_shops.yakuzen = _generate_cuisine_shop(day, "yakuzen")
-
+	"""Generate utility merchant inventories for the day (菜品通过遭遇系统购买)."""
 	_shops.ingredient = _generate_ingredient_shop(day)
 	_shops.technique = _generate_technique_shop(day)
 	_shops.tool = _generate_tool_shop(day)
@@ -114,42 +89,6 @@ func generate_shop(player: PlayerState, day: int):
 			if _shops[merchant].size() < _get_max_slots(merchant):
 				_shops[merchant].append(item)
 		_frozen[merchant].clear()
-
-func _generate_dish_shop(day: int) -> Array:
-	var items: Array = []
-	var max_tier = get_max_tier_for_day(day)
-	var tier_weights = _get_tier_weights(day)
-	var all_dishes = DishDatabase.get_dishes()
-	# Filter by max tier
-	var eligible = all_dishes.filter(func(d): return d.get("tier", 0) <= max_tier)
-	eligible.shuffle()
-
-	for i in range(mini(SHOP_SLOTS_DISH, eligible.size())):
-		var dish = eligible[i].duplicate(true)
-		dish["price"] = PRICE_DISH
-		dish["star_level"] = 1
-		items.append(dish)
-	return items
-
-func _generate_cuisine_shop(day: int, cuisine: String) -> Array:
-	"""按菜系生成商店（只包含该菜系的菜品）"""
-	var items: Array = []
-	var max_tier = get_max_tier_for_day(day)
-	var all_dishes = DishDatabase.get_dishes()
-
-	# 筛选该菜系的菜品
-	var eligible = all_dishes.filter(func(d):
-		return d.get("cuisine", "") == cuisine and d.get("tier", 0) <= max_tier
-	)
-	eligible.shuffle()
-
-	for i in range(mini(SHOP_SLOTS_DISH, eligible.size())):
-		var dish = eligible[i].duplicate(true)
-		dish["price"] = PRICE_DISH
-		dish["star_level"] = 1
-		items.append(dish)
-
-	return items
 
 func _generate_ingredient_shop(day: int) -> Array:
 	"""Generate ingredient shop — the core 'cooking feel' mechanic."""
@@ -299,7 +238,6 @@ func generate_filtered_shop(filter: Dictionary, slots: int, day: int, price_mult
 
 func _get_max_slots(merchant: String) -> int:
 	match merchant:
-		"dish": return SHOP_SLOTS_DISH
 		"ingredient": return SHOP_SLOTS_INGREDIENT
 		"technique": return SHOP_SLOTS_TECHNIQUE
 		"tool": return SHOP_SLOTS_TOOL

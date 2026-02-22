@@ -184,7 +184,8 @@ const SECRET_RECIPE_FLAVOR_MULT := 0.50  # 秘方：+50%风味/层(消耗)
 const GREASY_FLAVOR_PENALTY := 2         # 油腻：-2风味/层
 const MESSY_PRES_PENALTY := 2            # 杂乱：-2卖相/层
 const TASTE_FATIGUE_MULT := -0.15        # 味觉疲劳：-15%风味/层
-const DULL_CD_PENALTY := 0.3             # 沉闷：+0.3秒CD/层
+const DULL_CD_PENALTY := 1.0             # 沉闷：+1秒CD/层
+
 
 # ============================================================
 #  静态工具函数
@@ -316,47 +317,6 @@ const V2_TICK_SAT_BASE := [0, 3, 7, 12]
 const V2_TICK_THRESHOLD_NORMAL_INC := 0.4
 const V2_TICK_THRESHOLD_LIGHT_SWEET_INC := 0.2
 
-# ============================================================
-#  8 大引擎机制常量（V2 优化版 — 基于 The Bazaar 实践 + 10格棋盘校准）
-# ============================================================
-# 开胃 (Appetizing) — 百分比推进，大菜获益更多
-const APPETIZING_CD_PERCENT := 0.15          # 推进邻近卡当前CD的15%
-
-# 上瘾 (Addictive) — 加速叠层 + 自然衰减
-const ADDICTION_STACKS_PER_ACTIVATE := 2     # 每次+2层（原+1）
-const ADDICTION_SCORE_PER_STACK := 1.5       # 每层每秒1.5分（原1.0）
-const ADDICTION_MAX_STACKS := 99             # 上限放宽（原50）
-const ADDICTION_DECAY_INTERVAL := 5.0        # 每5秒衰减一次
-const ADDICTION_DECAY_PERCENT := 0.10        # 每次衰减10%层数
-
-# 爆香 (Sizzling) — 阈值降低 + 改为对基础分乘算
-const SIZZLE_THRESHOLD := 4                 # 4次激活后爆发（原5）
-const SIZZLE_BURST_MULT := 3.0              # 该菜本次基础得分×3.0（原counter×8.0）
-
-# 爽脆 (Crisp) — 概率提升 + 递归降低 + 衰减
-const CRISP_MULTICAST_CHANCE := 0.25         # 25%概率（原20%）
-const MAX_MULTICAST_DEPTH := 2               # 最多2层递归（原3）
-const CRISP_SCORE_DECAY := 0.7               # 第2次激活得分×0.7
-
-# 清口 (Refreshing) — 引爆式清除
-const REFRESHING_CLEAR_PERCENT := 0.50       # 清除所有油腻的50%（原固定2层）
-const REFRESHING_CLEAR_MIN := 1              # 最少清1层
-const REFRESHING_SPEED_PER_STACK := 0.3      # 每层回馈0.3s全场CD（原0.5）
-const REFRESHING_SCORE_PER_STACK := 3.0      # 每清1层获得3.0分（新增）
-
-# 油腻 (Greasy) — 上限提高 + 单层略降
-const GREASY_SLOW_PER_STACK := 0.08          # 每层减速8%（原10%）
-const GREASY_MAX_STACKS := 20                # 上限20（原15）
-
-# 提鲜 (Umami Prime) — 降门槛 + 作用右邻
-const UMAMI_PRIME_MULT := 1.8                # ×1.8倍率（原×2.0），作用右侧邻居
-const UMAMI_CUISINE_THRESHOLD := 2           # 同菜系≥2即可（原3）
-
-# 发酵 (Fermented) — 首次略降 + 成长型
-const FERMENTED_FIRST_BONUS := 1.3           # 首次×1.3（原×1.5）
-const FERMENTED_GROWTH_PER_ACT := 0.01       # 每次激活永久+1%得分
-const FERMENTED_GROWTH_CAP := 0.30           # 成长上限+30%
-
 # 通用引擎常量
 const MIN_CD_FLOOR := 1.0                    # 最低CD 1.0s（原0.5s，对齐The Bazaar）
 
@@ -375,10 +335,8 @@ const EDGE_RIGHT_SCORE_BONUS := 0.20         # 最右位：得分+20%
 const KEYWORD_MULT_THRESHOLD := 5            # 5层以上触发乘算
 const UMAMI_HIGH_SCORE_MULT := 0.03          # 鲜：总分×(1+层数×0.03)
 const PLATING_HIGH_SCORE_MULT := 0.02        # 摆盘：总分×(1+层数×0.02)
-const KNIFE_WORK_HIGH_CD_PERCENT := 0.02     # 刀工：CD -2%/层
-const CHAR_AROMA_SIZZLE_REDUCTION := 1       # 锅气：5+层时爆香阈值-1
-
-# ============================================================
+const KNIFE_WORK_HIGH_CD_PERCENT := 0.05     # 刀工：基础CD-5%×层数
+	# ============================================================
 #  标签冲突规则
 # ============================================================
 # 开胃触发 (spicy/sour) 被 顶饱 (rich+staple) 压制
@@ -405,3 +363,6 @@ const CHAR_AROMA_SIZZLE_REDUCTION := 1       # 锅气：5+层时爆香阈值-1
 #   技法遗物: 4个全局被动
 #   每次对决得分: ~2000-5000分（引擎机制爆发可达更高）
 #   声望损失: 3-8/败
+
+func get_knife_work_high_cd_percent() -> float:
+	return KNIFE_WORK_HIGH_CD_PERCENT

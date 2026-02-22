@@ -185,32 +185,17 @@ func _animate_sell():
 			_animate_return()
 			return
 
-		var item_type: String = str(_item_data.get("item_type", _item_data.get("type", "")))
 		var sell_price: int = maxi(1, int(_item_data.get("price", 0)) / 2)
 		player.add_gold(sell_price)
 
-		var ingredient_applied: bool = false
-		var ingredient_target_slot: int = -1
-		if item_type == "ingredient" and source_type == "backpack" and source_idx >= 0 and source_idx < player.backpack.size():
-			ingredient_target_slot = _find_first_enchant_target_slot(player)
-			if ingredient_target_slot >= 0:
-				ingredient_applied = IngredientManager.apply_from_backpack(player, source_idx, ingredient_target_slot)
-
 		if source_type == "board" and source_idx >= 0 and source_idx < player.board.size():
 			player.board[source_idx] = null
-		elif source_type == "backpack" and not ingredient_applied and source_idx >= 0 and source_idx < player.backpack.size():
+		elif source_type == "backpack" and source_idx >= 0 and source_idx < player.backpack.size():
 			player.backpack.remove_at(source_idx)
 
 		SignalBus.item_sold.emit(player.player_idx, _item_data)
 
-		var floating_text: String = "+%d Gold" % sell_price
-		if item_type == "ingredient":
-			if ingredient_applied:
-				floating_text += "\nIngredient applied"
-			elif ingredient_target_slot < 0:
-				floating_text += "\nNo valid dish target"
-			else:
-				floating_text += "\nApply failed"
+		var floating_text: String = "+%d 金币" % sell_price
 		FloatingTextScript.spawn(self, floating_text, _proxy_card.global_position, Color(1, 0.85, 0.3), 1.0, 56.0, 18)
 
 	var tween = create_tween()
@@ -261,16 +246,3 @@ func _cleanup():
 	_proxy_card = null
 	_source_card = null
 	_has_pointer_pos = false
-
-func _find_first_enchant_target_slot(player: PlayerState) -> int:
-	var limit: int = mini(player.board_size, player.board.size())
-	for i in range(limit):
-		var dish = player.board[i]
-		if dish == null:
-			continue
-		if dish.has("_ref_to"):
-			continue
-		if str(dish.get("item_type", "")) == "tool":
-			continue
-		return i
-	return -1

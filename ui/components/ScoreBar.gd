@@ -23,21 +23,47 @@ func _ready() -> void:
 		p2_score_label.visible = true
 		p2_score_label.modulate = Color.WHITE
 
-	# 放大所有视觉元素
+	# 放大所有视觉元素并应用精美的样式
 	if p1_score_label:
-		p1_score_label.add_theme_font_size_override("font_size", 36)
+		p1_score_label.add_theme_font_size_override("font_size", 48)
 	if p2_score_label:
-		p2_score_label.add_theme_font_size_override("font_size", 36)
+		p2_score_label.add_theme_font_size_override("font_size", 48)
 	if diff_label:
-		diff_label.add_theme_font_size_override("font_size", 20)
-	if p1_bar:
-		p1_bar.custom_minimum_size.y = 36
-	if p2_bar:
-		p2_bar.custom_minimum_size.y = 36
+		diff_label.add_theme_font_size_override("font_size", 24)
+	
+	_apply_beautiful_styles()
+	
+	# 隐去底部的无用Label以留出空间
 	if dot_label:
-		dot_label.add_theme_font_size_override("font_size", 15)
+		dot_label.visible = false
 	if env_label:
-		env_label.add_theme_font_size_override("font_size", 15)
+		env_label.visible = false
+
+func _apply_beautiful_styles() -> void:
+	var bg = StyleBoxFlat.new()
+	bg.bg_color = Color(0.12, 0.11, 0.15, 0.9)
+	bg.border_width_left = 2; bg.border_width_top = 2; bg.border_width_right = 2; bg.border_width_bottom = 2
+	bg.border_color = Color(0.4, 0.35, 0.5, 0.8)
+	bg.corner_radius_top_left = 8; bg.corner_radius_top_right = 8; bg.corner_radius_bottom_right = 8; bg.corner_radius_bottom_left = 8
+	
+	var fill_p1 = StyleBoxFlat.new()
+	fill_p1.bg_color = Color(0.35, 0.7, 1.0, 0.95)
+	fill_p1.corner_radius_top_left = 6; fill_p1.corner_radius_bottom_left = 6
+
+	var fill_p2 = StyleBoxFlat.new()
+	fill_p2.bg_color = Color(1.0, 0.45, 0.4, 0.95)
+	fill_p2.corner_radius_top_right = 6; fill_p2.corner_radius_bottom_right = 6
+
+	if p1_bar:
+		p1_bar.add_theme_stylebox_override("background", bg)
+		p1_bar.add_theme_stylebox_override("fill", fill_p1)
+		p1_bar.custom_minimum_size.y = 48
+	if p2_bar:
+		# HTML / UI Convention usually places right side filling right to left if fill_mode = 1
+		p2_bar.fill_mode = ProgressBar.FILL_END_TO_BEGIN
+		p2_bar.add_theme_stylebox_override("background", bg)
+		p2_bar.add_theme_stylebox_override("fill", fill_p2)
+		p2_bar.custom_minimum_size.y = 48
 
 func update_scores(p1_score: float, p2_score: float):
 	print("ScoreBar.update_scores called: p1=", p1_score, " p2=", p2_score)
@@ -106,13 +132,7 @@ func _update_leader_glow(p1_score: float, p2_score: float) -> void:
 		p1_score_label.add_theme_color_override("font_color", Color(0.78, 0.78, 0.82))
 
 func _apply_bar_shader(bar: ProgressBar) -> void:
-	if bar == null:
-		return
-	var shader = load("res://ui/shaders/score_bar_fill.gdshader")
-	if shader:
-		var mat = ShaderMaterial.new()
-		mat.shader = shader
-		bar.material = mat
+	pass # 我们现在使用 StyleBoxFlat 替代旧版 Shader 以防冲突
 
 func _update_diff(p1_score: float, p2_score: float) -> void:
 	# Keeps the lead state readable without scanning both raw scores.

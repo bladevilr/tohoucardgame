@@ -26,6 +26,8 @@ const CHEF_NAME_MAP := {
 
 var _current_merchant: String = ""
 var _current_encounter_icon: String = ""
+var _current_encounter: Dictionary = {}
+var _event_resolved_action: int = -1
 var _last_action_seen: int = 0  # Track current action for shop reset logic
 var _board_slots: Array = []
 var _selected_board_slot: int = -1
@@ -46,6 +48,29 @@ var _xp_bar: ProgressBar = null
 var _sell_zone: ColorRect = null
 var _sell_zone_label: Label = null
 
+const BUBBLE_EVENT_EFFECTS := {
+	"shrine_blessing": [
+		{"effect_id": "gain_gold_3", "summary": "灵梦的祈福带来财运（金币 +3）。"},
+		{"effect_id": "gain_prestige_1", "summary": "神社庇佑提升了你的名望（声望 +1）。"},
+		{"effect_id": "gain_random_ingredient_silver", "summary": "赛钱箱回响，你得到了一份御神供食材。"},
+	],
+	"tengu_gamble": [
+		{"effect_id": "gamble_small", "summary": "你参加了文文的赌局。"},
+		{"effect_id": "gain_gold_4", "summary": "文文给了你一笔“内幕费”（金币 +4）。"},
+		{"effect_id": "lose_gold_2_random_reward", "summary": "你用2金币换了一份可疑包裹。"},
+	],
+	"chef_training": [
+		{"effect_id": "all_dish_technique_plus_3", "summary": "修行后，你的刀工明显提升（全菜品技法 +3）。"},
+		{"effect_id": "all_dish_cd_minus_05", "summary": "训练让你的出菜节奏更快（全菜品冷却 -0.5 秒）。"},
+		{"effect_id": "gain_random_technique", "summary": "你领悟了一门新的技法。"},
+	],
+	"treasure_hunt": [
+		{"effect_id": "gain_random_ingredient_gold", "summary": "你挖到了稀有食材。"},
+		{"effect_id": "gain_random_technique", "summary": "你找到了遗失的技法卷轴。"},
+		{"effect_id": "gain_gold_5", "summary": "宝箱里装着一袋金币（金币 +5）。"},
+	],
+}
+
 @onready var background: TextureRect = $Background
 var day_label: Label = null
 var prestige_label: Label = null
@@ -55,6 +80,8 @@ var judge_panel = null
 var chef_portrait_frame: PanelContainer = null
 var chef_portrait: TextureRect = null
 var merchant_portrait: TextureRect = null
+var shop_name_label: Label = null
+var shop_desc_label: Label = null
 
 var merchant_tabs: VBoxContainer = null
 var shop_container: HBoxContainer = null
@@ -94,7 +121,7 @@ func _ready():
 	var match_state = GameManager.get_match_state()
 	var player = GameManager.get_player(0)
 	if match_state and player and match_state.current_phase == GameConfig.Phase.SHOP:
-		if ShopManager.get_shop("dish").is_empty():
+		if ShopManager.get_shop("ingredient").is_empty():
 			ShopManager.generate_shop(player, match_state.current_day)
 	
 		backpack_drawer.setup(player)
@@ -105,6 +132,10 @@ func _ready():
 
 	if match_state and _phase_banner:
 		_phase_banner.show_phase(match_state.current_phase)
+
+	# Check for pending level-ups missed during scene transition
+	if GameManager.pop_pending_level_up():
+		call_deferred("_show_level_up_overlay")
 
 	_apply_responsive_layout()
 	get_viewport().size_changed.connect(_on_viewport_resized)
@@ -329,8 +360,14 @@ func _resolve_ui_nodes() -> void:
 		controls_layer.add_child(float_refresh)
 		refresh_button = float_refresh
 	merchant_portrait = _find_node([
-		"ContentLayer/MerchantZone/MerchantPortraitBorder/MerchantPortrait"
+		"ContentLayer/MerchantZone/MerchantPortraitBorder/ShopHeader/MerchantPortrait"
 	]) as TextureRect
+	shop_name_label = _find_node([
+		"ContentLayer/MerchantZone/MerchantPortraitBorder/ShopHeader/ShopInfo/ShopNameLabel"
+	]) as Label
+	shop_desc_label = _find_node([
+		"ContentLayer/MerchantZone/MerchantPortraitBorder/ShopHeader/ShopInfo/ShopDescLabel"
+	]) as Label
 
 	# Player Zone
 	board_container = _find_node([
@@ -527,7 +564,9 @@ func _setup_board():
 	if board_container == null:
 		push_warning("GameBoard: board_container not found, skip board setup.")
 		return
-	for i in range(GameConfig.BOARD_SLOTS):
+	var player := GameManager.get_player(0)
+	var slot_count: int = player.board_size if player else GameConfig.BOARD_SLOTS
+	for i in range(slot_count):
 		var slot = BoardSlotScene.instantiate()
 		board_container.add_child(slot)
 		slot.setup(i)
@@ -612,7 +651,7 @@ func _setup_signals():
 			backpack_drawer.item_dropped_in.connect(_on_item_dropped_in_backpack)
 
 	if merchant_tabs and merchant_tabs.get_child_count() == 0:
-		for tab_name in ["ingredient", "dish", "technique", "tool", "blackmarket"]:
+		for tab_name in ["ingredient", "technique", "tool"]:
 			var btn = Button.new()
 			btn.text = _get_merchant_display_name(tab_name)
 			btn.custom_minimum_size = Vector2(0, 36)
@@ -777,6 +816,42 @@ func _refresh_board_wrapper(_p, _s, _i):
 func _on_backpack_item_clicked_wrapper(idx):
 	_on_backpack_item_clicked(idx)
 
+func _update_action_buttons() -> void:
+	var match_state: MatchState = GameManager.get_match_state()
+	var phase: int = match_state.current_phase if match_state else -1
+	var player: PlayerState = GameManager.get_player(0)
+
+	if ready_button:
+		match phase:
+			GameConfig.Phase.SHOP:
+				ready_button.text = "进入下一行动"
+			GameConfig.Phase.PVE_CHOICE:
+				ready_button.text = "选择挑战后继续"
+			GameConfig.Phase.PREP:
+				ready_button.text = "开始对决"
+			_:
+				ready_button.text = "下一阶段"
+
+	if refresh_button:
+		var in_shop: bool = (phase == GameConfig.Phase.SHOP)
+		refresh_button.visible = in_shop
+		if not in_shop:
+			return
+
+		var is_free_refresh: bool = (
+			player != null
+			and player.chef_id == "reimu"
+			and not player.free_refresh_used
+		)
+		var cost_text: String = "(免费)" if is_free_refresh else "(1G)"
+		if GameConfig.BATTLE_SYSTEM_V2:
+			if _current_merchant == "_temp_encounter":
+				refresh_button.text = "刷新当前商店%s" % cost_text
+			else:
+				refresh_button.text = "重掷奇遇%s" % cost_text
+		else:
+			refresh_button.text = "刷新商店%s" % cost_text
+
 func _refresh_all():
 	_refresh_shop()
 	_refresh_board()
@@ -787,19 +862,24 @@ func _refresh_all():
 		backpack_drawer.refresh()
 
 func _refresh_shop():
-	print("_refresh_shop called: _current_merchant=", _current_merchant, " V2=", GameConfig.BATTLE_SYSTEM_V2)
-	# 注释已修复
+	var portrait_border = _find_node(["ContentLayer/MerchantZone/MerchantPortraitBorder"])
+
 	if GameConfig.BATTLE_SYSTEM_V2 and _current_merchant == "":
 		_setup_selection_bubbles()
-		# 注释已修复
 		if shop_container:
 			shop_container.visible = false
 		var shop_row = _find_node(["ContentLayer/MerchantZone/ShopRow"])
 		if shop_row:
 			shop_row.visible = false
+		# 隐藏商店头像区（显示遭遇选择泡泡时不需要）
+		if portrait_border:
+			portrait_border.visible = false
+		_update_action_buttons()
 		return
 
-	# 注释已修复
+	# 显示商店头像和商品区
+	if portrait_border:
+		portrait_border.visible = true
 	var shop_row = _find_node(["ContentLayer/MerchantZone/ShopRow"])
 	if shop_row:
 		shop_row.visible = true
@@ -876,39 +956,54 @@ func _refresh_shop():
 		var anims = get_node_or_null("/root/UIAnimations")
 		if anims and anims.has_method("flip_reveal"):
 			anims.call("flip_reveal", card, 0.2, i * 0.05)
+	_update_action_buttons()
 
 var _selection_bubbles: Array = []
 
 func _update_merchant_portrait():
 	if merchant_portrait == null: return
 	var tex_name = "reimu"
-	
+	var display_name := ""
+	var display_desc := ""
+
 	if _current_merchant == "_temp_encounter":
 		tex_name = _current_encounter_icon
+		display_name = str(_current_encounter.get("name", ""))
+		display_desc = str(_current_encounter.get("desc", ""))
 	else:
 		match _current_merchant:
-			"dish": tex_name = "mystia"
-			"ingredient": tex_name = "marisa" 
-			"technique": tex_name = "patchouli"
-			"tool": tex_name = "sakuya"
-			"blackmarket": tex_name = "reisen"
-			# Cuisine types (for tab mode)
-			"chuuka": tex_name = "meiling"
-			"washoku": tex_name = "youmu"
-			"yatai": tex_name = "keine"
-			"youshoku": tex_name = "sakuya"
-			"kanmi": tex_name = "reisen"
-			"yakuzen": tex_name = "ichirin"
-	
+			"ingredient":
+				tex_name = "marisa"
+				display_name = "食材商店"
+			"technique":
+				tex_name = "patchouli"
+				display_name = "技法秘籍"
+			"tool":
+				tex_name = "sakuya"
+				display_name = "厨具工坊"
+			"blackmarket":
+				tex_name = "reisen"
+				display_name = "黑市"
+
 	var tex: Texture2D = null
-	# 1. Try ChefDatabase/ArtDatabase (standard UI assets)
-	if ArtDatabase.has_chef_portrait(tex_name):
+	# 1. Try judge portrait (优先使用评委头像作为商人图标)
+	var judge_path := "res://assets/ui/judges/%s.png" % tex_name
+	if ResourceLoader.exists(judge_path):
+		tex = load(judge_path)
+	# 2. Try ChefDatabase/ArtDatabase
+	if tex == null and ArtDatabase.has_chef_portrait(tex_name):
 		tex = ArtDatabase.get_chef_portrait(tex_name)
-	# 2. Try direct merchant asset load (new assets)
-	elif ResourceLoader.exists("res://assets/merchants/%s.png" % tex_name):
+	# 3. Try direct merchant asset
+	if tex == null and ResourceLoader.exists("res://assets/merchants/%s.png" % tex_name):
 		tex = load("res://assets/merchants/%s.png" % tex_name)
-	
+
 	merchant_portrait.texture = tex
+
+	# Update shop header labels
+	if shop_name_label:
+		shop_name_label.text = display_name
+	if shop_desc_label:
+		shop_desc_label.text = display_desc
 
 func _setup_selection_bubbles():
 	var container = _find_node(["ContentLayer/MerchantZone/SelectionBubbleContainer"])
@@ -964,6 +1059,7 @@ func _setup_selection_bubbles():
 		tween.parallel().tween_property(bubble, "scale", Vector2(1.0, 1.0), 0.4).set_delay(i * 0.15)
 
 func _on_encounter_bubble_clicked(encounter: Dictionary):
+	_current_encounter = encounter.duplicate(true)
 	_current_encounter_icon = encounter.get("icon", "reimu")
 	var encounter_type = str(encounter.get("type", ""))
 
@@ -988,10 +1084,28 @@ func _on_encounter_bubble_clicked(encounter: Dictionary):
 			container.visible = false
 		return
 
+	var state_now := GameManager.get_match_state()
+	if state_now and _event_resolved_action == int(state_now.current_action):
+		FloatingTextScript.spawn(
+			self,
+			"本行动奇遇已结算，点击右下角进入下一行动",
+			get_viewport_rect().size * 0.5,
+			Color(1.0, 0.78, 0.36),
+			1.5,
+			44.0,
+			18
+		)
+		return
+	if state_now:
+		_event_resolved_action = int(state_now.current_action)
+	var container_event := _find_node(["ContentLayer/MerchantZone/SelectionBubbleContainer"])
+	if container_event:
+		container_event.visible = false
+
 	var event_data = _trigger_event(str(encounter.get("event_id", "")), encounter)
 	_show_event_overlay(event_data)
 
-func _trigger_event(_event_id: String, encounter: Dictionary) -> Dictionary:
+func _trigger_event(event_id: String, encounter: Dictionary) -> Dictionary:
 	var event_data: Dictionary = encounter.get("event", {})
 	if event_data.is_empty():
 		event_data = {
@@ -999,7 +1113,88 @@ func _trigger_event(_event_id: String, encounter: Dictionary) -> Dictionary:
 			"description": encounter.get("desc", ""),
 			"result": {"text": encounter.get("desc", "")}
 		}
+	event_data["result"] = _resolve_bubble_event(event_id, encounter)
 	return event_data
+
+func _resolve_bubble_event(event_id: String, encounter: Dictionary) -> Dictionary:
+	var player: PlayerState = GameManager.get_player(0)
+	if player == null:
+		return {"text": "事件结算失败：找不到玩家数据。"}
+
+	var options: Array = BUBBLE_EVENT_EFFECTS.get(event_id, [])
+	if options.is_empty():
+		return {"text": str(encounter.get("desc", "奇遇发生了，但没有获得额外效果。"))}
+
+	var rolled: Dictionary = options[randi() % options.size()]
+	var base_text: String = str(rolled.get("summary", "奇遇触发。"))
+	var effect_id: String = str(rolled.get("effect_id", ""))
+	var pseudo_encounter := {
+		"choices": [
+			{
+				"label": "事件",
+				"text": str(encounter.get("name", "奇遇")),
+				"effect_id": effect_id,
+				"result_text": base_text,
+			}
+		]
+	}
+	var result: Dictionary = EncounterManager.resolve_encounter(player, pseudo_encounter, 0)
+	var reward_names: Array[String] = _grant_encounter_rewards(player, result.get("rewards", []))
+	result["text"] = _build_bubble_event_result_text(base_text, result, reward_names)
+	return result
+
+func _grant_encounter_rewards(player: PlayerState, rewards: Array) -> Array[String]:
+	var names: Array[String] = []
+	for reward_var in rewards:
+		if not (reward_var is Dictionary):
+			continue
+		var reward: Dictionary = reward_var
+		var item_name: String = str(reward.get("name_cn", reward.get("name", reward.get("id", "奖励物品"))))
+		var placed := BoardManager.auto_place_item(player, reward)
+		if placed < 0:
+			player.add_to_backpack(reward)
+		names.append(item_name)
+	return names
+
+func _build_bubble_event_result_text(base_text: String, result: Dictionary, reward_names: Array[String]) -> String:
+	var lines: Array[String] = []
+	if base_text.strip_edges() != "":
+		lines.append(base_text)
+
+	var gold_gained: int = int(result.get("gold_gained", 0))
+	if gold_gained > 0:
+		lines.append("+%d 金币" % gold_gained)
+	var gold_lost: int = int(result.get("gold_lost", 0))
+	if gold_lost > 0:
+		lines.append("-%d 金币" % gold_lost)
+
+	var prestige_gained: int = int(result.get("prestige_gained", 0))
+	if prestige_gained > 0:
+		lines.append("声望 +%d" % prestige_gained)
+	var prestige_lost: int = int(result.get("prestige_lost", 0))
+	if prestige_lost > 0:
+		lines.append("声望 -%d" % prestige_lost)
+
+	if str(result.get("buff", "")) != "":
+		lines.append("获得强化：%s" % str(result.get("buff", "")))
+	if result.get("shop_discount", false):
+		lines.append("获得效果：下次商店刷新半价")
+	if result.get("synergy_bonus", false):
+		lines.append("获得效果：羁绊加成 +20%")
+	if str(result.get("keyword_gained", "")) != "":
+		lines.append("获得关键词：%s" % str(result.get("keyword_gained", "")))
+	if str(result.get("added_tag", "")) != "":
+		lines.append("随机菜品获得标签：%s" % str(result.get("added_tag", "")))
+	if str(result.get("upgraded_dish", "")) != "":
+		lines.append("升级菜品：%s" % str(result.get("upgraded_dish", "")))
+	if str(result.get("mutated_dish", "")) != "":
+		lines.append("改造菜品：%s" % str(result.get("mutated_dish", "")))
+	if not reward_names.is_empty():
+		lines.append("获得物品：%s" % ", ".join(reward_names))
+
+	if lines.is_empty():
+		lines.append("奇遇完成。")
+	return "\n".join(lines)
 
 func _show_event_overlay(event: Dictionary) -> void:
 	var result_var: Variant = event.get("result", {"text": event.get("description", "")})
@@ -1056,7 +1251,11 @@ func _show_event_result_overlay(event: Dictionary, result: Dictionary) -> void:
 
 func _on_event_result_confirmed(layer: Node) -> void:
 	layer.queue_free()
-	_refresh_all()
+	var match_state := GameManager.get_match_state()
+	if match_state and _event_resolved_action == int(match_state.current_action):
+		GameManager.advance_phase()
+	else:
+		_refresh_all()
 
 func _on_merchant_bubble_clicked(merchant_type: String):
 	"""Legacy merchant bubble click handler."""
@@ -1350,6 +1549,7 @@ func _refresh_status():
 	
 	_last_gold = player.gold
 	_last_prestige = player.prestige
+	_update_action_buttons()
 
 func _on_shop_item_clicked(_item_data: Dictionary, shop_index: int):
 	var player = GameManager.get_player(0)
@@ -1368,22 +1568,44 @@ func _handle_bought_item(player: PlayerState, bought: Dictionary):
 		var bought_id = bought.get("id", "")
 		var bought_star = int(bought.get("star_level", 1))
 
-		for i in range(player.board.size()):
-			var board_item = player.board[i]
-			if board_item != null and not board_item.has("_ref_to"):
-				if board_item.get("id", "") == bought_id and int(board_item.get("star_level", 1)) == bought_star:
-					player.board[i] = null
-					bought["star_level"] = bought_star + 1
-					print("Dish upgrade: ", bought_id, " -> ", bought_star + 1, " stars")
-					break
+		# 已经3星的不能再升了
+		if bought_star < 3:
+			var upgraded := false
 
-		for i in range(player.backpack.size()):
-			var bp_item = player.backpack[i]
-			if bp_item.get("id", "") == bought_id and int(bp_item.get("star_level", 1)) == bought_star:
-				player.backpack.remove_at(i)
-				bought["star_level"] = bought_star + 1
-				print("Backpack dish upgrade: ", bought_id, " -> ", bought_star + 1, " stars")
-				break
+			for i in range(player.board.size()):
+				var board_item = player.board[i]
+				if board_item != null and not board_item.has("_ref_to"):
+					if board_item.get("id", "") == bought_id and int(board_item.get("star_level", 1)) == bought_star:
+						player.board[i] = null
+						bought["star_level"] = bought_star + 1
+						upgraded = true
+						break
+
+			if not upgraded:
+				for i in range(player.backpack.size()):
+					var bp_item = player.backpack[i]
+					if bp_item.get("id", "") == bought_id and int(bp_item.get("star_level", 1)) == bought_star:
+						player.backpack.remove_at(i)
+						bought["star_level"] = bought_star + 1
+						upgraded = true
+						break
+
+			if upgraded:
+				var new_star = int(bought.get("star_level", 1))
+				# 应用属性倍率
+				var mult: float = GameConfig.STAR2_MULTIPLIER if new_star == 2 else GameConfig.STAR3_MULTIPLIER
+				var base_flavor = float(bought.get("flavor", 0))
+				bought["flavor"] = int(base_flavor * mult)
+				if bought.has("base_stats"):
+					var stats = bought["base_stats"]
+					for attr in stats:
+						stats[attr] = float(stats[attr]) * mult
+				# 浮动文字反馈
+				var star_text = GameConfig.STAR_NAMES.get(new_star, "★★")
+				var star_color = GameConfig.STAR_COLORS.get(new_star, Color(1.0, 0.84, 0.0))
+				var dish_name = str(bought.get("name", bought_id))
+				FloatingTextScript.spawn(self, "%s 升至 %s" % [dish_name, star_text], get_viewport_rect().size * 0.5, star_color, 1.5, 60.0, 28)
+				print("Star upgrade: ", bought_id, " -> ", new_star, " stars")
 
 	if itype == "tool":
 		if player.tools.size() < player.max_tools:
@@ -1398,6 +1620,59 @@ func _handle_bought_item(player: PlayerState, bought: Dictionary):
 		if placed < 0:
 			if not player.add_to_backpack(bought):
 				player.add_gold(bought.get("price", 0))
+
+func _handle_bought_item_to_board(player: PlayerState, bought: Dictionary, drop_slot: int) -> void:
+	var itype = str(bought.get("item_type", ""))
+
+	# 升星逻辑（与 _handle_bought_item 完全一致）
+	if itype == "dish":
+		var bought_id = bought.get("id", "")
+		var bought_star = int(bought.get("star_level", 1))
+		if bought_star < 3:
+			var upgraded := false
+			for i in range(player.board.size()):
+				var board_item = player.board[i]
+				if board_item != null and not board_item.has("_ref_to"):
+					if board_item.get("id", "") == bought_id and int(board_item.get("star_level", 1)) == bought_star:
+						player.board[i] = null
+						bought["star_level"] = bought_star + 1
+						upgraded = true
+						break
+			if not upgraded:
+				for i in range(player.backpack.size()):
+					var bp_item = player.backpack[i]
+					if bp_item.get("id", "") == bought_id and int(bp_item.get("star_level", 1)) == bought_star:
+						player.backpack.remove_at(i)
+						bought["star_level"] = bought_star + 1
+						upgraded = true
+						break
+			if upgraded:
+				var new_star = int(bought.get("star_level", 1))
+				var mult: float = GameConfig.STAR2_MULTIPLIER if new_star == 2 else GameConfig.STAR3_MULTIPLIER
+				var base_flavor = float(bought.get("flavor", 0))
+				bought["flavor"] = int(base_flavor * mult)
+				if bought.has("base_stats"):
+					var stats = bought["base_stats"]
+					for attr in stats:
+						stats[attr] = float(stats[attr]) * mult
+				var star_text = GameConfig.STAR_NAMES.get(new_star, "★★")
+				var star_color = GameConfig.STAR_COLORS.get(new_star, Color(1.0, 0.84, 0.0))
+				var dish_name = str(bought.get("name", bought_id))
+				FloatingTextScript.spawn(self, "%s 升至 %s" % [dish_name, star_text], get_viewport_rect().size * 0.5, star_color, 1.5, 60.0, 28)
+
+	# 放置逻辑
+	if itype == "tool":
+		if player.tools.size() < player.max_tools:
+			player.tools.append(bought)
+		else:
+			player.add_gold(int(bought.get("price", 0)))
+	elif itype == "technique" or itype == "ingredient":
+		if not player.add_to_backpack(bought):
+			player.add_gold(int(bought.get("price", 0)))
+	else:
+		if not _try_place_item_on_board_with_candidates(player, bought, drop_slot):
+			if not player.add_to_backpack(bought):
+				player.add_gold(int(bought.get("price", 0)))
 
 func _play_buy_fx(shop_index: int, bought: Dictionary):
 	if shop_container == null:
@@ -1450,16 +1725,7 @@ func _on_backpack_item_clicked(bp_index: int):
 		return
 
 	if item_type == "ingredient":
-		if board_container:
-			FloatingTextScript.spawn(
-				self,
-				"将食材拖到出售区：自动附魔第一张菜",
-				board_container.global_position + Vector2(board_container.size.x / 2, -20),
-				Color(0.3, 1.0, 0.5),
-				1.4,
-				40.0,
-				18
-			)
+		_enter_ingredient_mode(bp_index)
 		return
 
 	if item_type == "tool":
@@ -1479,6 +1745,8 @@ func _on_backpack_item_clicked(bp_index: int):
 		_refresh_all()
 
 func _enter_ingredient_mode(bp_index: int):
+	if _ingredient_mode:
+		_exit_ingredient_mode()
 	_pending_ingredient_idx = bp_index
 	_ingredient_mode = true
 
@@ -1546,17 +1814,53 @@ func _on_item_dropped_on_slot(slot_idx: int, drag_data: Dictionary):
 	elif src_type == "backpack":
 		if src_idx < 0 or src_idx >= player.backpack.size():
 			return
+		var bp_item = player.backpack[src_idx]
+		var bp_type: String = str(bp_item.get("item_type", bp_item.get("type", "")))
+		if bp_type == "ingredient":
+			var applied := IngredientManager.apply_from_backpack(player, src_idx, drop_slot)
+			if applied:
+				var slot = _board_slots[drop_slot]
+				if video_overlay:
+					var success_cg = load("res://assets/cg/cooking_success.png")
+					if success_cg:
+						video_overlay.play_image(success_cg, 0.8)
+				FloatingTextScript.spawn(
+					self,
+					"已添加调味",
+					slot.global_position + slot.size / 2,
+					Color(0.3, 1.0, 0.5)
+				)
+			else:
+				FloatingTextScript.spawn(
+					self,
+					"该食材无法用于这个目标",
+					get_global_mouse_position(),
+					Color(1.0, 0.45, 0.45)
+				)
+			_refresh_all()
+			return
 		var item = player.remove_from_backpack(src_idx)
 		if item:
 			if not _try_place_item_on_board_with_candidates(player, item, drop_slot):
-				player.add_to_backpack(item)
+				# 目标格被占用 → 尝试交换：把棋盘物品移到背包，再放入新物品
+				var resolved_slot := _resolve_item_start_slot(player, drop_slot)
+				var board_item = player.get_item_at(resolved_slot)
+				if board_item != null and not board_item.has("_ref_to"):
+					var removed_board = player.remove_item(resolved_slot)
+					if removed_board:
+						if BoardManager.place_item_on_board(player, item, resolved_slot):
+							player.add_to_backpack(removed_board)
+						else:
+							# 放不下 → 还原
+							player.place_item(resolved_slot, removed_board)
+							player.add_to_backpack(item)
+				else:
+					player.add_to_backpack(item)
 	elif src_type == "shop":
 		var bought = ShopManager.buy_item(player, _current_merchant, src_idx)
 		if not bought.is_empty():
-			if not _try_place_item_on_board_with_candidates(player, bought, drop_slot):
-				if not player.add_to_backpack(bought):
-					# If both board and backpack cannot accept the item, refund to avoid item loss.
-					player.add_gold(int(bought.get("price", 0)))
+			# 先执行升星逻辑（合并重复菜品、应用倍率、浮动文字）
+			_handle_bought_item_to_board(player, bought, drop_slot)
 	
 	_refresh_all()
 
@@ -1600,19 +1904,37 @@ func _handle_bought_item_to_backpack(player: PlayerState, bought: Dictionary, in
 	if itype == "dish":
 		var bought_id = str(bought.get("id", ""))
 		var bought_star = int(bought.get("star_level", 1))
-		for i in range(player.board.size()):
-			var board_item = player.board[i]
-			if board_item != null and not board_item.has("_ref_to"):
-				if board_item.get("id", "") == bought_id and int(board_item.get("star_level", 1)) == bought_star:
-					player.board[i] = null
-					bought["star_level"] = bought_star + 1
-					break
-		for i in range(player.backpack.size()):
-			var bp_item = player.backpack[i]
-			if bp_item.get("id", "") == bought_id and int(bp_item.get("star_level", 1)) == bought_star:
-				player.backpack.remove_at(i)
-				bought["star_level"] = bought_star + 1
-				break
+		if bought_star < 3:
+			var upgraded := false
+			for i in range(player.board.size()):
+				var board_item = player.board[i]
+				if board_item != null and not board_item.has("_ref_to"):
+					if board_item.get("id", "") == bought_id and int(board_item.get("star_level", 1)) == bought_star:
+						player.board[i] = null
+						bought["star_level"] = bought_star + 1
+						upgraded = true
+						break
+			if not upgraded:
+				for i in range(player.backpack.size()):
+					var bp_item = player.backpack[i]
+					if bp_item.get("id", "") == bought_id and int(bp_item.get("star_level", 1)) == bought_star:
+						player.backpack.remove_at(i)
+						bought["star_level"] = bought_star + 1
+						upgraded = true
+						break
+			if upgraded:
+				var new_star = int(bought.get("star_level", 1))
+				var mult: float = GameConfig.STAR2_MULTIPLIER if new_star == 2 else GameConfig.STAR3_MULTIPLIER
+				var base_flavor = float(bought.get("flavor", 0))
+				bought["flavor"] = int(base_flavor * mult)
+				if bought.has("base_stats"):
+					var stats = bought["base_stats"]
+					for attr in stats:
+						stats[attr] = float(stats[attr]) * mult
+				var star_text = GameConfig.STAR_NAMES.get(new_star, "★★")
+				var star_color = GameConfig.STAR_COLORS.get(new_star, Color(1.0, 0.84, 0.0))
+				var dish_name = str(bought.get("name", bought_id))
+				FloatingTextScript.spawn(self, "%s 升至 %s" % [dish_name, star_text], get_viewport_rect().size * 0.5, star_color, 1.5, 60.0, 28)
 
 	if itype == "tool":
 		if player.tools.size() < player.max_tools:
@@ -1718,24 +2040,61 @@ func _on_merchant_tab(merchant: String):
 func _on_refresh():
 	var player = GameManager.get_player(0)
 	var match_state = GameManager.get_match_state()
-	if player and match_state:
-		# V2: Refresh brings back selection bubbles
-		if GameConfig.BATTLE_SYSTEM_V2:
+	if player == null or match_state == null:
+		return
+	if match_state.current_phase != GameConfig.Phase.SHOP:
+		return
+	if GameConfig.BATTLE_SYSTEM_V2 and _current_merchant == "" and _event_resolved_action == int(match_state.current_action):
+		FloatingTextScript.spawn(
+			self,
+			"本行动奇遇已完成，点击“进入下一行动”推进流程",
+			get_viewport_rect().size * 0.5,
+			Color(1.0, 0.78, 0.36),
+			1.5,
+			44.0,
+			18
+		)
+		return
+
+	var refreshed: bool = ShopManager.refresh_shop(player, match_state.current_day)
+	if not refreshed:
+		_shake_shop()
+		_update_action_buttons()
+		return
+
+	if GameConfig.BATTLE_SYSTEM_V2:
+		var is_temp_shop: bool = (
+			_current_merchant == "_temp_encounter"
+			and str(_current_encounter.get("type", "")) == "shop"
+		)
+		if is_temp_shop:
+			var filter: Dictionary = _current_encounter.get("filter", {})
+			var slots: int = int(_current_encounter.get("slots", 5))
+			var price_mult: float = float(_current_encounter.get("price_mult", 1.0))
+			var tier_offset: int = int(_current_encounter.get("tier_max_offset", 0))
+			var shop_items: Array = ShopManager.generate_filtered_shop(
+				filter, slots, match_state.current_day, price_mult, tier_offset
+			)
+			ShopManager.set_temp_shop(shop_items)
+			_current_merchant = "_temp_encounter"
+			var shop_row_temp = _find_node(["ContentLayer/MerchantZone/ShopRow"])
+			if shop_row_temp:
+				shop_row_temp.visible = true
+			var container_temp = _find_node(["ContentLayer/MerchantZone/SelectionBubbleContainer"])
+			if container_temp:
+				container_temp.visible = false
+		else:
 			_current_merchant = ""
 			_current_encounter_icon = ""
+			_current_encounter = {}
+			var shop_row = _find_node(["ContentLayer/MerchantZone/ShopRow"])
+			if shop_row:
+				shop_row.visible = false
+			var container = _find_node(["ContentLayer/MerchantZone/SelectionBubbleContainer"])
+			if container:
+				container.visible = true
 
-		ShopManager.refresh_shop(player, match_state.current_day)
-
-		# 注释已修复
-		var shop_row = _find_node(["ContentLayer/MerchantZone/ShopRow"])
-		if shop_row:
-			shop_row.visible = false
-
-		var container = _find_node(["ContentLayer/MerchantZone/SelectionBubbleContainer"])
-		if container:
-			container.visible = true
-
-		_refresh_all()
+	_refresh_all()
 
 func _on_ready():
 	GameManager.advance_phase()
@@ -1751,7 +2110,10 @@ func _on_phase_changed(new_phase: int):
 			visible = true
 			if match_state and match_state.current_action != _last_action_seen:
 				_last_action_seen = match_state.current_action
+				_event_resolved_action = -1
 				_current_merchant = ""
+				_current_encounter_icon = ""
+				_current_encounter = {}
 				var container = _find_node(["ContentLayer/MerchantZone/SelectionBubbleContainer"])
 				if container:
 					for child in container.get_children():
@@ -1850,7 +2212,7 @@ func _show_pve_choice_overlay() -> void:
 	var title := Label.new()
 	title.text = "选择挑战难度"
 	title.add_theme_font_size_override("font_size", 26)
-	title.add_theme_color_override("font_color", Color(1.0, 0.9, 0.55))
+	title.add_theme_color_override("font_color", Color(0.92, 0.82, 0.55))
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	root.add_child(title)
 

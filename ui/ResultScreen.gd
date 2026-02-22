@@ -22,10 +22,15 @@ extends Control
 @onready var row_l3: Label = $Center/MainPanel/Margin/VBox/ScoreBoard/LabelsCol/RowLabels/L3
 @onready var row_l4: Label = $Center/MainPanel/Margin/VBox/ScoreBoard/LabelsCol/RowLabels/L4
 
-@onready var contrib_list: VBoxContainer = $Center/MainPanel/Margin/VBox/AnalysisPanel/ContribList
-@onready var clash_label: Label = $Center/MainPanel/Margin/VBox/AnalysisPanel/ClashLabel
+@onready var stats_grid_parent: VBoxContainer = $Center/MainPanel/Margin/VBox/AnalysisScroll/AnalysisPanel/StatsGrid
+@onready var contrib_list: VBoxContainer = $Center/MainPanel/Margin/VBox/AnalysisScroll/AnalysisPanel/ContribList
+@onready var clash_label: Label = $Center/MainPanel/Margin/VBox/AnalysisScroll/AnalysisPanel/ClashLabel
 @onready var comments_box: VBoxContainer = $Center/MainPanel/Margin/VBox/JudgeComments
 @onready var continue_btn: Button = $Center/MainPanel/Margin/VBox/ContinueButton
+
+const ItemCardScene := preload("res://ui/components/ItemCard.tscn")
+const CARD_SCALE := 0.55
+const STAT_ROW_LABELS := ["基础风味", "触发次数", "总输出", "场均输出", "输出占比"]
 
 const CHEF_NAME_MAP := {
 	"mystia": "米斯蒂娅",
@@ -180,33 +185,181 @@ func _show_result(p_score: int, o_score: int) -> void:
 		anims.call("pulse", title_label, 1.2, 0.5)
 
 func _show_analysis(analysis: Dictionary) -> void:
+	# Clear previous content
 	for child in contrib_list.get_children():
+		child.queue_free()
+	for child in stats_grid_parent.get_children():
 		child.queue_free()
 
 	var item_contributions: Array = analysis.get("item_contributions", [{}, {}])
-	if item_contributions.size() > 0 and item_contributions[0] is Dictionary:
-		var p_contribs: Dictionary = item_contributions[0]
-		var sorted_items: Array = []
-		for slot_idx in p_contribs:
-			var data = p_contribs[slot_idx]
-			if data is Dictionary:
-				sorted_items.append({"name": data.get("name", "???"), "score": float(data.get("total_score", 0.0))})
-		sorted_items.sort_custom(func(a, b): return a.score > b.score)
+	if item_contributions.size() == 0 or not (item_contributions[0] is Dictionary):
+		return
 
-		var total_flavor: float = 0.0
-		for it in sorted_items:
-			total_flavor += it.score
+	var p_contribs: Dictionary = item_contributions[0]
+	var match_state = GameManager.get_match_state()
+	if not match_state:
+		return
 
-		for i in range(mini(sorted_items.size(), 5)):
-			var item = sorted_items[i]
-			var pct: float = (item.score / maxf(1.0, total_flavor)) * 100.0
-			var label: Label = Label.new()
-			label.text = "%d. %s: %d分 (%.0f%%)" % [i + 1, item.name, int(item.score), pct]
-			label.add_theme_font_size_override("font_size", 16)
-			label.add_theme_color_override("font_color", Color(1, 0.88, 0.35) if i == 0 else Color(0.8, 0.8, 0.85))
-			label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-			contrib_list.add_child(label)
+	# Collect board items in slot order
+	var board_items: Array = []  # [{slot, item_data, contrib_data}]
+	var p_board: Array = match_state.players[0].board
+	for i in range(p_board.size()):
+		var item = p_board[i]
+		if item != null and item is Dictionary and not item.has("_ref_to"):
+			var item_id := str(item.get("id", ""))
+			if not item_id.is_empty():
+				var contrib: Dictionary = {}
+				if p_contribs.has(i):
+					contrib = p_contribs[i]
+				board_items.append({
+					"slot": i,
+					"item_data": item,
+					"name": str(contrib.get("name", item.get("name", "???"))),
+					"base_flavor": float(contrib.get("base_flavor", item.get("flavor", 0))),
+					"trigger_count": int(contrib.get("trigger_count", 0)),
+					"total_score": float(contrib.get("total_score", 0.0)),
+				})
 
+	if board_items.is_empty():
+		return
+
+	# Compute totals and MVP
+	var total_flavor: float = 0.0
+	var max_score: float = 0.0
+	var mvp_idx: int = -1
+	for i in range(board_items.size()):
+		total_flavor += board_items[i].total_score
+		if board_items[i].total_score > max_score:
+			max_score = board_items[i].total_score
+			mvp_idx = i
+
+	var col_count: int = 1 + board_items.size()  # label col + item cols
+
+	# --- Build GridContainer ---
+	var grid := GridContainer.new()
+	grid.columns = col_count
+	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	grid.add_theme_constant_override("h_separation", 8)
+	grid.add_theme_constant_override("v_separation", 6)
+
+	# Row 0: Header row — empty corner + ItemCards
+	var corner := Control.new()
+	corner.custom_minimum_size = Vector2(80, int(240 * CARD_SCALE))
+	grid.add_child(corner)
+
+	for bi in board_items:
+		var card_wrapper := Control.new()
+		var scaled_w := int(160 * CARD_SCALE * bi.item_data.get("size", 1))
+		var scaled_h := int(240 * CARD_SCALE)
+		card_wrapper.custom_minimum_size = Vector2(scaled_w, scaled_h)
+		card_wrapper.clip_contents = true
+		var card = ItemCardScene.instantiate()
+		card.setup(bi.item_data)
+		card.scale = Vector2(CARD_SCALE, CARD_SCALE)
+		card.position = Vector2.ZERO
+		card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		card_wrapper.add_child(card)
+		grid.add_child(card_wrapper)
+
+	# Stat rows
+	for row_idx in range(STAT_ROW_LABELS.size()):
+		# Row label
+		var row_label := Label.new()
+		row_label.text = STAT_ROW_LABELS[row_idx]
+		row_label.add_theme_font_size_override("font_size", 14)
+		row_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.75))
+		row_label.custom_minimum_size = Vector2(80, 0)
+		row_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		grid.add_child(row_label)
+
+		# Data cells
+		for i in range(board_items.size()):
+			var bi = board_items[i]
+			var cell := Label.new()
+			cell.add_theme_font_size_override("font_size", 15)
+			cell.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			cell.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			cell.custom_minimum_size = Vector2(int(160 * CARD_SCALE), 0)
+
+			var is_mvp := (i == mvp_idx and max_score > 0.0)
+
+			match row_idx:
+				0:  # 基础风味
+					cell.text = "%d" % int(bi.base_flavor)
+					cell.add_theme_color_override("font_color", Color(0.9, 0.85, 0.7))
+				1:  # 触发次数
+					cell.text = "%d 次" % bi.trigger_count
+					cell.add_theme_color_override("font_color", Color(0.7, 0.85, 1.0))
+				2:  # 总输出
+					cell.text = "%d" % int(bi.total_score)
+					if is_mvp:
+						cell.add_theme_color_override("font_color", Color(0.95, 0.82, 0.45))
+					else:
+						cell.add_theme_color_override("font_color", Color(0.9, 0.9, 0.95))
+				3:  # 场均输出
+					var avg: float = bi.total_score / maxf(1.0, float(bi.trigger_count))
+					cell.text = "%.1f" % avg
+					cell.add_theme_color_override("font_color", Color(0.8, 0.9, 0.8))
+				4:  # 输出占比
+					var pct: float = (bi.total_score / maxf(1.0, total_flavor)) * 100.0
+					cell.text = "%.0f%%" % pct
+					if is_mvp:
+						cell.add_theme_color_override("font_color", Color(0.95, 0.82, 0.45))
+					else:
+						cell.add_theme_color_override("font_color", Color(0.75, 0.75, 0.8))
+
+			grid.add_child(cell)
+
+	# MVP row
+	var mvp_label := Label.new()
+	mvp_label.text = "MVP"
+	mvp_label.add_theme_font_size_override("font_size", 14)
+	mvp_label.add_theme_color_override("font_color", Color(0.95, 0.82, 0.45))
+	mvp_label.custom_minimum_size = Vector2(80, 0)
+	mvp_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	grid.add_child(mvp_label)
+
+	for i in range(board_items.size()):
+		var cell := Label.new()
+		cell.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		cell.custom_minimum_size = Vector2(int(160 * CARD_SCALE), 0)
+		if i == mvp_idx and max_score > 0.0:
+			cell.text = "★"
+			cell.add_theme_font_size_override("font_size", 20)
+			cell.add_theme_color_override("font_color", Color(0.95, 0.82, 0.45))
+		else:
+			cell.text = ""
+		grid.add_child(cell)
+
+	stats_grid_parent.add_child(grid)
+
+	# --- Score summary ---
+	var scores: Array = match_state.showdown_scores
+	var p_score: float = float(scores[0])
+	var o_score: float = float(scores[1])
+	var diff: float = absf(p_score - o_score)
+	var total_triggers := 0
+	for bi in board_items:
+		total_triggers += bi.trigger_count
+
+	var summary_label := Label.new()
+	summary_label.add_theme_font_size_override("font_size", 15)
+	summary_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	summary_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	if p_score > o_score:
+		summary_label.text = "以 %d 分优势获胜 (总计 %d 分 / 触发 %d 次)" % [int(diff), int(total_flavor), total_triggers]
+		summary_label.add_theme_color_override("font_color", Color(0.5, 0.9, 0.5))
+	elif p_score < o_score:
+		summary_label.text = "以 %d 分之差落败 (总计 %d 分 / 触发 %d 次)" % [int(diff), int(total_flavor), total_triggers]
+		summary_label.add_theme_color_override("font_color", Color(0.9, 0.5, 0.5))
+	else:
+		summary_label.text = "平局 (总计 %d 分 / 触发 %d 次)" % [int(total_flavor), total_triggers]
+		summary_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
+	contrib_list.add_child(summary_label)
+
+	# --- Clash penalties ---
 	var clash_penalties: Array = analysis.get("clash_penalties", [])
 	if clash_penalties.is_empty():
 		clash_label.text = ""
@@ -222,6 +375,60 @@ func _show_analysis(analysis: Dictionary) -> void:
 			clash_parts.append("撞菜[%s]: %s -%d分" % [cuisine_name, loser, penalty])
 
 	clash_label.text = "；".join(clash_parts)
+
+func _extract_best_dish(analysis: Dictionary, p_idx: int) -> Dictionary:
+	var item_contributions: Array = analysis.get("item_contributions", [{}, {}])
+	if p_idx >= item_contributions.size():
+		return {"name": "", "score": 0.0, "triggers": 0}
+	var contribs: Dictionary = item_contributions[p_idx]
+	var best := {"name": "", "score": 0.0, "triggers": 0}
+	for slot_idx in contribs:
+		var data = contribs[slot_idx]
+		if data is Dictionary:
+			var sc: float = float(data.get("total_score", 0.0))
+			if sc > best.score:
+				best = {"name": str(data.get("name", "???")), "score": sc, "triggers": int(data.get("trigger_count", 0))}
+	return best
+
+func _count_pref_matches(judge: Dictionary, analysis: Dictionary) -> int:
+	var match_state = GameManager.get_match_state()
+	if not match_state:
+		return 0
+	var jid := str(judge.get("id", "")).to_lower()
+	var judge_v2: Dictionary = JudgeDatabase.get_judge_v2(jid)
+	var pref_tags: Array = judge_v2.get("pref", [])
+	if pref_tags.is_empty():
+		return 0
+	var count := 0
+	var p_board: Array = match_state.players[0].board
+	for item in p_board:
+		if item != null and item is Dictionary and not item.has("_ref_to"):
+			var tags: Array = item.get("tags", [])
+			for pt in pref_tags:
+				if tags.has(pt):
+					count += 1
+					break
+	return count
+
+func _count_hate_matches(judge: Dictionary, analysis: Dictionary) -> int:
+	var match_state = GameManager.get_match_state()
+	if not match_state:
+		return 0
+	var jid := str(judge.get("id", "")).to_lower()
+	var judge_v2: Dictionary = JudgeDatabase.get_judge_v2(jid)
+	var hate_tags: Array = judge_v2.get("hate", [])
+	if hate_tags.is_empty():
+		return 0
+	var count := 0
+	var p_board: Array = match_state.players[0].board
+	for item in p_board:
+		if item != null and item is Dictionary and not item.has("_ref_to"):
+			var tags: Array = item.get("tags", [])
+			for ht in hate_tags:
+				if tags.has(ht):
+					count += 1
+					break
+	return count
 
 func _show_comments(judges: Array, scores: Array, analysis: Dictionary) -> void:
 	for child in comments_box.get_children():
@@ -259,31 +466,131 @@ func _show_comments(judges: Array, scores: Array, analysis: Dictionary) -> void:
 		comments_box.add_child(panel)
 
 func _get_dynamic_comment(judge: Dictionary, scores: Array, analysis: Dictionary) -> String:
-	var won := float(scores[0]) > float(scores[1])
-	var scoring: Dictionary = judge.get("scoring_modifiers", {})
-	var dot_totals: Array = analysis.get("dot_totals", [0.0, 0.0])
-	var tech_mults: Array = analysis.get("technique_mults", [1.0, 1.0])
+	var p_score := float(scores[0])
+	var o_score := float(scores[1])
+	var won := p_score > o_score
+	var diff := absf(p_score - o_score)
+	var total := p_score + o_score
+	var margin := diff / maxf(1.0, total / 2.0)
+	var is_close := margin < 0.10
+	var is_stomp := margin > 0.40
+	var jid := str(judge.get("id", "unknown")).to_lower()
 
-	if scoring.has("flavor_mult"):
-		return "风味层次很亮眼，技法倍率达到 x%.2f。" % float(tech_mults[0]) if won else "对手风味掌控更稳，后续可加强风味爆发。"
+	# Extract data-driven context
+	var best_dish: Dictionary = _extract_best_dish(analysis, 0)
+	var best_name: String = best_dish.get("name", "")
+	var best_score: int = int(best_dish.get("score", 0))
+	var pref_count: int = _count_pref_matches(judge, analysis)
+	var hate_count: int = _count_hate_matches(judge, analysis)
 
-	if scoring.has("dot_mult"):
-		var p_dot := float(dot_totals[0])
-		var o_dot := float(dot_totals[1])
-		if p_dot > o_dot:
-			return "卖相压制明显，持续得分优势建立得很好。"
-		elif o_dot > p_dot:
-			return "对手卖相更强，建议补足摆盘体系。"
-		return "双方卖相势均力敌，胜负主要看爆发。"
+	# Build data snippet for insertion
+	var dish_mention := ""
+	if not best_name.is_empty() and best_score > 0:
+		dish_mention = "「%s」贡献了%d分，" % [best_name, best_score]
 
-	if judge.get("id", "") == "eiki":
-		var diff := absf(float(scores[0]) - float(scores[1]))
-		var total := float(scores[0]) + float(scores[1])
-		if total > 0.0 and diff / (total / 2.0) < 0.10:
-			return "势均力敌，双方都拿到了额外裁定加成。"
-		return "胜负明确，判定结果无争议。" if won else "结果已经确定，下局还有机会翻盘。"
+	match jid:
+		"yuyuko":
+			if won and is_stomp:
+				return "%s把我喂得饱饱的！以%d分的巨大优势碾压对手，这桌菜太丰盛了！" % [dish_mention, int(diff)]
+			if won:
+				return "%s真是一道好菜！这顿饭吃得心满意足，以%d分的优势赢下了这场比试。" % [dish_mention, int(diff)]
+			if is_close:
+				return "两边的菜都很好吃，差距只有%d分...不过我总觉得还差那么一口，再多加点料就好了。" % int(diff)
+			return "没吃饱呢...%s虽然不错，但整体菜单的分量不够。输了%d分，下次多准备些硬菜吧。" % [dish_mention if not dish_mention.is_empty() else "你的招牌菜", int(diff)]
 
-	return "这次发挥很出色，节奏和数值都到位。" if won else "思路没问题，再优化联动顺序会更强。"
+		"yuuma":
+			if won and is_stomp:
+				return "痛快！%s这道菜的霸道味道让我很满意！%d分的碾压，这才配得上饕餮的食桌！" % [dish_mention, int(diff)]
+			if won:
+				return "%s味道够劲！以%d分获胜，你的菜有那股让人上瘾的狠劲。" % [dish_mention, int(diff)]
+			if is_close:
+				return "就差%d分...两边都不够猛。你的菜缺少那种让人一口就被征服的冲击力。" % int(diff)
+			return "太弱了！%s%d分的差距说明你根本不懂什么叫浓郁。给我端上真正有力量的菜来！" % [dish_mention, int(diff)]
+
+		"eiki":
+			if won:
+				if pref_count >= 3:
+					return "%s表现出色。以%d分获胜，菜单中有%d道菜符合我的审美标准，这是一份端正的菜谱。" % [dish_mention, int(diff), pref_count]
+				return "%s以%d分的优势取胜。整体发挥均衡得体，这是正道的胜利。" % [dish_mention, int(diff)]
+			if is_close:
+				return "仅差%d分。双方实力相当，但你在细节上稍有懈怠。回去仔细复盘每道菜的表现吧。" % int(diff)
+			if hate_count >= 2:
+				return "你有%d道菜与我的口味相悖，这直接拖累了评分。输掉%d分，必须重新审视你的菜单。" % [hate_count, int(diff)]
+			return "%s虽有亮点，但整体不够严谨。%d分的败北，说明菜单中存在明显的短板。" % [dish_mention, int(diff)]
+
+		"remilia":
+			if won:
+				if pref_count >= 3:
+					return "哼，%s总算拿得出手了。%d道菜合本小姐的口味，以%d分赢下比赛，勉强及格。" % [dish_mention, pref_count, int(diff)]
+				return "%s还行吧。以%d分获胜，但别得意，离红魔馆的标准还差得远呢。" % [dish_mention, int(diff)]
+			if hate_count >= 2:
+				return "你居然敢端上%d道清淡寡味的菜？！输掉%d分是你活该，本小姐需要的是浓郁华贵的料理！" % [hate_count, int(diff)]
+			return "%s平民的水准。输了%d分，回去好好学学什么叫贵族的餐桌吧。" % [dish_mention, int(diff)]
+
+		"tenshi":
+			if won and is_stomp:
+				return "哈哈哈！%s这道菜太过瘾了！%d分的大胜，就是这种碾压的感觉才有趣嘛！" % [dish_mention, int(diff)]
+			if won:
+				return "%s不错嘛！以%d分取胜，这顿饭还挺刺激的。" % [dish_mention, int(diff)]
+			if is_close:
+				return "啊~就差%d分，太无聊了！两边都不够刺激，能不能做点更有爆发力的菜？" % int(diff)
+			return "就这？%s也就那样吧。输了%d分，你这厨艺一点也不好玩。" % [dish_mention, int(diff)]
+
+		"kokoro":
+			if won:
+				return "从%s中我感受到了厨师的热情。以%d分获胜，你的菜里充满了真挚的感情。" % [dish_mention, int(diff)]
+			if is_close:
+				return "两位厨师的情感都很复杂呢...%d分之差，你的表达只差一点就能打动我了。" % int(diff)
+			return "%s虽然有心意，但%d分的差距说明情感的传达还不够充分。再用心一些吧。" % [dish_mention, int(diff)]
+
+		"iku":
+			if won:
+				if pref_count >= 3:
+					return "%s让整桌菜的氛围非常和谐。%d道菜与我的品味相符，以%d分优雅地赢下了比赛。" % [dish_mention, pref_count, int(diff)]
+				return "%s以%d分取胜。今天的用餐氛围不错，希望下次能看到更多元化的菜系搭配。" % [dish_mention, int(diff)]
+			return "气氛有些沉重呢...%s%d分的差距，或许增加一些清爽的菜品能改善整体节奏。" % [dish_mention, int(diff)]
+
+		"miko":
+			if won:
+				if pref_count >= 3:
+					return "吾感受到了和谐之美。%s表现优异，%d道精进之作让菜单整体以%d分获胜。" % [dish_mention, pref_count, int(diff)]
+				return "%s以%d分取胜。菜单展现了不错的平衡感，继续精进吧。" % [dish_mention, int(diff)]
+			return "%s%d分之差落败。吾建议拓宽菜系的多样性，让不同风味和谐共存。" % [dish_mention, int(diff)]
+
+		"yuuka":
+			if won:
+				return "%s如同精心培育的花朵般绽放了。以%d分获胜，这份美感让我很满意。" % [dish_mention, int(diff)]
+			if hate_count >= 1:
+				return "油炸物的粗糙让我皱眉...%d分的落差，请多用些新鲜蔬菜和清雅的茶品。" % int(diff)
+			return "%s力量不足。%d分的差距，需要更纯粹的美学表达。" % [dish_mention, int(diff)]
+
+		"raiko":
+			if won:
+				return "节奏感很棒！%s的出菜频率完美踩上了鼓点！以%d分获胜，请继续保持这个tempo！" % [dish_mention, int(diff)]
+			return "节奏乱了...%s%d分的差距说明出菜的节奏还需要磨练。跟上我的鼓点！" % [dish_mention, int(diff)]
+
+		"yukari":
+			if won:
+				return "呵呵，%s倒是挺有意思的。以%d分获胜——不过，今天的规则，由我来定。" % [dish_mention, int(diff)]
+			return "境界之外的东西果然还是差了点呢。%s%d分的差距，想赢我的评审可没那么容易。" % [dish_mention, int(diff)]
+
+		"aya":
+			if won:
+				return "独家报道！%s惊艳全场！以%d分力压对手的精彩一战！这条新闻一定能上头版！" % [dish_mention, int(diff)]
+			if is_close:
+				return "只差%d分...本来想写条大新闻的，结果虎头蛇尾。菜单里需要更多上镜的亮点菜品。" % int(diff)
+			return "这种平庸的菜谱完全不值得报道。%s%d分的惨败，毫无新闻价值。" % [dish_mention, int(diff)]
+
+		"patchouli":
+			if won:
+				return "理论上讲，%s的元素配比接近最优解。以%d分获胜，这是经过深思熟虑的菜谱设计。" % [dish_mention, int(diff)]
+			return "%s的理论构架存在缺陷。%d分的差距揭示了调味配比中的系统性问题，需要重新计算。" % [dish_mention, int(diff)]
+
+	# Fallback for unmapped judges
+	if won:
+		return "%s表现突出，以%d分的优势赢得了比赛。" % [dish_mention, int(diff)]
+	else:
+		return "%s%d分之差落败，菜单整体还有提升空间。" % [dish_mention, int(diff)]
 
 func _display_chef_name(chef_id: String) -> String:
 	if CHEF_NAME_MAP.has(chef_id):

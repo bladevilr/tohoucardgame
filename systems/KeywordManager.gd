@@ -91,10 +91,10 @@ func apply_spotlight(player_idx: int, item_runtime: Dictionary):
 	var spotlight = player.get_keyword_stacks("spotlight")
 	if spotlight > 0:
 		var reduction = spotlight * 1.0
-		item_runtime["current_cd"] = maxf(0.1, item_runtime.get("current_cd", 0) - reduction)
+		item_runtime["current_cd"] = maxf(1.0, item_runtime.get("current_cd", 0) - reduction)
 		player.consume_keyword("spotlight")
 
 func get_environment_cd_penalty() -> float:
 	"""Get CD penalty from dull environment keyword."""
 	var dull = _match_state.environment_keywords.get("dull", 0)
-	return dull * 0.3
+	return dull * GameConfig.DULL_CD_PENALTY

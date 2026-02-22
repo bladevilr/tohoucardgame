@@ -53,7 +53,7 @@ func _init_tools():
 			{trigger="on_activate", condition="has_technique:braise", effect="flavor+8", desc="红烧时风味+8"},
 			{trigger="on_activate", condition="has_technique:stir_fry", effect="aroma+5", desc="爆炒时香气+5",
 			 keyword_effect={type="gain_keyword", keyword="char_aroma", stacks=1}},
-			{trigger="on_activate", condition="has_tag:stir_fried", effect="cd-0.5", desc="炒菜CD-0.5s"}
+			{trigger="on_activate", condition="has_tag:stir_fried", effect="cd-1", desc="炒菜CD-1s"}
 		],
 		"铸铁重锅，蓄热均匀。炒菜上菜时获得1层【焦香】")
 
@@ -78,7 +78,7 @@ func _init_tools():
 		[
 			{trigger="on_activate", condition="has_technique:sous_vide", effect="flavor+10,technique+5", desc="低温慢煮时风味+10，技巧+5",
 			 keyword_effect={type="gain_keyword", keyword="umami", stacks=1}},
-			{trigger="on_keyword_gain", condition="keyword:umami", effect="cd-0.3", desc="获得【鲜美】时CD-0.3s"}
+			{trigger="on_keyword_gain", condition="keyword:umami", effect="cd-1", desc="获得【鲜美】时CD-1s"}
 		],
 		"精准温控，低温慢煮专用。慢煮菜品上菜时获得1层【鲜美】")
 
@@ -94,7 +94,7 @@ func _init_tools():
 	_add("fierce_stove", "猛火灶", "silver", "equipment",
 		{flavor=5, aroma=4},
 		[
-			{trigger="on_activate", condition="cuisine:chinese", effect="flavor+8,cd-0.5", desc="中华菜品风味+8，CD-0.5s",
+			{trigger="on_activate", condition="cuisine:chinese", effect="flavor+8,cd-1", desc="中华菜品风味+8，CD-1s",
 			 keyword_effect={type="gain_keyword", keyword="char_aroma", stacks=1}},
 			{trigger="on_activate", condition="has_tag:fierce_fire", effect="aroma+6", desc="猛火菜品香气+6"},
 			{trigger="synergy", condition="cuisine_count:chinese:3", effect="stir_fry_bonus+0.25", desc="≥3中华：爆炒手法效果+25%"}

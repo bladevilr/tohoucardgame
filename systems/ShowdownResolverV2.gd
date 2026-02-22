@@ -17,15 +17,6 @@ var _finished: bool = false
 var _timeline: Array = []
 var _scores: Array = [0.0, 0.0]
 
-# ===== 引擎机制状态 =====
-var _addiction_stacks: Array = [0, 0]
-var _addiction_timer: float = 0.0
-var _addiction_decay_timer: float = 0.0      # 上瘾衰减计时
-var _sizzle_counters: Array = [{}, {}]
-var _greasy_stacks: Array = [0, 0]
-var _umami_primed: Array = [{}, {}]
-var _fermented_growth: Array = [{}, {}]      # 发酵成长型：slot_idx -> 累计成长%
-
 # ===== 需求触发器/满足器标签集合 =====
 const THIRST_TRIGGERS := ["spicy", "grilled", "roasted", "numbing"]
 const THIRST_SATISFIERS := ["soup", "tea", "light"]
@@ -57,11 +48,12 @@ func setup(match_state: MatchState, judge_ids: Array) -> void:
 		var player: PlayerState = match_state.players[p_idx]
 		var runtimes: Array = []
 		for entry in player.get_board_items():
+			var base_cd := maxf(GameConfig.MIN_CD_FLOOR, float(entry.item.get("cooldown", 3.0)))
 			runtimes.append({
 				"item": entry.item,
 				"slot_idx": entry.slot_idx,
-				"base_cd": float(entry.item.get("cooldown", 3.0)),
-				"current_cd": float(entry.item.get("cooldown", 3.0)),
+				"base_cd": base_cd,
+				"current_cd": base_cd,
 				"activate_count": 0,
 			})
 		_runtimes[p_idx] = runtimes
@@ -69,14 +61,6 @@ func setup(match_state: MatchState, judge_ids: Array) -> void:
 	# 初始化 TriggerSystem（用于工具触发器）
 	_trigger_system = TriggerSystem.new(match_state)
 
-	# 初始化引擎状态
-	_sizzle_counters = [{}, {}]
-	_umami_primed = [{}, {}]
-	_fermented_growth = [{}, {}]
-	_addiction_stacks = [0, 0]
-	_addiction_timer = 0.0
-	_addiction_decay_timer = 0.0
-	_greasy_stacks = [0, 0]
 	_scores = [0.0, 0.0]
 	_elapsed = 0.0
 	_timeline = []
@@ -90,34 +74,11 @@ func tick(delta: float) -> void:
 	if _finished:
 		return
 
-	# 全局油腻减速 — 双方独立
 	for p_idx in range(2):
-		var greasy_slow: float = 1.0 + _greasy_stacks[p_idx] * GameConfig.GREASY_SLOW_PER_STACK
-		var effective_delta: float = delta / greasy_slow
-
 		for runtime in _runtimes[p_idx]:
-			runtime.current_cd -= effective_delta
+			runtime.current_cd -= delta
 			if runtime.current_cd <= 0.0:
 				_activate_item(p_idx, runtime, 0)
-
-	# 上瘾 DoT 全局计时（每 1 秒触发一次）
-	_addiction_timer += delta
-	while _addiction_timer >= 1.0:
-		_addiction_timer -= 1.0
-		for p_idx in range(2):
-			if _addiction_stacks[p_idx] > 0:
-				var dot_score: float = _addiction_stacks[p_idx] * GameConfig.ADDICTION_SCORE_PER_STACK
-				_scores[p_idx] += dot_score
-				SignalBus.dot_tick.emit(p_idx, dot_score)
-
-	# 上瘾自然衰减（每5秒衰减10%层数）
-	_addiction_decay_timer += delta
-	while _addiction_decay_timer >= GameConfig.ADDICTION_DECAY_INTERVAL:
-		_addiction_decay_timer -= GameConfig.ADDICTION_DECAY_INTERVAL
-		for p_idx in range(2):
-			if _addiction_stacks[p_idx] > 0:
-				var decay: int = maxi(1, int(_addiction_stacks[p_idx] * GameConfig.ADDICTION_DECAY_PERCENT))
-				_addiction_stacks[p_idx] = maxi(0, _addiction_stacks[p_idx] - decay)
 
 	# TriggerSystem 延迟效果处理
 	_trigger_system.process_delayed_effects()
@@ -137,7 +98,6 @@ func tick(delta: float) -> void:
 func _activate_item(p_idx: int, runtime: Dictionary, _multicast_depth: int = 0) -> void:
 	var item: Dictionary = runtime.item
 	runtime.activate_count += 1
-	var tags: Array = item.get("tags", [])
 	var board_size: int = _match_state.players[p_idx].board_size
 
 	# ---- 区域 & 位置判定 ----
@@ -164,24 +124,7 @@ func _activate_item(p_idx: int, runtime: Dictionary, _multicast_depth: int = 0) 
 	for state in _states:
 		_post_serve(item, score, state)
 
-	# ---- 阶段2: 发酵（成长型）----
-	if "fermented" in tags:
-		# 首次加成
-		if runtime.activate_count == 1:
-			score *= GameConfig.FERMENTED_FIRST_BONUS
-		# 成长型：每次激活永久+1%，上限+30%
-		var growth: float = _fermented_growth[p_idx].get(runtime.slot_idx, 0.0)
-		if growth < GameConfig.FERMENTED_GROWTH_CAP:
-			growth = minf(growth + GameConfig.FERMENTED_GROWTH_PER_ACT, GameConfig.FERMENTED_GROWTH_CAP)
-			_fermented_growth[p_idx][runtime.slot_idx] = growth
-		score *= (1.0 + growth)
-
-	# ---- 阶段3: 提鲜倍率检查（改为作用于本slot，由右邻触发标记）----
-	if _umami_primed[p_idx].get(runtime.slot_idx, false):
-		score *= GameConfig.UMAMI_PRIME_MULT
-		_umami_primed[p_idx].erase(runtime.slot_idx)
-
-	# ---- 阶段4: 工具触发器（TriggerSystem）----
+	# ---- 阶段2: 工具触发器（TriggerSystem）----
 	var context: Dictionary = {
 		"player_idx": p_idx,
 		"item_idx": runtime.slot_idx,
@@ -204,131 +147,16 @@ func _activate_item(p_idx: int, runtime: Dictionary, _multicast_depth: int = 0) 
 	if plating_stacks >= GameConfig.KEYWORD_MULT_THRESHOLD:
 		score *= (1.0 + plating_stacks * GameConfig.PLATING_HIGH_SCORE_MULT)
 
-	# ---- 阶段5: 标签驱动的引擎机制 ----
-
-	# 标签冲突检测
-	var has_spicy_sour: bool = "spicy" in tags or "sour" in tags
-	var has_rich_staple: bool = "rich" in tags and "staple" in tags
-	var has_light_tea: bool = "light" in tags or "tea" in tags
-	var has_rich_fried: bool = "rich" in tags and "fried" in tags
-
-	# 开胃：辣/酸 → 百分比推进相邻CD（被 rich+staple 压制）
-	if has_spicy_sour and not has_rich_staple:
-		var adj_items: Array = _match_state.players[p_idx].get_adjacent(runtime.slot_idx)
-		var appetizer_mult: float = 1.0
-		if zone == "appetizer":
-			appetizer_mult += GameConfig.ZONE_APPETIZER_BONUS
-		for rt in _runtimes[p_idx]:
-			if rt == runtime:
-				continue
-			if rt.item in adj_items:
-				var cd_reduction: float = rt.current_cd * GameConfig.APPETIZING_CD_PERCENT * appetizer_mult
-				rt.current_cd = maxf(0.0, rt.current_cd - cd_reduction)
-
-	# 上瘾：浓郁/鲜味 → 叠加上瘾层数
-	if "rich" in tags or "umami_tag" in tags:
-		_addiction_stacks[p_idx] = mini(
-			_addiction_stacks[p_idx] + GameConfig.ADDICTION_STACKS_PER_ACTIVATE,
-			GameConfig.ADDICTION_MAX_STACKS
-		)
-		SignalBus.keyword_gained.emit(p_idx, runtime.slot_idx, "addictive", _addiction_stacks[p_idx])
-
-	# 爆香：烤/炒 → 积累热量，阈值到达后对基础分乘算爆发
-	if "grilled" in tags or "stir_fried" in tags:
-		var key: int = runtime.slot_idx
-		_sizzle_counters[p_idx][key] = _sizzle_counters[p_idx].get(key, 0) + 1
-		# 锅气高层减少爆香阈值
-		var char_stacks: int = player.get_keyword_stacks("char_aroma")
-		var effective_threshold: int = GameConfig.SIZZLE_THRESHOLD
-		if char_stacks >= GameConfig.KEYWORD_MULT_THRESHOLD:
-			effective_threshold = maxi(2, effective_threshold - GameConfig.CHAR_AROMA_SIZZLE_REDUCTION)
-		if _sizzle_counters[p_idx][key] >= effective_threshold:
-			var burst_score: float = score * GameConfig.SIZZLE_BURST_MULT
-			score += burst_score
-			_sizzle_counters[p_idx][key] = 0
-			SignalBus.keyword_gained.emit(p_idx, runtime.slot_idx, "sizzling", 0)
-
-	# 油腻：同时有 rich+fried → 叠加油腻（清口同时存在时不叠）
-	if has_rich_fried and not has_light_tea:
-		_greasy_stacks[p_idx] = mini(
-			_greasy_stacks[p_idx] + 1,
-			GameConfig.GREASY_MAX_STACKS
-		)
-		SignalBus.keyword_gained.emit(p_idx, runtime.slot_idx, "greasy", _greasy_stacks[p_idx])
-
-	# 清口：清淡/茶 → 引爆式清除油腻（50%），转化为分数+全场CD推进
-	if has_light_tea:
-		var clear_amount: int = maxi(
-			GameConfig.REFRESHING_CLEAR_MIN,
-			int(_greasy_stacks[p_idx] * GameConfig.REFRESHING_CLEAR_PERCENT)
-		)
-		var cleared: int = mini(_greasy_stacks[p_idx], clear_amount)
-		if cleared > 0:
-			_greasy_stacks[p_idx] -= cleared
-			# 分数回馈
-			var refresh_score: float = cleared * GameConfig.REFRESHING_SCORE_PER_STACK
-			score += refresh_score
-			# CD加速回馈
-			var speed_bonus: float = cleared * GameConfig.REFRESHING_SPEED_PER_STACK
-			for rt in _runtimes[p_idx]:
-				rt.current_cd = maxf(0.0, rt.current_cd - speed_bonus)
-			SignalBus.keyword_consumed.emit(p_idx, "greasy", cleared)
-
-	# 提鲜：umami_tag + 同菜系 >= 2 → 标记右侧邻居下次×1.8
-	if "umami_tag" in tags:
-		var cuisine: String = item.get("cuisine", "")
-		if cuisine != "":
-			var cuisine_count: int = 0
-			for rt in _runtimes[p_idx]:
-				if rt.item.get("cuisine", "") == cuisine:
-					cuisine_count += 1
-			if cuisine_count >= GameConfig.UMAMI_CUISINE_THRESHOLD:
-				# 标记右侧邻居
-				var right_neighbor = _match_state.players[p_idx].get_right_neighbor(runtime.slot_idx)
-				if right_neighbor != null:
-					var right_slot: int = -1
-					for rt in _runtimes[p_idx]:
-						if rt.item == right_neighbor:
-							right_slot = rt.slot_idx
-							break
-					if right_slot >= 0:
-						_umami_primed[p_idx][right_slot] = true
-						SignalBus.keyword_gained.emit(p_idx, right_slot, "umami", 1)
-
-	# ---- 阶段5.5: 刀工高层CD减少 ----
+	# ---- 阶段4.6: 刀工高层CD减少 ----
 	var kw_stacks: int = player.get_keyword_stacks("knife_work")
 	if kw_stacks >= GameConfig.KEYWORD_MULT_THRESHOLD:
-		var kw_cd_reduction: float = runtime.base_cd * kw_stacks * GameConfig.KNIFE_WORK_HIGH_CD_PERCENT
-		runtime.current_cd = maxf(0.0, runtime.current_cd - kw_cd_reduction)
+		var kw_cd_percent: float = 0.05
+		if GameConfig.has_method("get_knife_work_high_cd_percent"):
+			kw_cd_percent = float(GameConfig.get_knife_work_high_cd_percent())
+		var kw_cd_reduction: float = runtime.base_cd * kw_stacks * kw_cd_percent
+		runtime.current_cd = maxf(GameConfig.MIN_CD_FLOOR, runtime.current_cd - kw_cd_reduction)
 
-	# ---- 阶段6: 爽脆多播（fried 标签，概率双重激活，衰减得分）----
-	if "fried" in tags and _multicast_depth < GameConfig.MAX_MULTICAST_DEPTH:
-		if randf() < GameConfig.CRISP_MULTICAST_CHANCE:
-			# 记录当前得分，然后递归（递归的得分会衰减）
-			score *= GameConfig.CRISP_SCORE_DECAY if _multicast_depth > 0 else 1.0
-			_scores[p_idx] += score
-			runtime.current_cd = maxf(GameConfig.MIN_CD_FLOOR, runtime.base_cd)
-			# 最左位CD加成
-			if is_leftmost:
-				runtime.current_cd *= (1.0 - GameConfig.EDGE_LEFT_CD_BONUS)
-			_timeline.append({
-				"time": _elapsed, "player": p_idx, "dish": item,
-				"slot_idx": runtime.slot_idx, "score": score,
-			})
-			SignalBus.showdown_item_served.emit(p_idx, runtime.slot_idx, {
-				"score": score, "dish": item,
-				"satiety": int(_states[0].satiety) if _states.size() > 0 else 0,
-				"mood": int(_states[0].mood) if _states.size() > 0 else 0,
-				"needs": _states[0].needs.duplicate() if _states.size() > 0 else [],
-			})
-			_activate_item(p_idx, runtime, _multicast_depth + 1)
-			return
-
-	# 爽脆衰减（非首次多播）
-	if _multicast_depth > 0:
-		score *= GameConfig.CRISP_SCORE_DECAY
-
-	# ---- 阶段7: 记录和发送信号 ----
+	# ---- 阶段5: 记录和发送信号 ----
 	_scores[p_idx] += score
 
 	# 重置 CD（应用最低 CD 保底 + 尽头加成）
@@ -718,17 +546,6 @@ func get_result() -> Dictionary:
 		"winner": winner,
 		"elapsed": _elapsed,
 		"timeline": _timeline,
-		"addiction_stacks": _addiction_stacks.duplicate(),
-		"greasy_stacks": _greasy_stacks.duplicate(),
-	}
-
-func get_engine_state(p_idx: int) -> Dictionary:
-	return {
-		"addiction": _addiction_stacks[p_idx] if p_idx < _addiction_stacks.size() else 0,
-		"greasy": _greasy_stacks[p_idx] if p_idx < _greasy_stacks.size() else 0,
-		"sizzle": _sizzle_counters[p_idx].duplicate() if p_idx < _sizzle_counters.size() else {},
-		"umami_primed": _umami_primed[p_idx].duplicate() if p_idx < _umami_primed.size() else {},
-		"fermented_growth": _fermented_growth[p_idx].duplicate() if p_idx < _fermented_growth.size() else {},
 	}
 
 # ============================================================

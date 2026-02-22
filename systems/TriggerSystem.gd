@@ -82,6 +82,15 @@ func _normalize_event(trigger_event: String) -> String:
 		# --- New: keyword gain event (used by tools like porcelain_set, sous_vide_machine) ---
 		"on_keyword_gain", "when_keyword_gained":
 			return "keyword_gained"
+		# --- New trigger events (Phase 3) ---
+		"on_crit":
+			return "on_crit"
+		"keyword_threshold":
+			return "keyword_threshold"
+		"on_item_sold":
+			return "on_item_sold"
+		"on_prestige_change":
+			return "on_prestige_change"
 	return ev
 
 func _matches_event(trigger: Dictionary, event_type: String, listener_slot: int, source_slot: int, context: Dictionary, player: PlayerState) -> bool:
@@ -128,6 +137,15 @@ func _matches_event(trigger: Dictionary, event_type: String, listener_slot: int,
 			ok = event_type == "item_tick" and listener_slot == source_slot
 		"any_activate":
 			ok = is_activation
+		# --- New trigger events (Phase 3) ---
+		"on_crit":
+			ok = event_type == "on_crit"
+		"keyword_threshold":
+			ok = event_type == "keyword_threshold"
+		"on_item_sold":
+			ok = event_type == "on_item_sold"
+		"on_prestige_change":
+			ok = event_type == "on_prestige_change"
 		_:
 			ok = false
 
@@ -362,6 +380,12 @@ func _parse_effect_string(raw: String) -> Dictionary:
 		parsed[attr] = value
 	return parsed
 
+func _normalize_cd_seconds(raw_value: float) -> float:
+	if raw_value <= 0.0:
+		return 0.0
+	# CD 改动统一按整秒处理；小于1秒的改动按1秒计。
+	return float(maxi(1, ceili(raw_value)))
+
 func _execute_effect(effect: Variant, player_idx: int, slot_idx: int, item: Dictionary, context: Dictionary):
 	if effect == null:
 		return
@@ -430,6 +454,16 @@ func _execute_effect(effect: Variant, player_idx: int, slot_idx: int, item: Dict
 		scores["technique"] = scores.get("technique", 0.0) + float(effect_dict.technique)
 	if effect_dict.has("aroma"):
 		scores["aroma"] = scores.get("aroma", 0.0) + float(effect_dict.aroma)
+
+	# 兼容字符串效果中的 cd±N（例如 "flavor+8,cd-1"）。
+	if effect_dict.has("cd"):
+		var cd_shift = float(effect_dict.get("cd", 0.0))
+		if cd_shift < 0.0:
+			var cd_reduce = _normalize_cd_seconds(absf(cd_shift))
+			context["cd_reduction_self"] = float(context.get("cd_reduction_self", 0.0)) + cd_reduce
+		elif cd_shift > 0.0:
+			var cd_increase = _normalize_cd_seconds(cd_shift)
+			context["cd_increase_self"] = float(context.get("cd_increase_self", 0.0)) + cd_increase
 
 	# Legacy schema support via type.
 	var effect_type = str(effect_dict.get("type", ""))
@@ -598,7 +632,27 @@ func _execute_effect(effect: Variant, player_idx: int, slot_idx: int, item: Dict
 			var cleared = _match_state.clear_environment_keyword(clear_id, clear_amount)
 			if cleared > 0:
 				SignalBus.keyword_environment_cleared.emit(clear_id, cleared)
-				if effect_dict.has("on_clear_gain_keyword"):
+				# Handle bonus_on_clear (new comprehensive handler)
+				var bonus_on_clear = effect_dict.get("bonus_on_clear", {})
+				if bonus_on_clear is Dictionary and not bonus_on_clear.is_empty():
+					var bonus_type = str(bonus_on_clear.get("type", ""))
+					match bonus_type:
+						"gain_keyword":
+							var gain_kw = str(bonus_on_clear.get("keyword", ""))
+							if gain_kw != "":
+								player.add_keyword(gain_kw, cleared)
+								SignalBus.keyword_gained.emit(player_idx, slot_idx, gain_kw, cleared)
+								process_event("keyword_gained", {"player_idx": player_idx, "item_idx": slot_idx, "keyword_id": gain_kw, "stacks": cleared})
+						"stat_bonus":
+							var bonus_scores: Dictionary = {}
+							for k in ["flavor", "presentation", "technique", "aroma"]:
+								if bonus_on_clear.has(k):
+									bonus_scores[k] = float(bonus_on_clear[k]) * cleared
+							if not bonus_scores.is_empty():
+								SignalBus.score_produced.emit(player_idx, slot_idx, bonus_scores)
+								_add_scores_to_context(bonus_scores, context)
+				# Legacy fallback: on_clear_gain_keyword
+				elif effect_dict.has("on_clear_gain_keyword"):
 					var gain_kw = str(effect_dict.on_clear_gain_keyword)
 					if gain_kw != "":
 						player.add_keyword(gain_kw, cleared)
@@ -718,12 +772,12 @@ func _execute_effect(effect: Variant, player_idx: int, slot_idx: int, item: Dict
 	# 10. CD 操控效果（写入 context，由 ShowdownResolver 统一消费）
 	# 缩减自身冷却
 	if effect_dict.has("reduce_cooldown_self"):
-		var amt = float(effect_dict.reduce_cooldown_self)
+		var amt = _normalize_cd_seconds(float(effect_dict.reduce_cooldown_self))
 		if amt > 0.0:
 			context["cd_reduction_self"] = float(context.get("cd_reduction_self", 0.0)) + amt
 	# 缩减相邻冷却
 	if effect_dict.has("reduce_cooldown_adjacent"):
-		var amt = float(effect_dict.reduce_cooldown_adjacent)
+		var amt = _normalize_cd_seconds(float(effect_dict.reduce_cooldown_adjacent))
 		if amt > 0.0:
 			context["cd_reduction_adjacent"] = float(context.get("cd_reduction_adjacent", 0.0)) + amt
 	# 加速自身（临时提高 CD 转速）
@@ -807,6 +861,95 @@ func _execute_effect(effect: Variant, player_idx: int, slot_idx: int, item: Dict
 			else:
 				player.add_keyword(keyword, stacks)
 				SignalBus.keyword_gained.emit(player_idx, slot_idx, keyword, stacks)
+
+	# 14. 牺牲自身（sacrifice_self）
+	if effect_dict.has("sacrifice_self") and bool(effect_dict.sacrifice_self):
+		var grant = effect_dict.get("grant_to_adjacent", {})
+		if grant is Dictionary and not grant.is_empty():
+			for adj_item in player.get_adjacent(slot_idx):
+				var adj_slot = -1
+				# Find the slot index for this adjacent item
+				for entry in player.get_board_items():
+					if entry.item == adj_item:
+						adj_slot = entry.slot_idx
+						break
+				if adj_slot >= 0:
+					_execute_effect(grant, player_idx, adj_slot, adj_item, context)
+		if player.has_method("remove_board_item"):
+			player.remove_board_item(slot_idx)
+
+	# 15. 随机选择效果（random_choice）
+	if effect_dict.has("random_choice"):
+		var choices = effect_dict.random_choice
+		if choices is Array and not choices.is_empty():
+			var chosen = choices[randi() % choices.size()]
+			if chosen is Dictionary and not chosen.is_empty():
+				_execute_effect(chosen, player_idx, slot_idx, item, context)
+
+	# 16. 偷取对手关键词（drain_opponent_keyword）
+	if effect_dict.has("drain_opponent_keyword"):
+		var drain = effect_dict.drain_opponent_keyword
+		if drain is Dictionary:
+			var drain_kw = str(drain.get("keyword", ""))
+			var drain_stacks = int(drain.get("stacks", 1))
+			if drain_kw != "":
+				var opp_idx = 1 - player_idx
+				var opponent = _match_state.get_player(opp_idx)
+				if opponent != null:
+					var drained = opponent.consume_keyword(drain_kw, drain_stacks)
+					if drained > 0:
+						player.add_keyword(drain_kw, drained)
+						SignalBus.keyword_gained.emit(player_idx, slot_idx, drain_kw, drained)
+						process_event("keyword_gained", {"player_idx": player_idx, "item_idx": slot_idx, "keyword_id": drain_kw, "stacks": drained})
+
+	# 17. 反弹环境词条给对手（reflect_to_opponent）
+	if effect_dict.has("reflect_to_opponent") and bool(effect_dict.reflect_to_opponent):
+		var env_kw = str(context.get("keyword_id", ""))
+		var env_stacks = int(context.get("stacks", 1))
+		if env_kw != "":
+			# Clear from self side
+			var reflected = _match_state.clear_environment_keyword(env_kw, env_stacks)
+			if reflected > 0:
+				SignalBus.keyword_environment_cleared.emit(env_kw, reflected)
+				# Apply negative effect to opponent
+				var opp_idx = 1 - player_idx
+				var opponent = _match_state.get_player(opp_idx)
+				if opponent != null:
+					opponent.add_keyword(env_kw, reflected)
+					SignalBus.keyword_gained.emit(opp_idx, -1, env_kw, reflected)
+		# Also clear self if requested
+		if bool(effect_dict.get("clear_self", false)):
+			var clear_kw = str(context.get("keyword_id", ""))
+			if clear_kw != "":
+				player.consume_keyword(clear_kw)
+
+	# 18. 增加自身冷却（increase_self_cooldown）
+	if effect_dict.has("increase_self_cooldown"):
+		var amt = _normalize_cd_seconds(float(effect_dict.increase_self_cooldown))
+		if amt > 0.0:
+			context["cd_increase_self"] = float(context.get("cd_increase_self", 0.0)) + amt
+
+	# 19. 风味倍率（flavor_mult as direct key, not type)
+	if effect_dict.has("flavor_mult") and effect_type != "flavor_mult" and effect_type != "first_activate_bonus":
+		var fmult = float(effect_dict.flavor_mult)
+		if fmult != 1.0 and context.has("score_bonus"):
+			var cur_flavor = float(context["score_bonus"].get("flavor", 0.0))
+			var added = cur_flavor * (fmult - 1.0)
+			if added != 0.0:
+				var mult_scores = {"flavor": added}
+				SignalBus.score_produced.emit(player_idx, slot_idx, mult_scores)
+				_add_scores_to_context(mult_scores, context)
+
+	# 20. 卖相倍率（presentation_mult as direct key, not type)
+	if effect_dict.has("presentation_mult") and effect_type != "presentation_mult":
+		var pmult = float(effect_dict.presentation_mult)
+		if pmult != 1.0 and context.has("score_bonus"):
+			var cur_pres = float(context["score_bonus"].get("presentation", 0.0))
+			var added = cur_pres * (pmult - 1.0)
+			if added != 0.0:
+				var mult_scores = {"presentation": added}
+				SignalBus.score_produced.emit(player_idx, slot_idx, mult_scores)
+				_add_scores_to_context(mult_scores, context)
 
 func _process_keyword_effect(trigger: Dictionary, player_idx: int, slot_idx: int, context: Dictionary):
 	"""Process the keyword_effect field from a trigger dictionary (used by tools)."""

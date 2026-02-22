@@ -2,6 +2,58 @@ extends Node
 
 var ingredients: Dictionary = {}
 
+const STAT_TEXT := {
+	"flavor": "风味",
+	"presentation": "卖相",
+	"technique": "技法",
+	"aroma": "香气",
+}
+
+const CUISINE_TEXT := {
+	"washoku": "和食",
+	"chuuka": "中华",
+	"youshoku": "洋食",
+	"yatai": "夜市",
+	"kanmi": "甜品",
+	"yakuzen": "药膳",
+}
+
+const TAG_TEXT := {
+	"rich": "浓郁",
+	"spicy": "辛辣",
+	"umami_tag": "鲜味",
+	"light": "清淡",
+	"sweet": "甜味",
+	"sour": "酸味",
+	"fermented": "发酵",
+	"medicinal": "药用",
+	"rare": "稀有",
+	"numbing": "麻味",
+	"egg": "蛋类",
+	"divine": "神圣",
+	"grilled": "烧烤",
+	"greasy": "油腻",
+}
+
+const SPECIAL_EFFECT_TEXT := {
+	"appetize_right_20": "右侧相邻菜品上菜时额外+20风味",
+	"clear_greasy_1": "开场清除1层油腻",
+	"score_right_raw_30": "右侧生食菜品上菜时额外+30风味",
+	"fermented_growth_boost": "发酵类效果成长速度提升",
+	"umami_on_3rd_activate": "每第3次上菜时额外获得1层鲜美",
+	"dessert_zone_bonus": "甜品区菜品获得额外加成",
+	"addiction_double_stack": "与上瘾类效果联动时叠层翻倍",
+	"add_env_greasy_2": "首次上菜时给环境增加2层油腻",
+	"first_activate_bonus_50": "首次上菜额外+50风味",
+	"clear_all_env_1": "开场各清除1层环境减益",
+	"sizzle_threshold_minus_1": "爆香类爆发阈值-1",
+	"all_scores_mult_1_5": "该菜品最终得分×1.5",
+	"grant_secret_recipe": "开场获得1层秘方",
+	"refreshing_full_clear": "开场清除全部沉闷与味觉疲劳",
+	"double_next_activate": "首次上菜风味倍率翻倍",
+	"grant_char_aroma_3": "开场获得3层焦香",
+}
+
 func _ready():
 	_init_ingredients()
 
@@ -53,12 +105,63 @@ func _add(id: String, display_name: String, tier: int, cost: int, stats: Diction
 	}
 
 func _build_desc(stats: Dictionary, tags: Dictionary, effect: String, cuisine: String) -> String:
-	var d = ""
-	for k in stats:
-		d += "%s+%s " % [k.capitalize(), stats[k]]
+	var segments: Array[String] = []
+	var stat_parts: Array[String] = []
+	for key in ["flavor", "presentation", "technique", "aroma"]:
+		if not stats.has(key):
+			continue
+		var delta: float = float(stats.get(key, 0.0))
+		if absf(delta) <= 0.001:
+			continue
+		var name: String = STAT_TEXT.get(key, key)
+		if absf(delta - roundf(delta)) <= 0.001:
+			stat_parts.append("%s%+d" % [name, int(roundf(delta))])
+		else:
+			stat_parts.append("%s%+.1f" % [name, delta])
+	if not stat_parts.is_empty():
+		segments.append("属性：" + "、".join(stat_parts))
+
+	var add_tags: Array = tags.get("add", [])
+	if not add_tags.is_empty():
+		var names: Array[String] = []
+		for tag in add_tags:
+			names.append(_translate_tag(str(tag)))
+		segments.append("附加标签：" + "、".join(names))
+
+	var remove_tags: Array = tags.get("remove", [])
+	if not remove_tags.is_empty():
+		var names: Array[String] = []
+		for tag in remove_tags:
+			names.append(_translate_tag(str(tag)))
+		segments.append("移除标签：" + "、".join(names))
+
+	var require_tags: Array = tags.get("require", [])
+	if not require_tags.is_empty():
+		var names: Array[String] = []
+		for tag in require_tags:
+			names.append(_translate_tag(str(tag)))
+		segments.append("使用条件：目标需包含" + "、".join(names))
+
+	var forbid_tags: Array = tags.get("forbid", [])
+	if not forbid_tags.is_empty():
+		var names: Array[String] = []
+		for tag in forbid_tags:
+			names.append(_translate_tag(str(tag)))
+		segments.append("禁用条件：目标不能包含" + "、".join(names))
+
 	if cuisine != "" and cuisine != "无":
-		d += " | 对%s亲和" % cuisine
-	return d
+		var cuisine_name: String = CUISINE_TEXT.get(cuisine, cuisine)
+		segments.append("菜系亲和：%s（数值×1.5）" % cuisine_name)
+
+	if effect != "":
+		segments.append("特效：" + SPECIAL_EFFECT_TEXT.get(effect, "触发特殊效果"))
+
+	if segments.is_empty():
+		return "可用于菜品附魔"
+	return "；".join(segments)
+
+func _translate_tag(tag: String) -> String:
+	return TAG_TEXT.get(tag, tag)
 
 func _init_ingredients():
 	# ============================================================

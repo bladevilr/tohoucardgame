@@ -194,17 +194,37 @@ func get_stat_preview(ingredient: Dictionary, dish: Dictionary) -> Dictionary:
 
 func describe_special_effect(effect_id: String) -> String:
 	match effect_id:
+		"appetize_right_20":
+			return "右侧相邻菜品上菜时额外+20风味"
 		"clear_greasy_1":
 			return "开场清除1层油腻"
+		"score_right_raw_30":
+			return "右侧生食菜品上菜时额外+30风味"
+		"fermented_growth_boost":
+			return "发酵类效果成长速度提升"
+		"umami_on_3rd_activate":
+			return "每第3次上菜时额外获得1层鲜美"
+		"dessert_zone_bonus":
+			return "甜品区菜品获得额外加成"
+		"addiction_double_stack":
+			return "与上瘾类效果联动时叠层翻倍"
 		"add_env_greasy_2":
 			return "首次上菜时给环境增加2层油腻"
+		"first_activate_bonus_50":
+			return "首次上菜额外+50风味"
 		"clear_all_env_1":
 			return "开场各清除1层环境减益"
+		"sizzle_threshold_minus_1":
+			return "爆香类爆发阈值-1"
+		"all_scores_mult_1_5":
+			return "该菜品最终得分×1.5"
 		"double_next_activate":
 			return "首次上菜风味倍率翻倍"
 		"grant_secret_recipe":
 			return "开场获得1层秘方"
+		"refreshing_full_clear":
+			return "开场清除全部沉闷与味觉疲劳"
 		"grant_char_aroma_3":
 			return "开场获得3层焦香"
 		_:
-			return effect_id if effect_id != "" else "无特殊效果"
+			return "无特殊效果" if effect_id == "" else "特殊效果"

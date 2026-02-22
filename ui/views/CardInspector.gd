@@ -23,6 +23,19 @@ const TAG_TEXT := {
 	"stir_fried": "炒制",
 	"steamed": "蒸制",
 	"stewed": "炖煮",
+	"light": "清淡",
+	"rich": "浓郁",
+	"spicy": "辛辣",
+	"sour": "酸味",
+	"sweet": "甜味",
+	"umami_tag": "鲜味",
+	"fermented": "发酵",
+	"egg": "蛋类",
+	"rare": "稀有",
+	"medicinal": "药用",
+	"numbing": "麻味",
+	"divine": "神圣",
+	"greasy": "油腻",
 	"fusion": "融合",
 	"mastered": "精进",
 }
@@ -39,14 +52,25 @@ const KEYWORD_TEXT := {
 	"messy": "杂乱",
 	"taste_fatigue": "味觉疲劳",
 	"dull": "沉闷",
+	"burst": "爆发",
 }
 
 const INGREDIENT_SPECIAL_TEXT := {
+	"appetize_right_20": "右侧相邻菜品上菜时额外+20风味",
 	"clear_greasy_1": "开场清除1层油腻",
+	"score_right_raw_30": "右侧生食菜品上菜时额外+30风味",
+	"fermented_growth_boost": "发酵类效果成长速度提升",
+	"umami_on_3rd_activate": "每第3次上菜时额外获得1层鲜美",
+	"dessert_zone_bonus": "甜品区菜品获得额外加成",
+	"addiction_double_stack": "与上瘾类效果联动时叠层翻倍",
 	"add_env_greasy_2": "首次上菜时给环境增加2层油腻",
+	"first_activate_bonus_50": "首次上菜额外+50风味",
 	"clear_all_env_1": "开场各清除1层环境减益",
+	"sizzle_threshold_minus_1": "爆香类爆发阈值-1",
+	"all_scores_mult_1_5": "该菜品最终得分×1.5",
 	"double_next_activate": "首次上菜风味倍率翻倍",
 	"grant_secret_recipe": "开场获得1层秘方",
+	"refreshing_full_clear": "开场清除全部沉闷与味觉疲劳",
 	"grant_char_aroma_3": "开场获得3层焦香",
 }
 
@@ -56,31 +80,24 @@ const TERM_DEFINITIONS := {
 	"被动": "始终生效的持续效果，无需触发条件，贯穿整场对决。",
 	"相邻": "棋盘上左右紧贴该菜的卡牌。换位后相邻关系随之改变。",
 	"环境": "全场共享的负面状态。油腻每层 -2 风味；杂乱每层 -2 卖相；味觉疲劳每层 -15% 风味倍率。环境效果对双方同时生效。",
-	"鲜美": "增益关键字。每层在该菜上菜时额外提供 +3 风味，不受味觉疲劳影响。",
-	"焦香": "增益关键字。每层额外 +2 风味，且与「烧烤」标签菜联动时通常有额外触发。",
-	"摆盘": "增益关键字。每层 +3 卖相，卖相差距越大时对对手的持续扣分越强（持续伤害 = 差值 × 0.6 × 技法倍率/秒）。",
-	"刀工": "增益关键字。每层 +2 技法。技法影响全局倍率：总技法 × 0.02 + 1（50 技法 = ×2.0 倍，100 = ×3.0 倍）。",
-	"回味": "延迟增益关键字。该菜上桌后于下一道菜上桌时结算额外 +30% 风味加成（按本次风味计算）。",
-	"秘方": "高价值消耗型关键字。消耗时提供 +50% 风味爆发，每层独立计算，用后清零。",
-	"聚光": "消耗型关键字。每层消耗后立即缩短该菜 -1 秒冷却，可提前上桌。",
-	"油腻": "环境减益。每层扣除全场所有菜 -2 风味/次，多层叠加。吃清淡菜或药膳可降层。",
-	"杂乱": "环境减益。每层扣除全场所有菜 -2 卖相/次，削弱双方的持续伤害输出。",
-	"味觉疲劳": "环境减益。每层使全场风味倍率 -15%，叠加后衰减显著，需及时清除。",
-	"沉闷": "减益关键字。每层使该菜冷却增加 +0.3 秒，导致上菜时机延后。",
+	"鲜美": "正面效果。叠加生效：每拥有 1 层，该菜品每次上菜时额外增加 3 点基础风味。当层数达到 5 层或以上时，还会根据层数获得额外的总分百分比加成。",
+	"焦香": "正面效果。叠加生效：每拥有 1 层，该菜品每次上菜时额外增加 2 点基础风味。",
+	"摆盘": "正面效果。叠加生效：每拥有 1 层，该菜品每次上菜时额外增加 3 点基础卖相。当层数达到 5 层或以上时，还会根据层数获得额外的总分百分比加成。",
+	"刀工": "正面效果。叠加生效：每拥有 1 层，该菜品额外增加 2 点基础技法属性。当层数达到 5 层或以上时，还会根据层数额外减少自身的上菜冷却时间。",
+	"回味": "延迟效果。叠加生效：每拥有 1 层，当下一道菜上桌时，会额外产生相当于本次风味得分 30% 的加分。",
+	"秘方": "一次性爆发。上菜时消耗所有层数，每消耗 1 层使本次上菜的风味得分极大地增加 50%。",
+	"聚光": "特殊状态。获得时立即消耗所有层数，每消耗 1 层使该菜品当前的冷却时间立刻缩短 1 秒。",
+	"油腻": "全场共享的负面状态。每增加 1 层，全场所有菜品及其效果导致的风味得分固定减少 2 点。",
+	"杂乱": "全场共享的负面状态。每增加 1 层，全场所有菜品带来的卖相得分固定减少 2 点。",
+	"味觉疲劳": "全场共享的负面状态。每增加 1 层，全场的最终风味得分倍率降低 15%。",
+	"沉闷": "负面状态。每叠加 1 层，该菜品的冷却时间增加 0.3 秒。",
+	"爆发": "条件触发效果。当该菜品累计完成要求次数的上菜后，会额外触发一次强力的效果。触发后计数清零重新开始计算。",
 	"融合": "菜品标签。表示该菜横跨多个菜系，通常可触发多套体系的协同奖励。",
 	"精进": "菜品标签。表示该菜经过专项修炼，通常大幅强化关键字效率或倍率上限。",
 	"风味": "核心得分属性。每次上菜的基础分 = 风味值 × 技法倍率。对最终胜负影响最大。",
 	"卖相": "持续伤害属性。双方卖相差每秒产生持续伤害 = 差值 × 0.6 × 技法倍率，高卖相方持续扣对手分。",
 	"技法": "全局倍率属性。公式：倍率 = 1.0 + 技法总值 × 0.02。对全场所有风味和持续伤害同步生效。",
 	"香气": "加速属性。每 10 点香气缩短该菜冷却的 5%，上限 35%（70 香气 = 最快）。",
-	"开胃": "引擎机制。辣/酸标签菜激活时，推进相邻菜品当前CD的15%（前菜区额外+50%效果）。大菜获益更多，是'机枪重炮'流的核心。",
-	"上瘾": "引擎机制。浓郁/鲜味标签菜激活时叠加2层上瘾，每层每秒产出1.5分。上限99层，每5秒自然衰减10%，需持续投喂。",
-	"爆香": "引擎机制。烤/炒标签菜激活时积累热量，满4次后爆发，爆发分数 = 该菜基础得分 × 3.0。焦香5+层时阈值降至3次。",
-	"爽脆": "引擎机制。油炸标签菜激活时有25%概率双重激活（最多2层），第2次得分衰减为70%。",
-	"清口": "引擎机制。清淡/茶标签菜激活时清除当前油腻层数的50%，每清1层获得3.0分并全场CD加速0.3秒。",
-	"油腻（机制）": "引擎机制。同时拥有浓郁+油炸标签的菜激活时叠加油腻，每层减慢全场CD 8%，最多20层。清口标签同时存在时不叠加。",
-	"提鲜": "引擎机制。鲜味标签菜在同菜系≥2道时，标记右侧邻居下次激活得分×1.8。位置摆放至关重要。",
-	"发酵": "引擎机制。发酵标签菜首次激活×1.3倍得分，之后每次激活永久+1%（上限+30%）。越陈越香。",
 }
 
 const EFFECT_TERMS := {
@@ -443,24 +460,7 @@ func _collect_terms(item_data: Dictionary) -> Array[String]:
 		elif key == "mastered":
 			push_term.call("精进")
 
-	# 标签驱动的引擎机制术语
-	var tags: Array = item_data.get("tags", [])
-	if "fermented" in tags:
-		push_term.call("发酵")
-	if "spicy" in tags or "sour" in tags:
-		push_term.call("开胃")
-	if "rich" in tags or "umami_tag" in tags:
-		push_term.call("上瘾")
-	if "grilled" in tags or "stir_fried" in tags:
-		push_term.call("爆香")
-	if "rich" in tags and "fried" in tags:
-		push_term.call("油腻（机制）")
-	if "fried" in tags:
-		push_term.call("爽脆")
-	if "light" in tags or "tea" in tags:
-		push_term.call("清口")
-	if "umami_tag" in tags:
-		push_term.call("提鲜")
+	# (V1 标签驱动引擎机制已作为显式触发器重构，此处不再自动注入名词)
 
 	for effect in item_data.get("on_activate", []):
 		_collect_effect_terms(effect, push_term)
@@ -506,6 +506,9 @@ func _collect_effect_terms(effect: Variant, push_term: Callable) -> void:
 			var tag_name: String = _translate_tag(str(cond.get("has_tag", "")))
 			if tag_name != "":
 				push_term.call(tag_name)
+	
+	if eff.has("accumulate"):
+		push_term.call("爆发")
 
 func _add_glossary_entry(title: String, desc: String) -> void:
 	var row: VBoxContainer = VBoxContainer.new()
@@ -545,6 +548,19 @@ func _describe_trigger(trigger: Dictionary) -> String:
 
 	var desc: String = str(trigger.get("desc", ""))
 	if desc != "":
+		# Replace raw english tags that might have leaked into descriptions
+		for key in TAG_TEXT:
+			if desc.find("(" + key + ")") >= 0:
+				desc = desc.replace("(" + key + ")", "(%s)" % TAG_TEXT[key])
+		
+		# Clarify cooldown mechanics
+		desc = desc.replace("自身CD-", "自身当前冷却缩短")
+		desc = desc.replace("全场CD-", "全场当前冷却缩短")
+		desc = desc.replace("CD-", "当前冷却缩短")
+		desc = desc.replace("自身CD+", "自身当前冷却增加")
+		desc = desc.replace("全场CD+", "全场当前冷却增加")
+		desc = desc.replace("CD+", "当前冷却增加")
+		
 		return "%s：%s" % [head, desc]
 	if trigger.has("effect") and trigger.get("effect") is Dictionary:
 		return "%s：%s" % [head, _describe_effect(trigger.get("effect"))]
@@ -750,8 +766,6 @@ func _add_sell_button(item_data: Dictionary) -> void:
 	btn.name = "SellButton"
 	if not is_owned:
 		btn.text = "未持有（不可出售）"
-	elif item_type == "ingredient":
-		btn.text = "出售并附魔首张菜（+%d 金）" % sell_price
 	else:
 		btn.text = "出售（获得 %d 金）" % sell_price
 	btn.custom_minimum_size = Vector2(0, 40)
@@ -785,13 +799,7 @@ func _add_sell_button(item_data: Dictionary) -> void:
 
 			player.add_gold(sell_price)
 
-			if item_type == "ingredient":
-				if bp_idx_before >= 0:
-					var target_slot: int = _find_first_enchant_target_slot(player)
-					if target_slot >= 0:
-						IngredientManager.apply_from_backpack(player, bp_idx_before, target_slot)
-
-			# 非食材附魔路径：按持有位置移除被出售物品
+			# 按持有位置移除被出售物品
 			if board_idx >= 0:
 				player.board[board_idx] = null
 
@@ -809,19 +817,6 @@ func _add_sell_button(item_data: Dictionary) -> void:
 	)
 	
 	vbox.add_child(btn)
-
-func _find_first_enchant_target_slot(player: PlayerState) -> int:
-	var limit: int = mini(player.board_size, player.board.size())
-	for i in range(limit):
-		var dish = player.board[i]
-		if dish == null:
-			continue
-		if dish.has("_ref_to"):
-			continue
-		if str(dish.get("item_type", "")) == "tool":
-			continue
-		return i
-	return -1
 
 func _describe_ingredient_special(effect_id: String) -> String:
 	if IngredientManager and IngredientManager.has_method("describe_special_effect"):

@@ -41,17 +41,18 @@ layout_mode = 2
 theme_override_constants/separation = 16
 alignment = 1
 
-[node name="TitleLabel" type="Label" parent="DecoFrame/VBox"]
+[node name="TitleLabel" type="RichTextLabel" parent="DecoFrame/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 48
-theme_override_colors/font_color = Color(1, 0.843, 0, 1)
-text = "东方料理对决"
-horizontal_alignment = 1
+custom_minimum_size = Vector2(0, 60)
+bbcode_enabled = true
+text = "[center][font_size=48][color=#5c3a1e]东方[font_size=30][color=#b08080]喂猪[/color][/font_size]料理对决[/color][/font_size][/center]"
+fit_content = true
+scroll_active = false
 
 [node name="SubtitleLabel" type="Label" parent="DecoFrame/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
-theme_override_colors/font_color = Color(0.62, 0.584, 0.69, 1)
+theme_override_colors/font_color = Color(0.72, 0.68, 0.78, 1)
 text = "幻想乡料理擂台"
 horizontal_alignment = 1
 

@@ -139,14 +139,26 @@ func _run_animation(pp, op, vs, pn, ps, on, os_, dl) -> void:
 	var t := create_tween()
 	t.set_parallel(false)
 
-	# 0.15s: 双侧头像同时滑入
 	t.tween_interval(0.15)
 	t.tween_callback(func():
-		print("VS: sliding portraits to x=50 and x=-610")
 		var tw2 := create_tween()
 		tw2.set_parallel(true)
-		tw2.tween_property(pp, "position:x", 50.0, 0.40).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		tw2.tween_property(op, "position:x", -610.0, 0.40).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		
+		var vp_x := get_viewport_rect().size.x
+		var vp_y := get_viewport_rect().size.y
+		var half_w := vp_x * 0.5
+		
+		# center portraits vertically and center horizontally within their halves
+		var target_y := (vp_y - 400.0) * 0.5
+		var left_target_x := (half_w - 340.0) * 0.5
+		var right_target_x := (half_w - 340.0) * 0.5
+		
+		# set their initial positions just off-screen before starting the tween so they start vertically centered
+		pp.position.y = target_y
+		op.position.y = target_y
+		
+		tw2.tween_property(pp, "position:x", left_target_x, 0.40).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw2.tween_property(op, "position:x", right_target_x, 0.40).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	)
 	t.tween_interval(0.52)
 
