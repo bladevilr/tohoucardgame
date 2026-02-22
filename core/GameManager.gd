@@ -14,6 +14,7 @@ var _is_pve_showdown: bool = false  # Tracks if current showdown originated from
 var _pending_level_ups: int = 0     # Level-ups awaiting UI resolution
 var game_mode: String = "casual"    # "ranked" / "casual"
 var _match_save_done: bool = false  # 防止重复存档
+var _cached_online_shadow: Dictionary = {}  # 从服务器预取的对手阵容
 
 # Day action sequence
 # Each action has: phase type, name, description
@@ -39,7 +40,11 @@ const DAY_ACTIONS := [
 ]
 
 func _ready():
-	pass
+	OnlineManager.shadow_fetched.connect(_on_shadow_fetched)
+
+func _on_shadow_fetched(data: Dictionary) -> void:
+	if data.get("ok", false):
+		_cached_online_shadow = data.get("shadow", {})
 
 func start_new_game(chef_id: String, opponent_chef_id: String = "", mode: String = "casual", opponent_profile: Dictionary = {}):
 	match_state = MatchState.new()
@@ -83,10 +88,13 @@ func _apply_chef_passive(player: PlayerState):
 
 func start_day():
 	current_action = 0
+	_cached_online_shadow = {}
 	match_state.pick_judges()
 	ShopManager.generate_shop(match_state.players[0], match_state.current_day)
 	if ai_controller != null:
 		ai_controller.do_shop_phase()
+	# 预取服务器上其他玩家的阵容快照，供 PvP 使用
+	OnlineManager.fetch_random_shadow()
 	SignalBus.day_started.emit(match_state.current_day)
 	_advance_to_next_action()
 
@@ -167,11 +175,22 @@ func _advance_to_next_action():
 				match_state.current_encounter = pve_choices[0]
 			change_phase(GameConfig.Phase.PVE_CHOICE)
 		"PVP_BATTLE":
-			# PvP showdown - try to use shadow opponent, fallback to AI
+			# PvP showdown - try online shadow → local shadow → AI fallback
+			var shadow: Dictionary = {}
+			if not _cached_online_shadow.is_empty():
+				# 使用服务器上的真实玩家阵容
+				shadow = _cached_online_shadow.get("snapshot", {})
+				shadow["chef_id"] = _cached_online_shadow.get("chef_id", "")
+				shadow["display_name"] = _cached_online_shadow.get("nickname", "")
+				_cached_online_shadow = {}
+			else:
+				shadow = SaveManager.get_random_shadow()
 			if ai_controller != null:
-				var shadow: Dictionary = SaveManager.get_random_shadow()
 				if not shadow.is_empty():
 					ai_controller.setup_shadow_opponent(shadow)
+					var opp_name: String = str(shadow.get("display_name", shadow.get("nickname", "")))
+					if opp_name != "":
+						match_state.opponent_display_name = opp_name
 				else:
 					ai_controller.do_shop_phase()
 			change_phase(GameConfig.Phase.PREP)
@@ -210,6 +229,10 @@ func _save_match_result(winner_idx: int) -> void:
 	var player: PlayerState = match_state.players[0]
 	var result: String = "win" if winner_idx == 0 else "loss"
 	SaveManager.record_match(game_mode, result, player.chef_id, player.prestige, match_state.current_day)
+	# Online leaderboard submission
+	var p_score: float = float(match_state.showdown_scores[0]) if match_state.showdown_scores.size() > 0 else 0.0
+	var o_score: float = float(match_state.showdown_scores[1]) if match_state.showdown_scores.size() > 1 else 0.0
+	OnlineManager.submit_match(game_mode, result, player.chef_id, player.prestige, match_state.current_day, p_score, o_score)
 
 func get_current_action_data() -> Dictionary:
 	"""Get the current action's metadata for UI display."""
@@ -263,6 +286,7 @@ func _save_player_shadow() -> void:
 		"display_name": SaveManager.get_nickname(),
 	}
 	SaveManager.save_shadow(snapshot)
+	OnlineManager.upload_shadow(snapshot)
 
 func _award_player_xp(amount: int) -> void:
 	"""Award XP to player 0, track level-ups, emit signals."""

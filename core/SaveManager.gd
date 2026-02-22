@@ -29,7 +29,8 @@ func _reset_data() -> void:
 		"best_prestige": 0, "best_day": 0,
 		"chef_stats": {},
 		"history": [],
-		"shadow_pool": []
+		"shadow_pool": [],
+		"client_id": ""
 	}
 
 func save_data() -> void:
@@ -109,3 +110,10 @@ func get_random_shadow() -> Dictionary:
 	if pool.is_empty():
 		return {}
 	return pool[randi() % pool.size()]
+
+func set_client_id(id: String) -> void:
+	_data["client_id"] = id
+	save_data()
+
+func get_client_id() -> String:
+	return str(_data.get("client_id", ""))

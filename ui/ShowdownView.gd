@@ -170,7 +170,12 @@ func _setup_opponent_badge() -> void:
 		return
 
 	var chef = ChefDatabase.get_chef(enemy.chef_id)
-	opponent_name_label.text = _display_chef_name(enemy.chef_id, str(chef.get("name", "未知对手")))
+	var ms = GameManager.get_match_state()
+	var opp_display: String = ms.opponent_display_name if ms else ""
+	if opp_display != "" and opp_display != "AI对手":
+		opponent_name_label.text = opp_display
+	else:
+		opponent_name_label.text = _display_chef_name(enemy.chef_id, str(chef.get("name", "未知对手")))
 	opponent_portrait.texture = ArtDatabase.get_chef_portrait(enemy.chef_id)
 	opponent_badge.visible = true
 
