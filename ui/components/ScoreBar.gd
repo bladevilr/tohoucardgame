@@ -1,152 +1,94 @@
 extends VBoxContainer
 
-# Compact showdown score widget with bars, diff indicator, and DoT/environment text.
+## 分差制血槽 — 200分总量，中间为0分差，左右各100分
+## P1(我方)得分推向右侧蓝色，P2(对手)得分推向左侧红色
+
 @onready var p1_score_label: Label = $ScoreRow/P1Score
 @onready var p2_score_label: Label = $ScoreRow/P2Score
-@onready var p1_bar: ProgressBar = $ScoreRow/BarContainer/P1Bar
-@onready var p2_bar: ProgressBar = $ScoreRow/BarContainer/P2Bar
-@onready var dot_label: Label = $InfoRow/DotLabel
-@onready var env_label: Label = $InfoRow/EnvLabel
+@onready var diff_bar: ProgressBar = $ScoreRow/BarWrapper/DiffBar
+@onready var center_line: ColorRect = $ScoreRow/BarWrapper/CenterLine
 @onready var diff_label: Label = $DetailRow/DiffLabel
 
-var _display_p1 = 0.0
-var _display_p2 = 0.0
+var _threshold: float = 100.0
 
 func _ready() -> void:
-	_apply_bar_shader(p1_bar)
-	_apply_bar_shader(p2_bar)
-	# 确保Label可见且有默认样式
+	_threshold = GameConfig.SCORE_DIFF_WIN_THRESHOLD
 	if p1_score_label:
 		p1_score_label.visible = true
-		p1_score_label.modulate = Color.WHITE
-	if p2_score_label:
-		p2_score_label.visible = true
-		p2_score_label.modulate = Color.WHITE
-
-	# 放大所有视觉元素并应用精美的样式
-	if p1_score_label:
 		p1_score_label.add_theme_font_size_override("font_size", 48)
 	if p2_score_label:
+		p2_score_label.visible = true
 		p2_score_label.add_theme_font_size_override("font_size", 48)
 	if diff_label:
 		diff_label.add_theme_font_size_override("font_size", 24)
-	
-	_apply_beautiful_styles()
-	
-	# 隐去底部的无用Label以留出空间
-	if dot_label:
-		dot_label.visible = false
-	if env_label:
-		env_label.visible = false
+	_apply_bar_styles()
 
-func _apply_beautiful_styles() -> void:
-	var bg = StyleBoxFlat.new()
-	bg.bg_color = Color(0.12, 0.11, 0.15, 0.9)
-	bg.border_width_left = 2; bg.border_width_top = 2; bg.border_width_right = 2; bg.border_width_bottom = 2
+func _apply_bar_styles() -> void:
+	if diff_bar == null:
+		return
+	diff_bar.max_value = _threshold * 2.0
+	diff_bar.value = _threshold
+	diff_bar.custom_minimum_size.y = 48
+	diff_bar.show_percentage = false
+
+	var bg := StyleBoxFlat.new()
+	bg.bg_color = Color(0.85, 0.35, 0.3, 0.9)
+	bg.corner_radius_top_left = 6; bg.corner_radius_top_right = 6
+	bg.corner_radius_bottom_left = 6; bg.corner_radius_bottom_right = 6
+	bg.border_width_left = 2; bg.border_width_top = 2
+	bg.border_width_right = 2; bg.border_width_bottom = 2
 	bg.border_color = Color(0.4, 0.35, 0.5, 0.8)
-	bg.corner_radius_top_left = 8; bg.corner_radius_top_right = 8; bg.corner_radius_bottom_right = 8; bg.corner_radius_bottom_left = 8
-	
-	var fill_p1 = StyleBoxFlat.new()
-	fill_p1.bg_color = Color(0.35, 0.7, 1.0, 0.95)
-	fill_p1.corner_radius_top_left = 6; fill_p1.corner_radius_bottom_left = 6
 
-	var fill_p2 = StyleBoxFlat.new()
-	fill_p2.bg_color = Color(1.0, 0.45, 0.4, 0.95)
-	fill_p2.corner_radius_top_right = 6; fill_p2.corner_radius_bottom_right = 6
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = Color(0.35, 0.7, 1.0, 0.95)
+	fill.corner_radius_top_left = 4; fill.corner_radius_bottom_left = 4
 
-	if p1_bar:
-		p1_bar.add_theme_stylebox_override("background", bg)
-		p1_bar.add_theme_stylebox_override("fill", fill_p1)
-		p1_bar.custom_minimum_size.y = 48
-	if p2_bar:
-		# HTML / UI Convention usually places right side filling right to left if fill_mode = 1
-		p2_bar.fill_mode = ProgressBar.FILL_END_TO_BEGIN
-		p2_bar.add_theme_stylebox_override("background", bg)
-		p2_bar.add_theme_stylebox_override("fill", fill_p2)
-		p2_bar.custom_minimum_size.y = 48
+	diff_bar.add_theme_stylebox_override("background", bg)
+	diff_bar.add_theme_stylebox_override("fill", fill)
 
-func update_scores(p1_score: float, p2_score: float):
-	print("ScoreBar.update_scores called: p1=", p1_score, " p2=", p2_score)
-	print("ScoreBar @onready nodes: p1_score_label=", p1_score_label != null, " p2_score_label=", p2_score_label != null)
+func update_scores(p1_score: float, p2_score: float) -> void:
+	if p1_score_label:
+		p1_score_label.text = "%d" % int(p1_score)
+	if p2_score_label:
+		p2_score_label.text = "%d" % int(p2_score)
 
-	if p1_score_label == null or p2_score_label == null:
-		print("ERROR: ScoreBar labels are null!")
-		return
+	var diff := p1_score - p2_score
+	# bar value: threshold = center (tie), 2*threshold = P1 wins, 0 = P2 wins
+	if diff_bar:
+		diff_bar.value = _threshold + clampf(diff, -_threshold, _threshold)
 
-	# 使用@onready变量
-	p1_score_label.text = "%d" % int(p1_score)
-	p2_score_label.text = "%d" % int(p2_score)
-	print("ScoreBar: Set texts to ", p1_score_label.text, " and ", p2_score_label.text)
-	print("ScoreBar: Label visible? p1=", p1_score_label.visible, " p2=", p2_score_label.visible)
+	_update_leader_glow(diff)
+	_update_diff(diff)
 
-	var total = maxf(1.0, p1_score + p2_score)
-	if p1_bar:
-		p1_bar.max_value = total
-		p1_bar.value = p1_score
-	if p2_bar:
-		p2_bar.max_value = total
-		p2_bar.value = p2_score
-
-	_display_p1 = p1_score
-	_display_p2 = p2_score
-	_update_leader_glow(p1_score, p2_score)
-	_update_diff(p1_score, p2_score)
-
-func update_dot(dot_per_sec: float, leading_player: int):
-	if dot_label == null:
-		return
-	if absf(dot_per_sec) < 0.01:
-		dot_label.text = "卖相压制: --"
-		dot_label.remove_theme_color_override("font_color")
-	else:
-		var side = "我方" if leading_player == 0 else "对手"
-		dot_label.text = "卖相压制: %s +%.1f/秒" % [side, dot_per_sec]
-		var color = Color(0.27, 0.85, 0.48) if leading_player == 0 else Color(0.96, 0.30, 0.30)
-		dot_label.add_theme_color_override("font_color", color)
-
-func update_environment(env_keywords: Dictionary):
-	if env_label == null:
-		return
-	var parts: Array[String] = []
-	for kw_id in env_keywords:
-		var stacks = env_keywords[kw_id]
-		if stacks > 0:
-			var kw = KeywordDatabase.get_keyword(kw_id)
-			var name = kw.get("name", kw_id) if not kw.is_empty() else kw_id
-			parts.append("%s ×%d" % [name, stacks])
-	env_label.text = "环境: " + (" ".join(parts) if not parts.is_empty() else "无")
-
-func _update_leader_glow(p1_score: float, p2_score: float) -> void:
+func _update_leader_glow(diff: float) -> void:
 	if p1_score_label == null or p2_score_label == null:
 		return
-
-	if absf(p1_score - p2_score) < 0.01:
+	if absf(diff) < 1.0:
 		p1_score_label.remove_theme_color_override("font_color")
 		p2_score_label.remove_theme_color_override("font_color")
 		return
-	if p1_score > p2_score:
+	if diff > 0:
 		p1_score_label.add_theme_color_override("font_color", Color(1.0, 0.88, 0.35))
 		p2_score_label.add_theme_color_override("font_color", Color(0.78, 0.78, 0.82))
 	else:
 		p2_score_label.add_theme_color_override("font_color", Color(1.0, 0.88, 0.35))
 		p1_score_label.add_theme_color_override("font_color", Color(0.78, 0.78, 0.82))
 
-func _apply_bar_shader(bar: ProgressBar) -> void:
-	pass # 我们现在使用 StyleBoxFlat 替代旧版 Shader 以防冲突
-
-func _update_diff(p1_score: float, p2_score: float) -> void:
-	# Keeps the lead state readable without scanning both raw scores.
+func _update_diff(diff: float) -> void:
 	if diff_label == null:
 		return
-	var diff = p1_score - p2_score
 	if absf(diff) < 1.0:
 		diff_label.text = "平分秋色"
 		diff_label.add_theme_color_override("font_color", Color(0.78, 0.78, 0.82))
 	elif diff > 0:
-		diff_label.text = "我方领先 +%d" % int(diff)
+		diff_label.text = "我方领先 +%d / %d" % [int(diff), int(_threshold)]
 		diff_label.add_theme_color_override("font_color", Color(0.27, 0.85, 0.48))
 	else:
-		diff_label.text = "对手领先 +%d" % int(absf(diff))
+		diff_label.text = "对手领先 +%d / %d" % [int(absf(diff)), int(_threshold)]
 		diff_label.add_theme_color_override("font_color", Color(0.96, 0.30, 0.30))
 
+func update_dot(_dot_per_sec: float, _leading_player: int) -> void:
+	pass
 
+func update_environment(_env_keywords: Dictionary) -> void:
+	pass

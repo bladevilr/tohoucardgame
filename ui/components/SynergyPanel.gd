@@ -58,7 +58,7 @@ func _build_effect_text(syn: Dictionary) -> String:
 		var value = effect[key]
 		match key:
 			"flavor_mult":
-				parts.append("风味x%s" % str(value))
+				parts.append("美味度x%s" % str(value))
 			"presentation_add_pct":
 				parts.append("卖相+%d%%" % int(float(value) * 100.0))
 			"technique_mult":
@@ -66,7 +66,7 @@ func _build_effect_text(syn: Dictionary) -> String:
 			"small_cd_mult":
 				parts.append("小型CDx%s" % str(value))
 			"large_flavor_mult":
-				parts.append("大型风味x%s" % str(value))
+				parts.append("大型美味度x%s" % str(value))
 			_:
 				parts.append("%s:%s" % [key, str(value)])
 

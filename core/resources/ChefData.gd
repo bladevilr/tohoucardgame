@@ -9,7 +9,7 @@ class_name ChefData
 @export var skill_effect: Dictionary = {}
 @export var skill_description: String = ""
 @export var tool_slots: int = 3
-@export var base_stats: Dictionary = {"flavor": 0, "aroma": 0, "technique": 0, "presentation": 0}
+@export var base_stats: Dictionary = {"flavor": 0, "technique": 0, "presentation": 0}
 
 func to_dict() -> Dictionary:
 	return {

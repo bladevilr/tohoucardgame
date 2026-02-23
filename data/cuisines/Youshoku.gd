@@ -3,19 +3,19 @@ class_name YoushokuPool
 
 ## 洋食カード・プール (Western Cuisine)
 ## 使用者: 咲夜 / 妖梦 / アリス / パチュリー
-## 設計方針: 濃郁摆盘流 — 卖相DoT壓制 / 摆盘閾値爆発 / rich標籤聯動
+## 設計方針: 濃郁增色流 — 卖相DoT壓制 / 增色閾値爆発 / rich標籤聯動
 ## キーワード生成: plating, knife_work, umami, aftertaste
 
 static func get_dishes() -> Array:
 	return [
-		# ===== BRONZE (Tier 0) — 摆盘引擎 =====
+		# ===== BRONZE (Tier 0) — 增色引擎 =====
 		{
 			"id": "consomme", "name": "清汤", "name_cn": "清汤",
 			"cuisine": "youshoku", "tier": 0, "size": 1, "cooldown": 3.5,
 			"flavor": 5, "mod_slots": 2,
 			"tags": ["soup", "light"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "desc": "获得1层刀工；清除1层味觉疲劳", "effect": {"add_keyword": "knife_work", "keyword_stacks": 1, "clear_environment": "taste_fatigue", "clear_amount": 1}}
+				{"event": "item_activated", "condition": "self", "desc": "获得2层精技；清除1层疲劳", "effect": {"add_keyword": "knife_work", "keyword_stacks": 2, "clear_environment": "taste_fatigue", "clear_amount": 1}}
 			],
 			"on_activate": [],
 			"description": "澄清透亮的法式清汤，滴滴皆是高汤精华。"
@@ -26,7 +26,7 @@ static func get_dishes() -> Array:
 			"flavor": 6, "mod_slots": 2,
 			"tags": ["egg", "rich"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "desc": "获得1层摆盘；若相邻有洋食(浓郁)菜品，额外获得1层摆盘", "effect": {"add_keyword": "plating", "keyword_stacks": 1, "if_adjacent_has_tag": "rich", "then_bonus": {"add_keyword": "plating", "keyword_stacks": 1}}}
+				{"event": "item_activated", "condition": "self", "desc": "获得3层增色；若相邻有洋食(浓郁)菜品，额外获得3层增色", "effect": {"add_keyword": "plating", "keyword_stacks": 3, "if_adjacent_has_tag": "rich", "then_bonus": {"add_keyword": "plating", "keyword_stacks": 3}}}
 			],
 			"on_activate": [],
 			"description": "奶香蛋液与馅料焗烤的法式咸派。"
@@ -37,7 +37,7 @@ static func get_dishes() -> Array:
 			"flavor": 4, "mod_slots": 2,
 			"tags": ["vegetable", "light"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "desc": "卖相+3，获得1层摆盘；清除1层油腻", "effect": {"type": "stat_bonus", "presentation": 3, "add_keyword": "plating", "keyword_stacks": 1, "clear_environment": "greasy", "clear_amount": 1}}
+				{"event": "item_activated", "condition": "self", "desc": "卖相+3，获得3层增色；清除1层油腻", "effect": {"type": "stat_bonus", "presentation": 3, "add_keyword": "plating", "keyword_stacks": 3, "clear_environment": "greasy", "clear_amount": 1}}
 			],
 			"on_activate": [],
 			"description": "帕马森芝士与面包丁点缀的经典沙拉。"
@@ -48,7 +48,7 @@ static func get_dishes() -> Array:
 			"flavor": 5, "mod_slots": 2,
 			"tags": ["grilled", "light"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "desc": "获得1层焦香；若在最左侧额外+5卖相", "effect": {"add_keyword": "char_aroma", "keyword_stacks": 1, "if_position": "leftmost", "then": {"type": "stat_bonus", "presentation": 5}, "else": {}}}
+				{"event": "item_activated", "condition": "self", "desc": "获得2层提味；若在最左侧额外+5卖相", "effect": {"add_keyword": "umami", "keyword_stacks": 2, "if_position": "leftmost", "then": {"type": "stat_bonus", "presentation": 5}, "else": {}}}
 			],
 			"on_activate": [],
 			"description": "烤至焦脆的面包片佐番茄罗勒。"
@@ -59,7 +59,7 @@ static func get_dishes() -> Array:
 			"flavor": 5, "mod_slots": 2,
 			"tags": ["soup", "rich"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "desc": "获得1层鲜美和1层摆盘", "effect": {"add_keyword": "umami", "keyword_stacks": 1, "add_keyword_2": "plating", "keyword_stacks_2": 1}},
+				{"event": "item_activated", "condition": "self", "desc": "获得3层提味和3层增色", "effect": {"add_keyword": "umami", "keyword_stacks": 3, "add_keyword_2": "plating", "keyword_stacks_2": 3}},
 				{"event": "adjacent_activate", "effect": {"reduce_cooldown_self": 1.0}, "desc": "相邻菜品激活时，自身CD-1秒"}
 			],
 			"on_activate": [],
@@ -71,7 +71,7 @@ static func get_dishes() -> Array:
 			"flavor": 5, "mod_slots": 2,
 			"tags": ["meat", "raw", "light"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "desc": "获得1层刀工和1层摆盘", "effect": {"add_keyword": "knife_work", "keyword_stacks": 1, "add_keyword_2": "plating", "keyword_stacks_2": 1}}
+				{"event": "item_activated", "condition": "self", "desc": "获得2层精技和3层增色", "effect": {"add_keyword": "knife_work", "keyword_stacks": 2, "add_keyword_2": "plating", "keyword_stacks_2": 3}}
 			],
 			"on_activate": [],
 			"description": "鲜红牛肉薄片淋上柠檬油醋汁。"
@@ -82,7 +82,7 @@ static func get_dishes() -> Array:
 			"flavor": 5, "mod_slots": 2,
 			"tags": ["meat", "fried", "rich"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "desc": "获得1层焦香；30%概率额外获得1层摆盘", "effect": {"add_keyword": "char_aroma", "keyword_stacks": 1, "random_chance": 0.3, "on_success": {"add_keyword": "plating", "keyword_stacks": 1}}},
+				{"event": "item_activated", "condition": "self", "desc": "获得2层提味；30%概率额外获得3层增色", "effect": {"add_keyword": "umami", "keyword_stacks": 2, "random_chance": 0.3, "on_success": {"add_keyword": "plating", "keyword_stacks": 3}}},
 				{"event": "friend_activate", "effect": {"reduce_cooldown_self": 1.0}, "desc": "己方其他菜品激活时，自身CD-1秒"}
 			],
 			"on_activate": [],
@@ -94,20 +94,20 @@ static func get_dishes() -> Array:
 			"flavor": 6, "mod_slots": 2,
 			"tags": ["soup", "rich"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "desc": "获得1层鲜美；相邻CD-1秒", "effect": {"add_keyword": "umami", "keyword_stacks": 1, "reduce_cooldown_adjacent": 1.0}}
+				{"event": "item_activated", "condition": "self", "desc": "获得3层提味；相邻CD-1秒", "effect": {"add_keyword": "umami", "keyword_stacks": 3, "reduce_cooldown_adjacent": 1.0}}
 			],
 			"on_activate": [],
 			"description": "焗烤芝士封顶的浓郁洋葱汤。"
 		},
 
-		# ===== SILVER (Tier 1) — 摆盘+条件 =====
+		# ===== SILVER (Tier 1) — 增色+条件 =====
 		{
 			"id": "gratin", "name": "焗烤", "name_cn": "焗烤",
 			"cuisine": "youshoku", "tier": 1, "size": 2, "cooldown": 6.0,
 			"flavor": 10, "mod_slots": 2,
 			"tags": ["rich", "grilled"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "desc": "获得1层焦香和1层摆盘；每3次爆发+30风味", "effect": {"add_keyword": "char_aroma", "keyword_stacks": 1, "add_keyword_2": "plating", "keyword_stacks_2": 1, "accumulate": {"counter_id": "gratin_heat", "increment": 1, "threshold": 3, "reset_counter": true, "on_threshold": {"flavor": 30}}}}
+				{"event": "item_activated", "condition": "self", "desc": "获得2层提味和3层增色；每3次爆发+30美味度", "effect": {"add_keyword": "umami", "keyword_stacks": 2, "add_keyword_2": "plating", "keyword_stacks_2": 3, "accumulate": {"counter_id": "gratin_heat", "increment": 1, "threshold": 3, "reset_counter": true, "on_threshold": {"flavor": 30}}}}
 			],
 			"on_activate": [],
 			"description": "奶油酱汁与芝士焗至金黄的烤菜。"
@@ -118,7 +118,7 @@ static func get_dishes() -> Array:
 			"flavor": 11, "mod_slots": 2,
 			"tags": ["meat", "stewed", "rich"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "desc": "获得1层鲜美和1层回味；相邻CD-1秒", "effect": {"add_keyword": "umami", "keyword_stacks": 1, "add_keyword_2": "aftertaste", "keyword_stacks_2": 1, "reduce_cooldown_adjacent": 1.0}}
+				{"event": "item_activated", "condition": "self", "desc": "获得3层提味和1层回味；相邻CD-1秒", "effect": {"add_keyword": "umami", "keyword_stacks": 3, "add_keyword_2": "aftertaste", "keyword_stacks_2": 1, "reduce_cooldown_adjacent": 1.0}}
 			],
 			"on_activate": [],
 			"description": "红酒慢炖的嫩鸡，汤汁浓郁醇厚。"
@@ -129,7 +129,7 @@ static func get_dishes() -> Array:
 			"flavor": 7, "mod_slots": 2,
 			"tags": ["seafood", "light"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "desc": "获得2层摆盘，卖相+3；清除1层油腻", "effect": {"add_keyword": "plating", "keyword_stacks": 2, "type": "stat_bonus", "presentation": 3, "clear_environment": "greasy", "clear_amount": 1}}
+				{"event": "item_activated", "condition": "self", "desc": "获得2层增色，卖相+3；清除1层油腻", "effect": {"add_keyword": "plating", "keyword_stacks": 2, "type": "stat_bonus", "presentation": 3, "clear_environment": "greasy", "clear_amount": 1}}
 			],
 			"on_activate": [],
 			"description": "金枪鱼与橄榄交织的南法风情沙拉。"
@@ -140,7 +140,7 @@ static func get_dishes() -> Array:
 			"flavor": 10, "mod_slots": 2,
 			"tags": ["rice", "rich", "umami_tag"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "desc": "获得1层鲜美和1层摆盘，风味×1.2", "effect": {"add_keyword": "umami", "keyword_stacks": 1, "add_keyword_2": "plating", "keyword_stacks_2": 1, "flavor_mult": 1.2}}
+				{"event": "item_activated", "condition": "self", "desc": "获得3层提味和3层增色，美味度×1.2", "effect": {"add_keyword": "umami", "keyword_stacks": 3, "add_keyword_2": "plating", "keyword_stacks_2": 3, "flavor_mult": 1.2}}
 			],
 			"on_activate": [],
 			"description": "不断搅拌至绵密的意式奶油烩饭。"
@@ -151,7 +151,7 @@ static func get_dishes() -> Array:
 			"flavor": 7, "mod_slots": 2,
 			"tags": ["meat", "mastered"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "desc": "首次激活卖相+10，获得2层摆盘", "effect": {"type": "first_activate_bonus", "presentation": 10, "extra": {"add_keyword": "plating", "keyword_stacks": 2}}}
+				{"event": "item_activated", "condition": "self", "desc": "首次激活卖相+10，获得2层增色", "effect": {"type": "first_activate_bonus", "presentation": 10, "extra": {"add_keyword": "plating", "keyword_stacks": 2}}}
 			],
 			"on_activate": [],
 			"description": "层层压制成型的冷切肉冻，精致优雅。"
@@ -162,7 +162,7 @@ static func get_dishes() -> Array:
 			"flavor": 7, "mod_slots": 2,
 			"tags": ["meat", "rich"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "desc": "获得1层摆盘；若相邻有洋食(浓郁)菜品，额外卖相+5", "effect": {"add_keyword": "plating", "keyword_stacks": 1, "if_adjacent_has_tag": "rich", "then_bonus": {"type": "stat_bonus", "presentation": 5}}}
+				{"event": "item_activated", "condition": "self", "desc": "获得1层增色；若相邻有洋食(浓郁)菜品，额外卖相+5", "effect": {"add_keyword": "plating", "keyword_stacks": 1, "if_adjacent_has_tag": "rich", "then_bonus": {"type": "stat_bonus", "presentation": 5}}}
 			],
 			"on_activate": [],
 			"description": "蒜香黄油焗烤的法式蜗牛。"
@@ -173,7 +173,7 @@ static func get_dishes() -> Array:
 			"flavor": 10, "mod_slots": 2,
 			"tags": ["noodle", "egg", "rich", "umami_tag"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "desc": "获得1层鲜美和1层摆盘；右邻也获得1层摆盘", "effect": {"add_keyword": "umami", "keyword_stacks": 1, "add_keyword_2": "plating", "keyword_stacks_2": 1, "chain_right": {"range": 1, "effect": {"add_keyword": "plating", "keyword_stacks": 1}}}}
+				{"event": "item_activated", "condition": "self", "desc": "获得3层提味和3层增色；右邻也获得3层增色", "effect": {"add_keyword": "umami", "keyword_stacks": 3, "add_keyword_2": "plating", "keyword_stacks_2": 3, "chain_right": {"range": 1, "effect": {"add_keyword": "plating", "keyword_stacks": 3}}}}
 			],
 			"on_activate": [],
 			"description": "蛋黄酱汁裹挟培根的经典意面。"
@@ -184,8 +184,8 @@ static func get_dishes() -> Array:
 			"flavor": 9, "mod_slots": 2,
 			"tags": ["meat", "stewed", "rich"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "desc": "获得1层鲜美，相邻CD-1秒", "effect": {"add_keyword": "umami", "keyword_stacks": 1, "reduce_cooldown_adjacent": 1.0}},
-				{"event": "adjacent_activate", "effect": {"add_keyword": "plating", "keyword_stacks": 1}, "desc": "相邻菜品激活时，获得1层摆盘"}
+				{"event": "item_activated", "condition": "self", "desc": "获得3层提味，相邻CD-1秒", "effect": {"add_keyword": "umami", "keyword_stacks": 3, "reduce_cooldown_adjacent": 1.0}},
+				{"event": "adjacent_activate", "effect": {"add_keyword": "plating", "keyword_stacks": 1}, "desc": "相邻菜品激活时，获得1层增色"}
 			],
 			"on_activate": [],
 			"description": "白酱炖煮的嫩鸡肉，奶香四溢。"
@@ -198,8 +198,8 @@ static func get_dishes() -> Array:
 			"flavor": 18, "mod_slots": 2,
 			"tags": ["meat", "rich", "mastered"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "desc": "首次激活风味+20、获得3层摆盘和2层刀工", "effect": {"type": "first_activate_bonus", "flavor": 20, "extra": {"add_keyword": "plating", "keyword_stacks": 3, "add_keyword_2": "knife_work", "keyword_stacks_2": 2}}},
-				{"event": "item_activated", "condition": "self", "effect": {"if_keyword_gte": {"keyword": "plating", "stacks": 4}, "then": {"presentation_mult": 1.5}, "else": {}}, "desc": "摆盘≥4层时卖相×1.5"}
+				{"event": "item_activated", "condition": "self", "desc": "首次激活美味度+20、获得3层增色和2层精技", "effect": {"type": "first_activate_bonus", "flavor": 20, "extra": {"add_keyword": "plating", "keyword_stacks": 3, "add_keyword_2": "knife_work", "keyword_stacks_2": 2}}},
+				{"event": "item_activated", "condition": "self", "effect": {"if_keyword_gte": {"keyword": "plating", "stacks": 4}, "then": {"presentation_mult": 1.5}, "else": {}}, "desc": "增色≥4层时卖相×1.5"}
 			],
 			"on_activate": [],
 			"description": "酥皮包裹的整块菲力牛排，华丽的主菜。"
@@ -210,7 +210,7 @@ static func get_dishes() -> Array:
 			"flavor": 14, "mod_slots": 2,
 			"tags": ["seafood", "stewed", "rich", "umami_tag"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "desc": "获得2层鲜美和1层摆盘，风味×1.3", "effect": {"add_keyword": "umami", "keyword_stacks": 2, "add_keyword_2": "plating", "keyword_stacks_2": 1, "flavor_mult": 1.3}}
+				{"event": "item_activated", "condition": "self", "desc": "获得6层提味和3层增色，美味度×1.3", "effect": {"add_keyword": "umami", "keyword_stacks": 6, "add_keyword_2": "plating", "keyword_stacks_2": 3, "flavor_mult": 1.3}}
 			],
 			"on_activate": [],
 			"description": "多种海鲜熬煮的普罗旺斯浓汤。"
@@ -221,7 +221,7 @@ static func get_dishes() -> Array:
 			"flavor": 15, "mod_slots": 2,
 			"tags": ["meat", "rich", "stewed"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "desc": "获得2层回味和1层摆盘；回味≥3时风味×1.3", "effect": {"add_keyword": "aftertaste", "keyword_stacks": 2, "add_keyword_2": "plating", "keyword_stacks_2": 1, "if_keyword_gte": {"keyword": "aftertaste", "stacks": 3}, "then": {"flavor_mult": 1.3}, "else": {}}}
+				{"event": "item_activated", "condition": "self", "desc": "获得2层回味和1层增色；回味≥3时美味度×1.3", "effect": {"add_keyword": "aftertaste", "keyword_stacks": 2, "add_keyword_2": "plating", "keyword_stacks_2": 1, "if_keyword_gte": {"keyword": "aftertaste", "stacks": 3}, "then": {"flavor_mult": 1.3}, "else": {}}}
 			],
 			"on_activate": [],
 			"description": "低温油封后煎至酥脆的鸭腿。"
@@ -232,7 +232,7 @@ static func get_dishes() -> Array:
 			"flavor": 16, "mod_slots": 2,
 			"tags": ["seafood", "grilled", "rich"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "desc": "获得2层摆盘；每3次爆发+40风味和卖相+15", "effect": {"add_keyword": "plating", "keyword_stacks": 2, "accumulate": {"counter_id": "lobster_heat", "increment": 1, "threshold": 3, "reset_counter": true, "on_threshold": {"flavor": 40, "presentation": 15}}}}
+				{"event": "item_activated", "condition": "self", "desc": "获得2层增色；每3次爆发+40美味度和卖相+15", "effect": {"add_keyword": "plating", "keyword_stacks": 2, "accumulate": {"counter_id": "lobster_heat", "increment": 1, "threshold": 3, "reset_counter": true, "on_threshold": {"flavor": 40, "presentation": 15}}}}
 			],
 			"on_activate": [],
 			"description": "奶油酱焗烤的半只龙虾，浓香扑鼻。"
@@ -243,8 +243,8 @@ static func get_dishes() -> Array:
 			"flavor": 10, "mod_slots": 2,
 			"tags": ["egg", "mastered"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "desc": "首次激活风味+15、卖相+10；后续获得2层摆盘", "effect": {"type": "first_activate_bonus", "flavor": 15, "presentation": 10}},
-				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "plating", "keyword_stacks": 2}, "desc": "获得2层摆盘"}
+				{"event": "item_activated", "condition": "self", "desc": "首次激活美味度+15、卖相+10；后续获得2层增色", "effect": {"type": "first_activate_bonus", "flavor": 15, "presentation": 10}},
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "plating", "keyword_stacks": 2}, "desc": "获得2层增色"}
 			],
 			"on_activate": [],
 			"description": "蓬松如云的烤蛋奶糕，转瞬即逝的美味。"
@@ -255,7 +255,7 @@ static func get_dishes() -> Array:
 			"flavor": 15, "mod_slots": 2,
 			"tags": ["meat", "grilled", "rich", "mastered"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "desc": "获得2层焦香和1层摆盘；首次激活风味+15", "effect": {"add_keyword": "char_aroma", "keyword_stacks": 2, "add_keyword_2": "plating", "keyword_stacks_2": 1, "type": "first_activate_bonus", "flavor": 15}}
+				{"event": "item_activated", "condition": "self", "desc": "获得4层提味和3层增色；首次激活美味度+15", "effect": {"add_keyword": "umami", "keyword_stacks": 4, "add_keyword_2": "plating", "keyword_stacks_2": 3, "type": "first_activate_bonus", "flavor": 15}}
 			],
 			"on_activate": [],
 			"description": "香草面包糠包裹的法式烤羊排。"
@@ -266,7 +266,7 @@ static func get_dishes() -> Array:
 			"flavor": 14, "mod_slots": 2,
 			"tags": ["meat", "grilled", "fried", "rich"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "desc": "获得1层焦香；每3次爆发+35风味；25%概率风味×1.5", "effect": {"add_keyword": "char_aroma", "keyword_stacks": 1, "accumulate": {"counter_id": "steak_heat", "increment": 1, "threshold": 3, "reset_counter": true, "on_threshold": {"flavor": 35}}, "random_chance": 0.25, "on_success": {"flavor_mult": 1.5}}}
+				{"event": "item_activated", "condition": "self", "desc": "获得2层提味；每3次爆发+35美味度；25%概率美味度×1.5", "effect": {"add_keyword": "umami", "keyword_stacks": 2, "accumulate": {"counter_id": "steak_heat", "increment": 1, "threshold": 3, "reset_counter": true, "on_threshold": {"flavor": 35}}, "random_chance": 0.25, "on_success": {"flavor_mult": 1.5}}}
 			],
 			"on_activate": [],
 			"description": "煎至完美熟度的牛排配金黄薯条。"
@@ -277,7 +277,7 @@ static func get_dishes() -> Array:
 			"flavor": 10, "mod_slots": 2,
 			"tags": ["sweet", "tea", "mastered"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "desc": "首次激活卖相+15、获得3层摆盘；清除1层味觉疲劳", "effect": {"type": "first_activate_bonus", "presentation": 15, "extra": {"add_keyword": "plating", "keyword_stacks": 3, "clear_environment": "taste_fatigue", "clear_amount": 1}}}
+				{"event": "item_activated", "condition": "self", "desc": "首次激活卖相+15、获得3层增色；清除1层疲劳", "effect": {"type": "first_activate_bonus", "presentation": 15, "extra": {"add_keyword": "plating", "keyword_stacks": 3, "clear_environment": "taste_fatigue", "clear_amount": 1}}}
 			],
 			"on_activate": [],
 			"description": "三层架上的精致点心与红茶。"
@@ -288,7 +288,7 @@ static func get_dishes() -> Array:
 			"flavor": 16, "mod_slots": 2,
 			"tags": ["meat", "stewed", "rich", "umami_tag"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "desc": "获得2层鲜美和1层回味；相邻CD-1秒", "effect": {"add_keyword": "umami", "keyword_stacks": 2, "add_keyword_2": "aftertaste", "keyword_stacks_2": 1, "reduce_cooldown_adjacent": 1.0}}
+				{"event": "item_activated", "condition": "self", "desc": "获得6层提味和1层回味；相邻CD-1秒", "effect": {"add_keyword": "umami", "keyword_stacks": 6, "add_keyword_2": "aftertaste", "keyword_stacks_2": 1, "reduce_cooldown_adjacent": 1.0}}
 			],
 			"on_activate": [],
 			"description": "慢炖至骨髓融化的小牛胫骨。"
@@ -301,8 +301,8 @@ static func get_dishes() -> Array:
 			"flavor": 22, "mod_slots": 2,
 			"tags": ["meat", "rich", "mastered"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "desc": "首次激活风味+25、获得3层摆盘；摆盘≥5时卖相×1.8", "effect": {"type": "first_activate_bonus", "flavor": 25, "extra": {"add_keyword": "plating", "keyword_stacks": 3}}},
-				{"event": "item_activated", "condition": "self", "effect": {"if_keyword_gte": {"keyword": "plating", "stacks": 5}, "then": {"presentation_mult": 1.8, "add_keyword": "plating", "keyword_stacks": 2}, "else": {"add_keyword": "plating", "keyword_stacks": 2}}, "desc": "摆盘≥5层时卖相×1.8并获得2层摆盘；否则获得2层摆盘"}
+				{"event": "item_activated", "condition": "self", "desc": "首次激活美味度+25、获得3层增色；增色≥5时卖相×1.8", "effect": {"type": "first_activate_bonus", "flavor": 25, "extra": {"add_keyword": "plating", "keyword_stacks": 3}}},
+				{"event": "item_activated", "condition": "self", "effect": {"if_keyword_gte": {"keyword": "plating", "stacks": 5}, "then": {"presentation_mult": 1.8, "add_keyword": "plating", "keyword_stacks": 2}, "else": {"add_keyword": "plating", "keyword_stacks": 2}}, "desc": "增色≥5层时卖相×1.8并获得2层增色；否则获得2层增色"}
 			],
 			"on_activate": [],
 			"description": "松露薄片覆盖的煎鹅肝，奢华至极。"
@@ -313,7 +313,7 @@ static func get_dishes() -> Array:
 			"flavor": 20, "mod_slots": 2,
 			"tags": ["mastered", "rich"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "desc": "首次激活风味+30、卖相+20、获得3层摆盘和2层刀工；相邻加速2秒", "effect": {"type": "first_activate_bonus", "flavor": 30, "presentation": 20, "extra": {"add_keyword": "plating", "keyword_stacks": 3, "add_keyword_2": "knife_work", "keyword_stacks_2": 2, "haste_adjacent": 2.0, "haste_mult": 2.0}}}
+				{"event": "item_activated", "condition": "self", "desc": "首次激活美味度+30、卖相+20、获得3层增色和2层精技；相邻加速2秒", "effect": {"type": "first_activate_bonus", "flavor": 30, "presentation": 20, "extra": {"add_keyword": "plating", "keyword_stacks": 3, "add_keyword_2": "knife_work", "keyword_stacks_2": 2, "haste_adjacent": 2.0, "haste_mult": 2.0}}}
 			],
 			"on_activate": [],
 			"description": "从前菜到甜点的完整法式套餐。"
@@ -324,7 +324,7 @@ static func get_dishes() -> Array:
 			"flavor": 18, "mod_slots": 2,
 			"tags": ["sweet", "mastered"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "desc": "获得3层摆盘和2层回味；摆盘≥5时卖相×1.5", "effect": {"add_keyword": "plating", "keyword_stacks": 3, "add_keyword_2": "aftertaste", "keyword_stacks_2": 2, "if_keyword_gte": {"keyword": "plating", "stacks": 5}, "then": {"presentation_mult": 1.5}, "else": {}}}
+				{"event": "item_activated", "condition": "self", "desc": "获得3层增色和2层回味；增色≥5时卖相×1.5", "effect": {"add_keyword": "plating", "keyword_stacks": 3, "add_keyword_2": "aftertaste", "keyword_stacks_2": 2, "if_keyword_gte": {"keyword": "plating", "stacks": 5}, "then": {"presentation_mult": 1.5}, "else": {}}}
 			],
 			"on_activate": [],
 			"description": "主厨精选甜品的华丽拼盘。"
@@ -335,7 +335,7 @@ static func get_dishes() -> Array:
 			"flavor": 24, "mod_slots": 2,
 			"tags": ["meat", "rich", "mastered"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "desc": "获得3层刀工和2层焦香，风味×1.3；向两侧传2层摆盘", "effect": {"add_keyword": "knife_work", "keyword_stacks": 3, "add_keyword_2": "char_aroma", "keyword_stacks_2": 2, "flavor_mult": 1.3, "chain_right": {"range": 1, "effect": {"add_keyword": "plating", "keyword_stacks": 2}}, "chain_left": {"range": 1, "effect": {"add_keyword": "plating", "keyword_stacks": 2}}}}
+				{"event": "item_activated", "condition": "self", "desc": "获得6层精技和4层提味，美味度×1.3；向两侧传6层增色", "effect": {"add_keyword": "knife_work", "keyword_stacks": 6, "add_keyword_2": "umami", "keyword_stacks_2": 4, "flavor_mult": 1.3, "chain_right": {"range": 1, "effect": {"add_keyword": "plating", "keyword_stacks": 6}}, "chain_left": {"range": 1, "effect": {"add_keyword": "plating", "keyword_stacks": 6}}}}
 			],
 			"on_activate": [],
 			"description": "鹅肝与松露加冕的顶级牛排。"

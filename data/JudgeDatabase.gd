@@ -10,8 +10,8 @@ func _init_judges():
 	_add("yuyuko", "西行寺幽幽子",
 		{flavor_mult=1.5},
 		"无底胃袋",
-		{keyword_bonus_tags=["umami","char_aroma"], keyword_bonus_mult=0.50},
-		"「再来十份！」——亡灵公主的无底胃袋让风味评分×1.5。鲜美与焦香在她舌尖绽放，「鲜美」「焦香」关键词效果+50%。",
+		{keyword_bonus_tags=["umami"], keyword_bonus_mult=0.50},
+		"「再来十份！」——亡灵公主的无底胃袋让美味度评分×1.5。提味在她舌尖绽放，「提味」关键词效果+50%。",
 		"白玉楼的主人，永远吃不饱的优雅亡灵。")
 
 	# ===== 饕餮尤魔 =====

@@ -11,7 +11,6 @@ var _item_runtimes: Array = [[], []]
 var _scores: Array = [0.0, 0.0]
 var _presentation_totals: Array = [0.0, 0.0]
 var _technique_mults: Array = [1.0, 1.0]
-var _aroma_reductions: Array = [0.0, 0.0]
 var _dot_totals: Array = [0.0, 0.0]
 
 var _elapsed: float = 0.0
@@ -151,9 +150,6 @@ func setup():
 		var tech_total = player.get_total_attr("technique")
 		_technique_mults[p_idx] = GameConfig.get_technique_multiplier(tech_total)
 
-		var aroma_total = player.get_total_attr("aroma")
-		_aroma_reductions[p_idx] = GameConfig.get_aroma_cd_reduction(aroma_total)
-
 		# Apply static fusion/synergy bonuses
 		for f in _active_fusions[p_idx]:
 			var bonuses = f.get("effect", {})
@@ -209,8 +205,7 @@ func tick(delta: float):
 			_keyword_manager.apply_spotlight(p_idx, runtime)
 			_process_item_tick_triggers(p_idx, runtime, delta)
 
-			var cd_reduction_mult = 1.0 - _aroma_reductions[p_idx]
-			var effective_tick = delta / maxf(0.1, cd_reduction_mult)
+			var effective_tick = delta
 
 			# 加速/减速倍率（互相独立，加速优先级更高）
 			var rate_mult := 1.0
@@ -230,7 +225,7 @@ func tick(delta: float):
 
 			if runtime.current_cd <= 0:
 				_activate_item(p_idx, runtime)
-				var new_cd = runtime.base_cd * (1.0 - _aroma_reductions[p_idx]) + env_cd_penalty
+				var new_cd = runtime.base_cd + env_cd_penalty
 				runtime.current_cd = maxf(1.0, new_cd)
 
 	_apply_presentation_dot(delta)
@@ -286,11 +281,11 @@ func _activate_item(player_idx: int, runtime: Dictionary):
 	var chef = ChefDatabase.get_chef(player.chef_id)
 	var skill_effect = {} if chef.is_empty() else chef.get("skill", {}).get("effect", {})
 
-	# Meiling: char_aroma bonus
-	if skill_effect.get("char_aroma_bonus_mult", 0.0) > 0:
-		var aroma_stacks = player.get_keyword_stacks("char_aroma")
+	# Meiling: umami bonus
+	if skill_effect.get("umami_bonus_mult", 0.0) > 0:
+		var aroma_stacks = player.get_keyword_stacks("umami")
 		if aroma_stacks > 0:
-			var bonus = aroma_stacks * skill_effect.char_aroma_bonus_mult
+			var bonus = aroma_stacks * skill_effect.umami_bonus_mult
 			base_scores["flavor"] = float(base_scores.get("flavor", 0)) * (1.0 + bonus * 0.1)
 
 	# Alice: plating bonus
@@ -299,7 +294,7 @@ func _activate_item(player_idx: int, runtime: Dictionary):
 
 	# Seija: swap lowest and highest attribute values
 	if skill_effect.get("swap_min_max_attrs", false):
-		var attr_keys = ["flavor", "presentation", "technique", "aroma"]
+		var attr_keys = ["flavor", "presentation", "technique"]
 		var min_attr := ""
 		var max_attr := ""
 		var min_val := INF
@@ -501,7 +496,7 @@ func _apply_presentation_dot(delta: float):
 func _calc_presentation_total(player_idx: int) -> float:
 	var player = _match_state.get_player(player_idx)
 	var total = player.get_total_attr("presentation")
-	total += player.get_keyword_stacks("plating") * 3.0
+	total += player.get_keyword_stacks("plating") * GameConfig.VISUAL_BOOST_PER_STACK
 	var messy = _match_state.environment_keywords.get("messy", 0)
 	total -= messy * 2.0
 	
@@ -668,9 +663,6 @@ func get_item_runtimes(player_idx: int) -> Array:
 func get_technique_mults() -> Array:
 	return _technique_mults
 
-func get_aroma_reductions() -> Array:
-	return _aroma_reductions
-
 func get_presentation_totals() -> Array:
 	return _presentation_totals
 
@@ -695,7 +687,6 @@ func get_analysis_data() -> Dictionary:
 	return {
 		"scores": _scores.duplicate(),
 		"technique_mults": _technique_mults.duplicate(),
-		"aroma_reductions": _aroma_reductions.duplicate(),
 		"presentation_totals": _presentation_totals.duplicate(),
 		"dot_totals": _dot_totals.duplicate(),
 		"item_contributions": item_contributions,
@@ -713,15 +704,6 @@ func _process_fusion_runtime_triggers(player_idx: int, runtime: Dictionary, cont
 	for f in _active_fusions[player_idx]:
 		var bonuses = f.get("effect", {})
 		if bonuses.is_empty(): bonuses = f.get("bonuses", {})
-
-		# Mystia (Yatai + Washoku): Char Aroma -> Umami
-		if bonuses.has("char_aroma_to_umami"):
-			var ca = player.get_keyword_stacks("char_aroma")
-			if ca >= 2:
-				var convert = int(ca / 2)
-				player.consume_keyword("char_aroma", convert * 2)
-				player.add_keyword("umami", convert)
-				_add_broadcast(player_idx, "keyword", "焦香化为鲜美！%d层焦香转化为%d层鲜美。" % [convert * 2, convert])
 
 		# Reimu (Washoku + Yakuzen): Light -> Clear Env + Flavor
 		if bonuses.has("env_clear_on_light") and "light" in tags:
@@ -743,7 +725,7 @@ func _process_fusion_runtime_triggers(player_idx: int, runtime: Dictionary, cont
 		# Marisa (Yatai + Yakuzen): Random Bonus on Yatai
 		if bonuses.has("random_bonus_on_grill") and cuisine == "yatai":
 			if randf() < 0.20:
-				var buffs = ["umami", "char_aroma", "plating", "knife_work"]
+				var buffs = ["umami", "plating", "knife_work"]
 				var pick = buffs[randi() % buffs.size()]
 				player.add_keyword(pick, 1)
 				_add_broadcast(player_idx, "keyword", "魔法实验成功！随机获得1层%s！" % _get_keyword_name(pick))
@@ -842,19 +824,19 @@ func _get_env_name(env_id: String) -> String:
 	match env_id:
 		"greasy": return "油腻"
 		"messy": return "杂乱"
-		"taste_fatigue": return "味觉疲劳"
+		"taste_fatigue": return "疲劳"
 		"dull": return "沉闷"
 	return env_id
 
 func _get_keyword_name(kw_id: String) -> String:
 	match kw_id:
-		"umami": return "鲜美"
-		"char_aroma": return "焦香"
-		"plating": return "摆盘"
-		"knife_work": return "刀工"
-		"spotlight": return "瞩目"
+		"umami": return "提味"
+		"plating": return "增色"
+		"knife_work": return "精技"
+		"spotlight": return "加速"
 		"aftertaste": return "回味"
 		"secret_recipe": return "秘方"
+		"taste_fatigue": return "疲劳"
 	return kw_id
 
 func get_broadcast_log() -> Array:

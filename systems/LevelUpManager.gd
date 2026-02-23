@@ -41,7 +41,7 @@ static func _generate_level1_choices() -> Array:
 		d["_reward_type"] = "dish"
 		if not d.has("base_stats"):
 			d["base_stats"] = {}
-		var bonus_attrs: Array[String] = ["flavor", "presentation", "technique", "aroma"]
+		var bonus_attrs: Array[String] = ["flavor", "presentation", "technique"]
 		var bonus_attr: String = bonus_attrs[randi() % bonus_attrs.size()]
 		d.base_stats[bonus_attr] = int(d.base_stats.get(bonus_attr, 0)) + 8
 		var stat_name: String = str(GameConfig.STAT_NAMES.get(bonus_attr, bonus_attr))
@@ -162,4 +162,4 @@ static func apply_reward(player: PlayerState, reward: Dictionary) -> void:
 
 static func _dish_power(dish: Dictionary) -> float:
 	var stats: Dictionary = dish.get("base_stats", {})
-	return float(stats.get("flavor", 0)) + float(stats.get("presentation", 0)) + float(stats.get("technique", 0)) + float(stats.get("aroma", 0))
+	return float(stats.get("flavor", 0)) + float(stats.get("presentation", 0)) + float(stats.get("technique", 0))

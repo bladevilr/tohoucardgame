@@ -18,7 +18,7 @@ var _chef_buttons: Dictionary = {}
 @onready var flavor_stat: Label = $HBox/RightPanel/RightVBox/PortraitRow/SkillPanel/SkillVBox/StatsGrid/FlavorStat
 @onready var present_stat: Label = $HBox/RightPanel/RightVBox/PortraitRow/SkillPanel/SkillVBox/StatsGrid/PresentStat
 @onready var tech_stat: Label = $HBox/RightPanel/RightVBox/PortraitRow/SkillPanel/SkillVBox/StatsGrid/TechStat
-@onready var aroma_stat: Label = $HBox/RightPanel/RightVBox/PortraitRow/SkillPanel/SkillVBox/StatsGrid/AromaStat
+
 @onready var strategy_label: Label = $HBox/RightPanel/RightVBox/StrategyLabel
 @onready var confirm_button: Button = $HBox/RightPanel/RightVBox/ConfirmButton
 @onready var back_button: Button = $BackButton
@@ -91,10 +91,10 @@ const CHEF_TRAITS := {
 	"mystia": "高频上菜型。处理快、节奏强，适合用次数压制对手。",
 	"sakuya": "开场提速型。提前触发关键菜品，中后期爆发稳定。",
 	"youmu": "小菜连动型。触发次数多，适合滚雪球和连段。",
-	"meiling": "焦香强化型。重点围绕“焦香”叠层和收益放大。",
+	"meiling": "提味强化型。重点围绕"提味"叠层和收益放大。",
 	"marisa": "随机增益型。波动较大但上限高，适合运营和抉择。",
 	"reimu": "经济运营型。刷新成本优势，擅长长局资源管理。",
-	"alice": "摆盘收益型。卖相和连续输出稳定，容错率高。",
+	"alice": "增色收益型。卖相和连续输出稳定，容错率高。",
 	"patchouli": "多关键词联动型。成型后强度高，但前期需要构筑。",
 	"reisen": "节奏干扰型。通过冷却/状态干扰获取对局优势。",
 }
@@ -102,10 +102,10 @@ const STRATEGY_TEXT := {
 	"mystia": "夜市+和食联动，优先堆上菜频率，用次数滚起节奏。",
 	"sakuya": "洋食+甘味成型后爆发强，前期注重过渡和关键菜冷却。",
 	"youmu": "依赖小菜高频触发，先保证连段稳定，再补终结能力。",
-	"meiling": "围绕焦香词条构筑，中期发力明显，适合主动压制。",
+	"meiling": "围绕提味词条构筑，中期发力明显，适合主动压制。",
 	"marisa": "随机增益波动较大，运营时优先保底，再追求上限。",
 	"reimu": "刷新与资源管理优势明显，适合稳扎稳打的运营路线。",
-	"alice": "摆盘收益稳定，优先保证卖相与出菜节奏的平衡。",
+	"alice": "增色收益稳定，优先保证卖相与出菜节奏的平衡。",
 	"patchouli": "关键词联动上限高，前期先凑核心组合，后期强度兑现。",
 	"reisen": "干扰能力强，围绕控节奏打反手，拖到优势回合收割。",
 }
@@ -404,10 +404,9 @@ func _on_chef_preview(chef_id: String) -> void:
 		skill_effect.text = "机制效果:\n%s" % mechanical_text
 
 	var base_stats: Dictionary = chef.get("base_stats", {})
-	flavor_stat.text = "风味: +%d" % int(base_stats.get("flavor", 0))
+	flavor_stat.text = "美味度: +%d" % int(base_stats.get("flavor", 0))
 	present_stat.text = "卖相: +%d" % int(base_stats.get("presentation", 0))
 	tech_stat.text = "技法: +%d" % int(base_stats.get("technique", 0))
-	aroma_stat.text = "香气: +%d" % int(base_stats.get("aroma", 0))
 
 	strategy_label.text = _build_chef_overview(chef_id, cuisines, base_stats, skill.get("effect", {}))
 	_update_selected_button_styles()
@@ -433,10 +432,10 @@ func _describe_skill_effect(effect: Dictionary) -> String:
 		parts.append("- 全菜品冷却-%ss" % str(effect["all_dish_cd_reduction"]))
 	if effect.has("small_dish_reactivate_chance"):
 		parts.append("- 小型菜品%d%%概率再次触发" % int(float(effect["small_dish_reactivate_chance"]) * 100.0))
-	if effect.has("char_aroma_effect_mult"):
-		parts.append("- 焦香效果提升%d%%" % int((float(effect["char_aroma_effect_mult"]) - 1.0) * 100.0))
-	if effect.has("char_aroma_bonus_mult"):
-		parts.append("- 焦香额外加成x%s" % str(effect["char_aroma_bonus_mult"]))
+	if effect.has("umami_effect_mult"):
+		parts.append("- 提味效果提升%d%%" % int((float(effect["umami_effect_mult"]) - 1.0) * 100.0))
+	if effect.has("umami_bonus_mult"):
+		parts.append("- 提味额外加成x%s" % str(effect["umami_bonus_mult"]))
 	if effect.has("extra_random_keyword_chance"):
 		parts.append("- 上菜%d%%概率获得随机关键词" % int(float(effect["extra_random_keyword_chance"]) * 100.0))
 	if effect.has("free_refresh_per_day"):
@@ -444,9 +443,9 @@ func _describe_skill_effect(effect: Dictionary) -> String:
 	if effect.has("donation_gold_chance"):
 		parts.append("- 事件%d%%概率额外获得金币" % int(float(effect["donation_gold_chance"]) * 100.0))
 	if effect.has("plating_effect_mult"):
-		parts.append("- 摆盘效果提升%d%%" % int((float(effect["plating_effect_mult"]) - 1.0) * 100.0))
+		parts.append("- 增色效果提升%d%%" % int((float(effect["plating_effect_mult"]) - 1.0) * 100.0))
 	if effect.has("plating_output_bonus"):
-		parts.append("- 摆盘追加输出加成+%d%%" % int(float(effect["plating_output_bonus"]) * 100.0))
+		parts.append("- 增色追加输出加成+%d%%" % int(float(effect["plating_output_bonus"]) * 100.0))
 	if effect.get("five_element_bonus", false):
 		parts.append("- 集齐五元素关键词时触发额外加成")
 	if effect.has("element_cycle_bonus"):
@@ -484,10 +483,9 @@ func _build_chef_overview(chef_id: String, cuisines: Array, base_stats: Dictiona
 
 func _summarize_stat_profile(base_stats: Dictionary) -> String:
 	var labels := [
-		{"key": "flavor", "name": "风味"},
+		{"key": "flavor", "name": "美味度"},
 		{"key": "presentation", "name": "卖相"},
 		{"key": "technique", "name": "技法"},
-		{"key": "aroma", "name": "香气"},
 	]
 	var high_name: String = "均衡"
 	var high_value: int = -999
@@ -512,7 +510,7 @@ func _summarize_skill_archetype(effect: Dictionary) -> String:
 		return "经济运营型：缓解资源压力"
 	if effect.has("all_dish_cd_reduction") or effect.has("small_dish_reactivate_chance") or effect.has("yatai_cd_reduction"):
 		return "节奏控制型：上菜频率高"
-	if effect.has("char_aroma_effect_mult") or effect.has("plating_effect_mult") or effect.has("plating_output_bonus"):
+	if effect.has("umami_effect_mult") or effect.has("plating_effect_mult") or effect.has("plating_output_bonus"):
 		return "收益放大型：核心关键词强化"
 	if effect.has("opponent_random_cd_increase") or effect.get("lunatic_red_eyes", false):
 		return "干扰压制型：限制对手节奏"

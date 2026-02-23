@@ -169,12 +169,13 @@ func _show_result(p_score: int, o_score: int) -> void:
 		is_pve = match_state.current_action_data.get("phase", "") == "PVE_BATTLE"
 
 	var prefix := "试营业 · " if is_pve else ""
+	var diff := absi(p_score - o_score)
 
 	if p_score > o_score:
-		title_label.text = prefix + "胜利"
+		title_label.text = prefix + "胜利！领先 +%d 分" % diff
 		title_label.add_theme_color_override("font_color", Color(1, 0.8, 0.2))
 	elif p_score < o_score:
-		title_label.text = prefix + "败北"
+		title_label.text = prefix + "败北…落后 %d 分" % diff
 		title_label.add_theme_color_override("font_color", Color(0.9, 0.3, 0.3))
 	else:
 		title_label.text = prefix + "平局"

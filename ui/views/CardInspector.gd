@@ -41,63 +41,60 @@ const TAG_TEXT := {
 }
 
 const KEYWORD_TEXT := {
-	"umami": "鲜美",
-	"char_aroma": "焦香",
-	"plating": "摆盘",
-	"knife_work": "刀工",
-	"spotlight": "聚光",
+	"umami": "提味",
+	"plating": "增色",
+	"knife_work": "精技",
+	"spotlight": "加速",
 	"aftertaste": "回味",
 	"secret_recipe": "秘方",
 	"greasy": "油腻",
 	"messy": "杂乱",
-	"taste_fatigue": "味觉疲劳",
+	"taste_fatigue": "疲劳",
 	"dull": "沉闷",
 	"burst": "爆发",
 }
 
 const INGREDIENT_SPECIAL_TEXT := {
-	"appetize_right_20": "右侧相邻菜品上菜时额外+20风味",
+	"appetize_right_20": "右侧相邻菜品上菜时额外+20美味度",
 	"clear_greasy_1": "开场清除1层油腻",
-	"score_right_raw_30": "右侧生食菜品上菜时额外+30风味",
+	"score_right_raw_30": "右侧生食菜品上菜时额外+30美味度",
 	"fermented_growth_boost": "发酵类效果成长速度提升",
-	"umami_on_3rd_activate": "每第3次上菜时额外获得1层鲜美",
+	"umami_on_3rd_activate": "每第3次上菜时额外获得1层提味",
 	"dessert_zone_bonus": "甜品区菜品获得额外加成",
 	"addiction_double_stack": "与上瘾类效果联动时叠层翻倍",
 	"add_env_greasy_2": "首次上菜时给环境增加2层油腻",
-	"first_activate_bonus_50": "首次上菜额外+50风味",
+	"first_activate_bonus_50": "首次上菜额外+50美味度",
 	"clear_all_env_1": "开场各清除1层环境减益",
 	"sizzle_threshold_minus_1": "爆香类爆发阈值-1",
 	"all_scores_mult_1_5": "该菜品最终得分×1.5",
-	"double_next_activate": "首次上菜风味倍率翻倍",
+	"double_next_activate": "首次上菜美味度倍率翻倍",
 	"grant_secret_recipe": "开场获得1层秘方",
-	"refreshing_full_clear": "开场清除全部沉闷与味觉疲劳",
-	"grant_char_aroma_3": "开场获得3层焦香",
+	"refreshing_full_clear": "开场清除全部沉闷与疲劳",
+	"grant_umami_6": "开场获得6层提味",
 }
 
 const TERM_DEFINITIONS := {
-	"上菜": "每道菜按冷却时间顺序逐一上桌，触发上菜效果并产出分数。分数 = 风味 × 技法倍率 × 疲劳系数（随上菜数递减）× 评委口味修正。",
+	"上菜": "每道菜按冷却时间顺序逐一上桌，触发上菜效果并产出分数。分数 = 美味度 × 技法倍率 × 疲劳系数（随上菜数递减）× 评委口味修正。",
 	"触发": "满足特定事件（如相邻菜上桌、获得关键字）时自动执行效果，无需手动操作。",
 	"被动": "始终生效的持续效果，无需触发条件，贯穿整场对决。",
 	"相邻": "棋盘上左右紧贴该菜的卡牌。换位后相邻关系随之改变。",
-	"环境": "全场共享的负面状态。油腻每层 -2 风味；杂乱每层 -2 卖相；味觉疲劳每层 -15% 风味倍率。环境效果对双方同时生效。",
-	"鲜美": "正面效果。叠加生效：每拥有 1 层，该菜品每次上菜时额外增加 3 点基础风味。当层数达到 5 层或以上时，还会根据层数获得额外的总分百分比加成。",
-	"焦香": "正面效果。叠加生效：每拥有 1 层，该菜品每次上菜时额外增加 2 点基础风味。",
-	"摆盘": "正面效果。叠加生效：每拥有 1 层，该菜品每次上菜时额外增加 3 点基础卖相。当层数达到 5 层或以上时，还会根据层数获得额外的总分百分比加成。",
-	"刀工": "正面效果。叠加生效：每拥有 1 层，该菜品额外增加 2 点基础技法属性。当层数达到 5 层或以上时，还会根据层数额外减少自身的上菜冷却时间。",
-	"回味": "延迟效果。叠加生效：每拥有 1 层，当下一道菜上桌时，会额外产生相当于本次风味得分 30% 的加分。",
-	"秘方": "一次性爆发。上菜时消耗所有层数，每消耗 1 层使本次上菜的风味得分极大地增加 50%。",
-	"聚光": "特殊状态。获得时立即消耗所有层数，每消耗 1 层使该菜品当前的冷却时间立刻缩短 1 秒。",
-	"油腻": "全场共享的负面状态。每增加 1 层，全场所有菜品及其效果导致的风味得分固定减少 2 点。",
+	"环境": "全场共享的负面状态。油腻每层 -2 美味度；杂乱每层 -2 卖相；疲劳每层 -15% 美味度倍率。环境效果对双方同时生效。",
+	"提味": "正面效果。每层 +1 美味度。10 层以上时获得额外总分百分比加成。",
+	"增色": "正面效果。每层 +1 卖相。10 层以上时获得额外总分百分比加成。",
+	"精技": "正面效果。每层 +1 技法。10 层以上时额外减少冷却。",
+	"回味": "延迟效果。叠加生效：每拥有 1 层，当下一道菜上桌时，会额外产生相当于本次美味度得分 30% 的加分。",
+	"秘方": "一次性爆发。上菜时消耗所有层数，每消耗 1 层使本次上菜的美味度得分极大地增加 50%。",
+	"加速": "特殊状态。获得时立即消耗所有层数，每消耗 1 层使该菜品当前的冷却时间立刻缩短 1 秒。",
+	"油腻": "全场共享的负面状态。每增加 1 层，全场所有菜品及其效果导致的美味度得分固定减少 2 点。",
 	"杂乱": "全场共享的负面状态。每增加 1 层，全场所有菜品带来的卖相得分固定减少 2 点。",
-	"味觉疲劳": "全场共享的负面状态。每增加 1 层，全场的最终风味得分倍率降低 15%。",
+	"疲劳": "全场共享的负面状态。每增加 1 层，全场的最终美味度得分倍率降低 15%。",
 	"沉闷": "负面状态。每叠加 1 层，该菜品的冷却时间增加 0.3 秒。",
 	"爆发": "条件触发效果。当该菜品累计完成要求次数的上菜后，会额外触发一次强力的效果。触发后计数清零重新开始计算。",
 	"融合": "菜品标签。表示该菜横跨多个菜系，通常可触发多套体系的协同奖励。",
 	"精进": "菜品标签。表示该菜经过专项修炼，通常大幅强化关键字效率或倍率上限。",
-	"风味": "核心得分属性。每次上菜的基础分 = 风味值 × 技法倍率。对最终胜负影响最大。",
+	"美味度": "核心得分属性。每次上菜的基础分 = 美味度 × 技法倍率。对最终胜负影响最大。",
 	"卖相": "持续伤害属性。双方卖相差每秒产生持续伤害 = 差值 × 0.6 × 技法倍率，高卖相方持续扣对手分。",
-	"技法": "全局倍率属性。公式：倍率 = 1.0 + 技法总值 × 0.02。对全场所有风味和持续伤害同步生效。",
-	"香气": "加速属性。每 10 点香气缩短该菜冷却的 5%，上限 35%（70 香气 = 最快）。",
+	"技法": "全局倍率属性。公式：倍率 = 1.0 + 技法总值 × 0.02。对全场所有美味度和持续伤害同步生效。",
 }
 
 const EFFECT_TERMS := {
@@ -107,9 +104,9 @@ const EFFECT_TERMS := {
 	"add_environment": ["环境"],
 	"trigger_environment": ["环境"],
 	"clear_environment": ["环境"],
-	"score": ["风味", "卖相", "技法", "香气"],
-	"stat_bonus": ["风味", "卖相", "技法", "香气"],
-	"flavor_mult": ["风味"],
+	"score": ["美味度", "卖相", "技法"],
+	"stat_bonus": ["美味度", "卖相", "技法"],
+	"flavor_mult": ["美味度"],
 	"presentation_mult": ["卖相"],
 }
 
@@ -477,10 +474,9 @@ func _collect_terms(item_data: Dictionary) -> Array[String]:
 			_collect_effect_terms(trigger.get("effect"), push_term)
 
 	# Always include stat terms since we show stats grid
-	push_term.call("风味")
+	push_term.call("美味度")
 	push_term.call("卖相")
 	push_term.call("技法")
-	push_term.call("香气")
 
 	return ordered
 
@@ -589,7 +585,7 @@ func _describe_effect(effect: Dictionary) -> String:
 		var kw = _translate_keyword(str(effect.get("consume_keyword", "")))
 		return "消耗%s" % kw
 	if effect.has("flavor_mult"):
-		return "风味倍率x%.2f" % float(effect.get("flavor_mult", 1.0))
+		return "美味度倍率x%.2f" % float(effect.get("flavor_mult", 1.0))
 	if effect.has("presentation_mult"):
 		return "卖相倍率x%.2f" % float(effect.get("presentation_mult", 1.0))
 
@@ -628,7 +624,7 @@ func _describe_effect(effect: Dictionary) -> String:
 				_translate_keyword(str(effect.get("keyword", "")))
 			]
 		"flavor_mult":
-			return "风味倍率x%.2f" % float(effect.get("value", effect.get("mult", 1.0)))
+			return "美味度倍率x%.2f" % float(effect.get("value", effect.get("mult", 1.0)))
 		"presentation_mult":
 			return "卖相倍率x%.2f" % float(effect.get("value", effect.get("mult", 1.0)))
 		"stat_bonus":
@@ -646,13 +642,11 @@ func _describe_effect(effect: Dictionary) -> String:
 func _attr_name(key: String) -> String:
 	match key:
 		"flavor":
-			return "风味"
+			return "美味度"
 		"presentation":
 			return "卖相"
 		"technique":
 			return "技法"
-		"aroma":
-			return "香气"
 	return key
 
 func _get_display_name(item_data: Dictionary) -> String:

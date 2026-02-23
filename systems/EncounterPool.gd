@@ -5,7 +5,7 @@
 ## 商店维度：
 ## 1. 规模：小型(3物品) / 中型(5物品) / 大型(7物品)
 ## 2. 菜系：中华/和食/夜市/洋食/甘味/药膳
-## 3. 标签：焦香/鲜美/清淡/油腻/回味等
+## 3. 标签：提味/清淡/油腻/回味等
 ## 4. 类型：菜品/食材/技法/厨具/混合
 ## 5. 品阶：低级货摊/普通/高级
 ## 6. 价格：便宜(0.7x)/正常/昂贵(1.5x)
@@ -45,8 +45,8 @@ const CHEF_SHOP_POOL := {
 		"small_yatai", "medium_yatai", "large_yatai",
 		# 副菜系: 中华 (小/中)
 		"small_chuuka", "medium_chuuka",
-		# 标签: 焦香
-		"tag_char_aroma",
+		# 标签: 提味
+		"tag_umami",
 		# 通用
 		"shop_ingredient_small", "shop_ingredient_medium", "shop_tool",
 		"shop_mixed_small", "shop_lowgrade",
@@ -58,7 +58,7 @@ const CHEF_SHOP_POOL := {
 		"small_washoku", "medium_washoku", "large_washoku",
 		# 副菜系: 洋食 (中)
 		"medium_youshoku",
-		# 标签: 清淡、鲜美
+		# 标签: 清淡、提味
 		"tag_light", "tag_umami",
 		# 通用
 		"shop_ingredient_small", "shop_ingredient_medium", "shop_technique",
@@ -71,7 +71,7 @@ const CHEF_SHOP_POOL := {
 		"small_youshoku", "medium_youshoku", "large_youshoku",
 		# 副菜系: 甘味 (中)
 		"medium_kanmi",
-		# 标签: 鲜美
+		# 标签: 提味
 		"tag_umami",
 		# 通用
 		"shop_ingredient_medium", "shop_technique", "shop_tool",
@@ -84,8 +84,8 @@ const CHEF_SHOP_POOL := {
 		"small_chuuka", "medium_chuuka", "large_chuuka",
 		# 副菜系: 夜市 (小/中)
 		"small_yatai", "medium_yatai",
-		# 标签: 鲜美、焦香
-		"tag_umami", "tag_char_aroma",
+		# 标签: 提味、提味
+		"tag_umami", "tag_umami",
 		# 通用
 		"shop_ingredient_small", "shop_ingredient_medium", "shop_tool",
 		"shop_mixed_small",
@@ -97,8 +97,8 @@ const CHEF_SHOP_POOL := {
 		"small_yatai", "medium_yatai",
 		# 副菜系: 和食 (小)
 		"small_washoku",
-		# 标签: 焦香
-		"tag_char_aroma",
+		# 标签: 提味
+		"tag_umami",
 		# 通用 (强化食材和混合)
 		"shop_ingredient_small", "shop_ingredient_medium",
 		"shop_mixed_small", "shop_mixed_large",
@@ -163,8 +163,8 @@ const CHEF_SHOP_POOL := {
 		"small_chuuka", "medium_chuuka", "large_chuuka",
 		# 副菜系: 夜市 (小)
 		"small_yatai",
-		# 标签: 焦香
-		"tag_char_aroma",
+		# 标签: 提味
+		"tag_umami",
 		# 通用 (强化黑市和混合)
 		"shop_ingredient_small", "shop_mixed_small", "shop_mixed_large",
 		"shop_lowgrade", "shop_blackmarket",
@@ -416,26 +416,13 @@ var _shop_templates := {
 	},
 
 	# === 标签商店（按关键词筛选） ===
-	"tag_char_aroma": {
-		"type": "shop",
-		"size": "medium",
-		"slots": 5,
-		"filter": {"tag": "char_aroma"},
-		"name": "焦香专卖",
-		"desc": "烧烤烘焙专家\n只卖焦香菜品",
-		"icon": "mystia",
-		"weight_base": 60,
-		"unlock_day": 3,
-		"price_mult": 1.0,
-		"tier_max_offset": 0,
-	},
 	"tag_umami": {
 		"type": "shop",
 		"size": "medium",
 		"slots": 5,
 		"filter": {"tag": "umami"},
-		"name": "鲜美专卖",
-		"desc": "汤汁浓郁专家\n只卖鲜美菜品",
+		"name": "提味专卖",
+		"desc": "汤汁浓郁专家\n只卖提味菜品",
 		"icon": "meiling",
 		"weight_base": 60,
 		"unlock_day": 3,

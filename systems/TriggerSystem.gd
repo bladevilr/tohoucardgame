@@ -452,9 +452,6 @@ func _execute_effect(effect: Variant, player_idx: int, slot_idx: int, item: Dict
 		scores["presentation"] = scores.get("presentation", 0.0) + float(effect_dict.presentation)
 	if effect_dict.has("technique"):
 		scores["technique"] = scores.get("technique", 0.0) + float(effect_dict.technique)
-	if effect_dict.has("aroma"):
-		scores["aroma"] = scores.get("aroma", 0.0) + float(effect_dict.aroma)
-
 	# 兼容字符串效果中的 cd±N（例如 "flavor+8,cd-1"）。
 	if effect_dict.has("cd"):
 		var cd_shift = float(effect_dict.get("cd", 0.0))
@@ -471,7 +468,7 @@ func _execute_effect(effect: Variant, player_idx: int, slot_idx: int, item: Dict
 		"stat_bonus":
 			var fe_mult = int(context.get("_for_each_multiplier", 1))
 			context.erase("_for_each_multiplier")
-			for k in ["flavor", "presentation", "technique", "aroma"]:
+			for k in ["flavor", "presentation", "technique"]:
 				if effect_dict.has(k):
 					scores[k] = scores.get(k, 0.0) + float(effect_dict.get(k, 0.0)) * fe_mult
 			# Handle nested "extra" effect (e.g., stat_bonus with extra gain_keyword)
@@ -481,7 +478,7 @@ func _execute_effect(effect: Variant, player_idx: int, slot_idx: int, item: Dict
 					_execute_effect(extra, player_idx, slot_idx, item, context)
 		"stat_bonus_for_target":
 			# Apply stat bonus to the activating item's score_bonus in context
-			for k in ["flavor", "presentation", "technique", "aroma"]:
+			for k in ["flavor", "presentation", "technique"]:
 				if effect_dict.has(k):
 					if context.has("score_bonus"):
 						context["score_bonus"][k] = context["score_bonus"].get(k, 0.0) + float(effect_dict.get(k, 0.0))
@@ -566,7 +563,7 @@ func _execute_effect(effect: Variant, player_idx: int, slot_idx: int, item: Dict
 		# Only applies its stat bonuses when activate_count == 1 in context.
 		"first_activate_bonus":
 			if context.get("activate_count", 0) == 1:
-				for k in ["flavor", "presentation", "technique", "aroma"]:
+				for k in ["flavor", "presentation", "technique"]:
 					if effect_dict.has(k):
 						scores[k] = scores.get(k, 0.0) + float(effect_dict.get(k, 0.0))
 				# Also handle flavor_mult for first_activate_bonus
@@ -645,7 +642,7 @@ func _execute_effect(effect: Variant, player_idx: int, slot_idx: int, item: Dict
 								process_event("keyword_gained", {"player_idx": player_idx, "item_idx": slot_idx, "keyword_id": gain_kw, "stacks": cleared})
 						"stat_bonus":
 							var bonus_scores: Dictionary = {}
-							for k in ["flavor", "presentation", "technique", "aroma"]:
+							for k in ["flavor", "presentation", "technique"]:
 								if bonus_on_clear.has(k):
 									bonus_scores[k] = float(bonus_on_clear[k]) * cleared
 							if not bonus_scores.is_empty():

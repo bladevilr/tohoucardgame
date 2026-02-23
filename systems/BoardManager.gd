@@ -210,9 +210,3 @@ static func get_initiative_multiplier(player: RefCounted) -> float:
 	for entry in player.get_board_items():
 		total += entry.item.get("base_stats", {}).get("technique", 0.0)
 	return 1.0 + total * 0.02
-
-static func get_spirit_multiplier(player: RefCounted) -> float:
-	var total := 0.0
-	for entry in player.get_board_items():
-		total += entry.item.get("base_stats", {}).get("aroma", 0.0)
-	return 1.0 + total * 0.01

@@ -20,20 +20,19 @@ const CHEF_NAME_MAP := {
 }
 
 const KEYWORD_NAME_MAP := {
-	"umami": "鲜美",
-	"char_aroma": "焦香",
-	"plating": "摆盘",
-	"knife_work": "刀工",
+	"umami": "提味",
+	"plating": "增色",
+	"knife_work": "精技",
 	"aftertaste": "回味",
 	"secret_recipe": "秘方",
-	"spotlight": "高光",
+	"spotlight": "加速",
 	"greasy": "腻口",
 	"messy": "杂乱",
-	"taste_fatigue": "味觉疲劳",
+	"taste_fatigue": "疲劳",
 	"dull": "寡淡",
 }
 
-const BUFF_KEYWORDS := ["umami", "char_aroma", "plating", "knife_work", "aftertaste", "secret_recipe", "spotlight"]
+const BUFF_KEYWORDS := ["umami", "plating", "knife_work", "aftertaste", "secret_recipe", "spotlight"]
 const DEBUFF_KEYWORDS := ["greasy", "messy", "taste_fatigue", "dull"]
 
 const BROADCAST_COLORS := {
@@ -72,7 +71,6 @@ const BROADCAST_COLORS := {
 @onready var opponent_keyword_row: HBoxContainer = $MainHBox/VBox/OpponentArea/OpponentKeywordRow
 @onready var env_keyword_row: HBoxContainer = $MainHBox/VBox/ScoreArea/EnvKeywordRow
 @onready var technique_label: Label = $MainHBox/VBox/ScoreArea/BattleInfoPanel/BattleInfoRow/TechniqueLabel
-@onready var aroma_label: Label = $MainHBox/VBox/ScoreArea/BattleInfoPanel/BattleInfoRow/AromaLabel
 @onready var synergy_label: Label = $MainHBox/VBox/ScoreArea/BattleInfoPanel/BattleInfoRow/SynergyLabel
 
 var _resolver: ShowdownResolver = null
@@ -223,13 +221,12 @@ func _setup_judge_avatar() -> void:
 		avatar.name = "JudgeAvatar%d" % i
 		center_area.add_child(avatar)
 
-		# 上下排列在左侧的预留空白列中 (x = 20 到 200)
-		# 屏幕高度为1080，竖直中心 540。上下各偏移 140 像素以拉开距离
+		# 右侧排列：上下各偏移 140 像素
 		var y_offset = -140.0 if i == 0 else 140.0
-		avatar.set_anchors_preset(Control.PRESET_CENTER_LEFT)
-		avatar.offset_left   = 30.0
+		avatar.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
+		avatar.offset_left   = -190.0
 		avatar.offset_top    = y_offset - 90.0
-		avatar.offset_right  = 190.0 # 160 px wide
+		avatar.offset_right  = -30.0
 		avatar.offset_bottom = y_offset + 90.0
 
 		if avatar.has_method("setup"):
@@ -240,15 +237,15 @@ func _setup_judge_avatar() -> void:
 		name_lbl.name = "JudgeNameLabel%d" % i
 		name_lbl.add_theme_font_size_override("font_size", 19)
 		name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		
+
 		# 使用中文名字
 		var judge_data = JudgeDatabase.get_judge_v2(judge_id) if GameConfig.BATTLE_SYSTEM_V2 else JudgeDatabase.get_judge(judge_id)
 		name_lbl.text = str(judge_data.get("name", judge_id))
-		
-		name_lbl.set_anchors_preset(Control.PRESET_CENTER_LEFT)
-		name_lbl.offset_left   = 10.0
+
+		name_lbl.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
+		name_lbl.offset_left   = -210.0
 		name_lbl.offset_top    = y_offset - 120.0
-		name_lbl.offset_right  = 210.0
+		name_lbl.offset_right  = -10.0
 		name_lbl.offset_bottom = y_offset - 90.0
 		name_lbl.mouse_filter  = Control.MOUSE_FILTER_IGNORE
 		name_lbl.add_theme_color_override("font_color", Color(1.0, 0.95, 0.8))
@@ -374,14 +371,6 @@ func _update_battle_info_panel() -> void:
 		technique_multiplier = float(match_state.technique_multiplier)
 	technique_label.text = "技法倍率: %.2f×" % technique_multiplier
 
-	# 香气加速 - 获取香气加成
-	var aroma_acceleration = 1.0
-	if match_state.has_meta("aroma_acceleration"):
-		aroma_acceleration = float(match_state.get_meta("aroma_acceleration"))
-	elif "aroma_acceleration" in match_state:
-		aroma_acceleration = float(match_state.aroma_acceleration)
-	aroma_label.text = "香气加速: %.2f×" % aroma_acceleration
-
 	# 协同效应 - 获取协同百分比
 	var synergy_percent = 0
 	if match_state.has_meta("synergy_bonus"):
@@ -408,7 +397,7 @@ func _on_item_served(player_idx: int, item_idx: int, result: Dictionary) -> void
 	# 提取菜品数据，用于暴击判定和弹道
 	var served_item: Dictionary = result.get("item", {}) if not GameConfig.BATTLE_SYSTEM_V2 else result.get("dish", {})
 
-	# 暴击判定：得分达到基础风味 2.5 倍，或绝对值 ≥ 60
+	# 暴击判定：得分达到基础美味度 2.5 倍，或绝对值 ≥ 60
 	var base_flavor: float = float(served_item.get("flavor", result.get("base_flavor", 0.0)))
 	var is_crit: bool = (base_flavor > 0.0 and flavor >= base_flavor * 2.5) or flavor >= 60.0
 
@@ -422,7 +411,7 @@ func _on_item_served(player_idx: int, item_idx: int, result: Dictionary) -> void
 	if adjacent_links > 0:
 		FloatingTextScript.spawn(self, "连锁连击 ×%.1f" % chain_mult, start_pos + Vector2(0, -40), Color(1.0, 0.7, 0.2), 1.2, 70.0, 24)
 
-	# 更新卡牌角标（实时风味值 + 暴击样式）
+	# 更新卡牌角标（实时美味度 + 暴击样式）
 	if card.has_method("show_flavor_overlay"):
 		card.show_flavor_overlay(int(flavor), is_crit)
 
@@ -622,14 +611,9 @@ func _apply_ui_scale() -> void:
 	if player_scroll:
 		player_scroll.custom_minimum_size.y = 280
 
-	# 压缩中间 Spacer（评委头像已独立浮在 CenterArea）
-	var spacer = get_node_or_null("MainHBox/VBox/Spacer")
-	if spacer:
-		spacer.custom_minimum_size.y = 10
-
-	# 播报面板缩窄，让中央有更多空间
+	# 播报面板缩窄，让右侧评委区域更突出
 	if broadcast_panel:
-		broadcast_panel.custom_minimum_size.x = 200
+		broadcast_panel.custom_minimum_size.x = 220
 
 	# 计时器字体
 	if timer_label:

@@ -11,7 +11,7 @@ const _OPPONENTS: Array = [
 	{"display_name": "古明地觉#1000",    "chef_id": "reisen",    "difficulty": 3, "rating": 1680,
 	 "title": "读心料理人",              "cuisine_hint": "甜品+药膳·控场反制"},
 	{"display_name": "比那名居天子#0001","chef_id": "meiling",   "difficulty": 2, "rating": 1520,
-	 "title": "天界的豪华宴",            "cuisine_hint": "中华+夜市·焦香爆发"},
+	 "title": "天界的豪华宴",            "cuisine_hint": "中华+夜市·提味爆发"},
 	{"display_name": "十六夜咲夜#0016", "chef_id": "sakuya",    "difficulty": 2, "rating": 1450,
 	 "title": "完全で瀟洒な料理",        "cuisine_hint": "洋食+甜品·大菜爆发"},
 	{"display_name": "东风谷早苗#1024", "chef_id": "reimu",     "difficulty": 2, "rating": 1380,

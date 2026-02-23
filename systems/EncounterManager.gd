@@ -94,7 +94,7 @@ func _init_event_pools():
 			[
 				_choice("A", "走向永远亭", "gain_random_ingredient_silver",
 					"永琳送了你一份珍贵的药材作为迷路的补偿。"),
-				_choice("B", "走向篝火", "gain_gold_4_gain_char_aroma",
+				_choice("B", "走向篝火", "gain_gold_4_gain_umami",
 					"是妹红在烤竹笋！她分了你一些，还教了你控火技巧。获得4金币。"),
 				_choice("C", "原路返回", "gain_gold_2",
 					"安全第一。虽然没什么收获，但至少没迷路。获得2金币。"),
@@ -173,25 +173,25 @@ func _init_event_pools():
 
 	# ========== 下午茶歇 (偏战力强化) ==========
 	_event_pools.afternoon_tea = [
-		_make_event("sakuya_training", "咲夜的刀工特训",
-			"完美而优雅的女仆正在厨房练习刀工，银色的刀光令人目眩。",
+		_make_event("sakuya_training", "咲夜的精技特训",
+			"完美而优雅的女仆正在厨房练习刀法，银色的刀光令人目眩。",
 			"「想学吗？不过我的训练可不轻松。」",
 			[
 				_choice("A", "接受特训", "all_dish_technique_plus_3",
-					"经过咲夜的魔鬼训练，你的刀工突飞猛进。全菜品技法+3。"),
+					"经过咲夜的魔鬼训练，你的刀法突飞猛进。全菜品技法+3。"),
 				_choice("B", "请教时间管理", "all_dish_cd_minus_05",
 					"咲夜教你如何在有限时间内最大化效率。全菜品CD-0.5秒。"),
 				_choice("C", "一起喝茶", "gain_gold_2_gain_presentation_3",
 					"优雅的下午茶时光。获得2金币，全菜品卖相+3。"),
 			]),
-		_make_event("alice_plating", "爱丽丝的摆盘课",
+		_make_event("alice_plating", "爱丽丝的增色课",
 			"人偶使正在用她的人偶们演示精致的摆盘技巧。",
 			"「料理不只是味道，视觉也是重要的一环。来，我教你。」",
 			[
 				_choice("A", "学习摆盘", "all_dish_presentation_plus_5",
 					"在爱丽丝的指导下，你的摆盘水平大幅提升。全菜品卖相+5。"),
 				_choice("B", "借用人偶帮忙", "gain_plating_keyword_3",
-					"爱丽丝的人偶在对决中帮你摆盘。获得3层「摆盘」关键词。"),
+					"爱丽丝的人偶在对决中帮你摆盘。获得3层「增色」关键词。"),
 				_choice("C", "交换料理心得", "gain_random_ingredient_gold",
 					"愉快的交流后，爱丽丝送了你一份珍贵的食材。"),
 			]),
@@ -412,10 +412,10 @@ func _execute_effect(player: PlayerState, effect_id: String, result: Dictionary)
 		"gain_gold_1_reveal_judges":
 			player.add_gold(1); result["gold_gained"] = 1
 			result["revealed_judges"] = true
-		"gain_gold_4_gain_char_aroma":
+		"gain_gold_4_gain_umami":
 			player.add_gold(4)
-			player.add_keyword("char_aroma", 2)
-			result["gold_gained"] = 4; result["keyword_gained"] = "char_aroma"
+			player.add_keyword("umami", 2)
+			result["gold_gained"] = 4; result["keyword_gained"] = "umami"
 
 		# === 金币消耗 + 奖励 ===
 		"lose_gold_2_random_reward":

@@ -50,12 +50,11 @@ func unequip_technique(player: PlayerState, index: int) -> Dictionary:
 
 func get_global_modifiers(player: PlayerState, dish: Dictionary) -> Dictionary:
 	"""Calculate combined technique modifiers for a specific dish.
-	Returns {flavor_mult, presentation_mult, technique_mult, aroma_mult, cd_modifier, extra_tags}."""
+	Returns {flavor_mult, presentation_mult, technique_mult, cd_modifier, extra_tags}."""
 	var result := {
 		"flavor_mult": 1.0,
 		"presentation_mult": 1.0,
 		"technique_mult": 1.0,
-		"aroma_mult": 1.0,
 		"cd_modifier": 0.0,
 		"extra_tags": [],
 	}
@@ -104,9 +103,7 @@ func get_global_modifiers(player: PlayerState, dish: Dictionary) -> Dictionary:
 					result.presentation_mult += mod_val
 				"technique":
 					result.technique_mult += mod_val
-				"aroma":
-					result.aroma_mult += mod_val
-		
+
 		# CD modifier
 		result.cd_modifier += float(tech.get("cd_modifier", 0.0))
 		
@@ -133,7 +130,6 @@ func apply_global_modifiers_to_stats(player: PlayerState, dish: Dictionary, base
 	modified["flavor"] = modified.get("flavor", 0.0) * mods.flavor_mult
 	modified["presentation"] = modified.get("presentation", 0.0) * mods.presentation_mult
 	modified["technique"] = modified.get("technique", 0.0) * mods.technique_mult
-	modified["aroma"] = modified.get("aroma", 0.0) * mods.aroma_mult
 	
 	return modified
 

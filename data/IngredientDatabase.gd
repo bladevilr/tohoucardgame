@@ -3,10 +3,9 @@ extends Node
 var ingredients: Dictionary = {}
 
 const STAT_TEXT := {
-	"flavor": "风味",
+	"flavor": "美味度",
 	"presentation": "卖相",
 	"technique": "技法",
-	"aroma": "香气",
 }
 
 const CUISINE_TEXT := {
@@ -36,22 +35,22 @@ const TAG_TEXT := {
 }
 
 const SPECIAL_EFFECT_TEXT := {
-	"appetize_right_20": "右侧相邻菜品上菜时额外+20风味",
+	"appetize_right_20": "右侧相邻菜品上菜时额外+20美味度",
 	"clear_greasy_1": "开场清除1层油腻",
-	"score_right_raw_30": "右侧生食菜品上菜时额外+30风味",
+	"score_right_raw_30": "右侧生食菜品上菜时额外+30美味度",
 	"fermented_growth_boost": "发酵类效果成长速度提升",
-	"umami_on_3rd_activate": "每第3次上菜时额外获得1层鲜美",
+	"umami_on_3rd_activate": "每第3次上菜时额外获得1层提味",
 	"dessert_zone_bonus": "甜品区菜品获得额外加成",
 	"addiction_double_stack": "与上瘾类效果联动时叠层翻倍",
 	"add_env_greasy_2": "首次上菜时给环境增加2层油腻",
-	"first_activate_bonus_50": "首次上菜额外+50风味",
+	"first_activate_bonus_50": "首次上菜额外+50美味度",
 	"clear_all_env_1": "开场各清除1层环境减益",
 	"sizzle_threshold_minus_1": "爆香类爆发阈值-1",
 	"all_scores_mult_1_5": "该菜品最终得分×1.5",
 	"grant_secret_recipe": "开场获得1层秘方",
-	"refreshing_full_clear": "开场清除全部沉闷与味觉疲劳",
-	"double_next_activate": "首次上菜风味倍率翻倍",
-	"grant_char_aroma_3": "开场获得3层焦香",
+	"refreshing_full_clear": "开场清除全部沉闷与疲劳",
+	"double_next_activate": "首次上菜美味度倍率翻倍",
+	"grant_umami_3": "开场获得3层提味",
 }
 
 func _ready():
@@ -107,7 +106,7 @@ func _add(id: String, display_name: String, tier: int, cost: int, stats: Diction
 func _build_desc(stats: Dictionary, tags: Dictionary, effect: String, cuisine: String) -> String:
 	var segments: Array[String] = []
 	var stat_parts: Array[String] = []
-	for key in ["flavor", "presentation", "technique", "aroma"]:
+	for key in ["flavor", "presentation", "technique"]:
 		if not stats.has(key):
 			continue
 		var delta: float = float(stats.get(key, 0.0))
@@ -213,4 +212,4 @@ func _init_ingredients():
 	_add("hourai_elixir", "蓬莱之药", 3, 2, {"flavor": 3}, {"add": ["medicinal", "rare", "divine"]}, "grant_secret_recipe", "yakuzen")
 	_add("lunar_dew", "月露", 3, 2, {"flavor": 3}, {"add": ["rare", "light", "divine"]}, "refreshing_full_clear", "")
 	_add("void_essence", "虚空精华", 3, 2, {"flavor": 3}, {"add": ["rare"]}, "double_next_activate", "")
-	_add("yatagarasu_flame", "八咫鸦之炎", 3, 2, {"flavor": 3}, {"add": ["spicy", "rare", "grilled"], "remove": ["light"]}, "grant_char_aroma_3", "yatai")
+	_add("yatagarasu_flame", "八咫鸦之炎", 3, 2, {"flavor": 3}, {"add": ["spicy", "rare", "grilled"], "remove": ["light"]}, "grant_umami_3", "yatai")

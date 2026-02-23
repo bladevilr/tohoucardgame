@@ -18,6 +18,7 @@ config/features=PackedStringArray("4.6", "Forward Plus")
 [autoload]
 
 SignalBus="*res://core/SignalBus.gd"
+MobileScale="*res://ui/effects/MobileScale.gd"
 GameConfig="*res://data/GameConfig.gd"
 DishDatabase="*res://data/DishDatabase.gd"
 KeywordDatabase="*res://data/KeywordDatabase.gd"

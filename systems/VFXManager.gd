@@ -49,15 +49,13 @@ func _on_keyword_gained(player_idx: int, slot_idx: int, keyword_id: String, stac
 	var color := Color.CYAN
 	match keyword_id:
 		"umami":
-			color = Color(0.2, 0.8, 0.3)  # 绿色-鲜味
-		"char_aroma":
-			color = Color(1.0, 0.4, 0.1)  # 橙红-焦香
+			color = Color(1.0, 0.85, 0.2)  # 黄色-提味
 		"plating":
-			color = Color(0.8, 0.6, 1.0)  # 紫色-摆盘
+			color = Color(0.3, 0.9, 0.4)   # 绿色-增色
 		"knife_work":
-			color = Color(0.7, 0.9, 1.0)  # 冰蓝-刀工
+			color = Color(0.5, 0.8, 1.0)   # 浅蓝-精技
 		"spotlight":
-			color = Color(1.0, 1.0, 0.3)  # 亮黄-聚光
+			color = Color(0.3, 0.9, 0.9)   # 青色-加速
 		"rich":
 			color = Color(0.6, 0.2, 0.1)  # 深棕-浓郁
 		"aftertaste":

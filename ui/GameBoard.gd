@@ -60,7 +60,7 @@ const BUBBLE_EVENT_EFFECTS := {
 		{"effect_id": "lose_gold_2_random_reward", "summary": "你用2金币换了一份可疑包裹。"},
 	],
 	"chef_training": [
-		{"effect_id": "all_dish_technique_plus_3", "summary": "修行后，你的刀工明显提升（全菜品技法 +3）。"},
+		{"effect_id": "all_dish_technique_plus_3", "summary": "修行后，你的刀法明显提升（全菜品技法 +3）。"},
 		{"effect_id": "all_dish_cd_minus_05", "summary": "训练让你的出菜节奏更快（全菜品冷却 -0.5 秒）。"},
 		{"effect_id": "gain_random_technique", "summary": "你领悟了一门新的技法。"},
 	],
@@ -139,6 +139,12 @@ func _ready():
 
 	_apply_responsive_layout()
 	get_viewport().size_changed.connect(_on_viewport_resized)
+
+	# Tutorial: auto-trigger on first game
+	if SaveManager.get_total_games() == 0 and not SaveManager.is_tutorial_done():
+		var tut = preload("res://ui/TutorialOverlay.tscn").instantiate()
+		add_child(tut)
+		tut.start_tutorial()
 
 func _setup_level_display() -> void:
 	var vbox: VBoxContainer = get_node_or_null("LeftSidebar/VBox") as VBoxContainer

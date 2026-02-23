@@ -166,7 +166,7 @@ const STAR_COLORS := {
 
 # === 关键词 ===
 const KEYWORD_TYPES := {
-	"buff": ["umami", "char_aroma", "plating", "knife_work", "spotlight", "aftertaste", "secret_recipe"],
+	"buff": ["umami", "plating", "knife_work", "spotlight", "aftertaste", "secret_recipe"],
 	"environment": ["greasy", "messy", "taste_fatigue", "dull"],
 	"mark": ["fusion", "mastered", "rich", "light"]
 }
@@ -174,16 +174,15 @@ const KEYWORD_TYPES := {
 # ============================================================
 #  关键词数值 — 每层效果
 # ============================================================
-const UMAMI_FLAVOR_PER_STACK := 3        # 鲜美：+3风味/层
-const CHAR_AROMA_FLAVOR_PER_STACK := 2   # 焦香：+2风味/层
-const PLATING_PRES_PER_STACK := 3        # 摆盘：+3卖相/层
-const KNIFE_WORK_TECH_PER_STACK := 2     # 刀工：+2技法/层
-const SPOTLIGHT_CD_PER_STACK := 1.0      # 瞩目：-1秒CD/层(消耗)
-const AFTERTASTE_FLAVOR_MULT := 0.30     # 回味：+30%风味/层
-const SECRET_RECIPE_FLAVOR_MULT := 0.50  # 秘方：+50%风味/层(消耗)
-const GREASY_FLAVOR_PENALTY := 2         # 油腻：-2风味/层
+const FLAVOR_BOOST_PER_STACK := 1        # 提味：+1美味度/层
+const VISUAL_BOOST_PER_STACK := 1        # 增色：+1卖相/层
+const TECH_BOOST_PER_STACK := 1          # 精技：+1技法/层
+const SPOTLIGHT_CD_PER_STACK := 1.0      # 加速：-1秒CD/层(消耗)
+const AFTERTASTE_FLAVOR_MULT := 0.30     # 回味：+30%美味度/层
+const SECRET_RECIPE_FLAVOR_MULT := 0.50  # 秘方：+50%美味度/层(消耗)
+const GREASY_FLAVOR_PENALTY := 2         # 油腻：-2美味度/层
 const MESSY_PRES_PENALTY := 2            # 杂乱：-2卖相/层
-const TASTE_FATIGUE_MULT := -0.15        # 味觉疲劳：-15%风味/层
+const TASTE_FATIGUE_MULT := -0.15        # 疲劳：-15%美味度/层
 const DULL_CD_PENALTY := 1.0             # 沉闷：+1秒CD/层
 
 
@@ -210,6 +209,7 @@ const BATTLE_SYSTEM_V2 := true
 
 # V2 Showdown
 const V2_SHOWDOWN_DURATION := 30.0
+const SCORE_DIFF_WIN_THRESHOLD := 100.0
 
 # V2 Scoring - Base
 const V2_TECH_MULT_BASE := 0.85
@@ -332,10 +332,10 @@ const EDGE_RIGHT_SCORE_BONUS := 0.20         # 最右位：得分+20%
 # ============================================================
 #  关键词高层乘算转化（5+层时触发）
 # ============================================================
-const KEYWORD_MULT_THRESHOLD := 5            # 5层以上触发乘算
-const UMAMI_HIGH_SCORE_MULT := 0.03          # 鲜：总分×(1+层数×0.03)
-const PLATING_HIGH_SCORE_MULT := 0.02        # 摆盘：总分×(1+层数×0.02)
-const KNIFE_WORK_HIGH_CD_PERCENT := 0.05     # 刀工：基础CD-5%×层数
+const KEYWORD_MULT_THRESHOLD := 10           # 10层以上触发乘算
+const UMAMI_HIGH_SCORE_MULT := 0.03          # 提味：总分×(1+层数×0.03)
+const PLATING_HIGH_SCORE_MULT := 0.02        # 增色：总分×(1+层数×0.02)
+const KNIFE_WORK_HIGH_CD_PERCENT := 0.05     # 精技：基础CD-5%×层数
 	# ============================================================
 #  标签冲突规则
 # ============================================================

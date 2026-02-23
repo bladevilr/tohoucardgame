@@ -97,11 +97,11 @@ static func get_keyword_chinese(kw_id: String) -> String:
 		return kw.get("name", kw_id)
 	# 备用翻译
 	var map = {
-		"umami": "鲜美", "char_aroma": "焦香", "plating": "摆盘",
-		"knife_work": "刀�?, "spotlight": "瞩目",
+		"umami": "提味", "plating": "增色",
+		"knife_work": "精技", "spotlight": "加速",
 		"aftertaste": "回味", "secret_recipe": "秘方",
 		"greasy": "油腻", "messy": "杂乱",
-		"taste_fatigue": "味觉疲劳", "dull": "沉闷",
+		"taste_fatigue": "疲劳", "dull": "沉闷",
 		"fusion": "融合", "mastered": "精进",
 		"rich": "浓郁", "light": "清淡",
 	}
@@ -166,7 +166,7 @@ static func translate_single_effect(eff: Dictionary) -> String:
 
 		"stat_bonus":
 			var parts: Array[String] = []
-			for attr in ["flavor", "presentation", "technique", "aroma"]:
+			for attr in ["flavor", "presentation", "technique"]:
 				var val = eff.get(attr, 0)
 				if typeof(val) == TYPE_FLOAT or typeof(val) == TYPE_INT:
 					if float(val) != 0:
@@ -185,7 +185,7 @@ static func translate_single_effect(eff: Dictionary) -> String:
 
 		"stat_bonus_for_target":
 			var parts: Array[String] = []
-			for attr in ["flavor", "presentation", "technique", "aroma"]:
+			for attr in ["flavor", "presentation", "technique"]:
 				var val = eff.get(attr, 0)
 				if typeof(val) == TYPE_FLOAT or typeof(val) == TYPE_INT:
 					if float(val) != 0:
@@ -263,7 +263,7 @@ static func translate_single_effect(eff: Dictionary) -> String:
 
 		"score":
 			var parts: Array[String] = []
-			for attr in ["flavor", "presentation", "technique", "aroma"]:
+			for attr in ["flavor", "presentation", "technique"]:
 				var val = eff.get(attr, 0)
 				if typeof(val) == TYPE_FLOAT or typeof(val) == TYPE_INT:
 					if float(val) > 0:
@@ -462,8 +462,7 @@ static func _translate_condition(cond) -> String:
 
 static func _attr_chinese(attr: String) -> String:
 	match attr:
-		"flavor": return "味道"
+		"flavor": return "美味度"
 		"presentation": return "卖相"
-		"technique": return "技�?
-		"aroma": return "香气"
+		"technique": return "技法"
 	return attr

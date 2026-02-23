@@ -15,7 +15,7 @@ static func get_dishes() -> Array:
 			"flavor": 4, "mod_slots": 2,
 			"tags": ["sweet", "light"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "plating", "keyword_stacks": 1, "if_position": "rightmost", "then": {"add_keyword": "aftertaste", "keyword_stacks": 1}, "else": {}}, "desc": "获得1层摆盘；若在最右侧，额外获得1层回味"}
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "plating", "keyword_stacks": 3, "if_position": "rightmost", "then": {"add_keyword": "aftertaste", "keyword_stacks": 1}, "else": {}}, "desc": "获得3层增色；若在最右侧，额外获得1层回味"}
 			],
 			"on_activate": [],
 			"description": "三色糯米团子串在竹签上，软糯清甜。"
@@ -49,7 +49,7 @@ static func get_dishes() -> Array:
 			"flavor": 3, "mod_slots": 2,
 			"tags": ["sweet", "light"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "plating", "keyword_stacks": 1, "type": "stat_bonus", "presentation": 2}, "desc": "获得1层摆盘，卖相+2"},
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "plating", "keyword_stacks": 3, "type": "stat_bonus", "presentation": 2}, "desc": "获得3层增色，卖相+2"},
 				{"event": "friend_activate", "effect": {"reduce_cooldown_self": 1.0}, "desc": "己方其他菜品激活时，自身CD-1秒"}
 			],
 			"on_activate": [],
@@ -61,7 +61,7 @@ static func get_dishes() -> Array:
 			"flavor": 5, "mod_slots": 2,
 			"tags": ["sweet", "grilled"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"random_chance": 0.3, "on_success": {"flavor_mult": 2.0, "add_keyword": "aftertaste", "keyword_stacks": 1}, "add_keyword": "char_aroma", "keyword_stacks": 1}, "desc": "获得1层焦香；30%概率风味翻倍并获得1层回味"}
+				{"event": "item_activated", "condition": "self", "effect": {"random_chance": 0.3, "on_success": {"flavor_mult": 2.0, "add_keyword": "aftertaste", "keyword_stacks": 1}, "add_keyword": "umami", "keyword_stacks": 2}, "desc": "获得2层提味；30%概率美味度翻倍并获得1层回味"}
 			],
 			"on_activate": [],
 			"description": "鱼形的鲷鱼模具烤出的红豆馅饼。"
@@ -72,7 +72,7 @@ static func get_dishes() -> Array:
 			"flavor": 4, "mod_slots": 2,
 			"tags": ["sweet", "light"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "plating", "keyword_stacks": 1, "clear_environment": "taste_fatigue", "clear_amount": 1}, "desc": "获得1层摆盘；清除1层味觉疲劳"}
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "plating", "keyword_stacks": 3, "clear_environment": "taste_fatigue", "clear_amount": 1}, "desc": "获得3层增色；清除1层疲劳"}
 			],
 			"on_activate": [],
 			"description": "寒天冻配红豆与水果的清凉甜品。"
@@ -107,7 +107,7 @@ static func get_dishes() -> Array:
 			"flavor": 8, "mod_slots": 2,
 			"tags": ["sweet", "tea"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "plating", "keyword_stacks": 1, "add_keyword_2": "aftertaste", "keyword_stacks_2": 1, "clear_environment": "greasy", "clear_amount": 2, "bonus_on_clear": {"type": "stat_bonus", "presentation": 5}}, "desc": "获得1层摆盘和1层回味；清除2层油腻→+5卖相"}
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "plating", "keyword_stacks": 3, "add_keyword_2": "aftertaste", "keyword_stacks_2": 1, "clear_environment": "greasy", "clear_amount": 2, "bonus_on_clear": {"type": "stat_bonus", "presentation": 5}}, "desc": "获得3层增色和1层回味；清除2层油腻→+5卖相"}
 			],
 			"on_activate": [],
 			"description": "抹茶冰淇淋与白玉团子的层叠芭菲。"
@@ -118,7 +118,7 @@ static func get_dishes() -> Array:
 			"flavor": 7, "mod_slots": 2,
 			"tags": ["sweet", "rich"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "aftertaste", "keyword_stacks": 1, "flavor_mult": 1.2, "reduce_cooldown_adjacent": 1.0}, "desc": "获得1层回味，风味×1.2，相邻CD-1秒"}
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "aftertaste", "keyword_stacks": 1, "flavor_mult": 1.2, "reduce_cooldown_adjacent": 1.0}, "desc": "获得1层回味，美味度×1.2，相邻CD-1秒"}
 			],
 			"on_activate": [],
 			"description": "蜂蜜浸润的绵密长崎蛋糕。"
@@ -129,7 +129,7 @@ static func get_dishes() -> Array:
 			"flavor": 6, "mod_slots": 2,
 			"tags": ["sweet", "seasonal", "light"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "plating", "keyword_stacks": 2, "type": "stat_bonus", "presentation": 5, "if_adjacent_has_tag": "sweet", "then_bonus": {"add_keyword": "aftertaste", "keyword_stacks": 1}}, "desc": "获得2层摆盘，卖相+5；若相邻有甜品(甜味)，额外获得1层回味"}
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "plating", "keyword_stacks": 6, "type": "stat_bonus", "presentation": 5, "if_adjacent_has_tag": "sweet", "then_bonus": {"add_keyword": "aftertaste", "keyword_stacks": 1}}, "desc": "获得6层增色，卖相+5；若相邻有甜品(甜味)，额外获得1层回味"}
 			],
 			"on_activate": [],
 			"description": "樱叶包裹的粉色糯米饼，春意盎然。"
@@ -140,7 +140,7 @@ static func get_dishes() -> Array:
 			"flavor": 8, "mod_slots": 2,
 			"tags": ["sweet", "mastered", "rich"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"type": "first_activate_bonus", "flavor": 10, "presentation": 5, "extra": {"add_keyword": "plating", "keyword_stacks": 2, "add_keyword_2": "aftertaste", "keyword_stacks_2": 1}}, "desc": "首次激活风味+10、卖相+5，获得2层摆盘和1层回味"}
+				{"event": "item_activated", "condition": "self", "effect": {"type": "first_activate_bonus", "flavor": 10, "presentation": 5, "extra": {"add_keyword": "plating", "keyword_stacks": 6, "add_keyword_2": "aftertaste", "keyword_stacks_2": 1}}, "desc": "首次激活美味度+10、卖相+5，获得6层增色和1层回味"}
 			],
 			"on_activate": [],
 			"description": "数十层薄饼与奶油交叠的千层蛋糕。"
@@ -151,7 +151,7 @@ static func get_dishes() -> Array:
 			"flavor": 6, "mod_slots": 2,
 			"tags": ["sweet", "seasonal", "light"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "plating", "keyword_stacks": 1, "add_keyword_2": "aftertaste", "keyword_stacks_2": 1, "if_keyword_gte": {"keyword": "aftertaste", "stacks": 3}, "then": {"flavor": 10}, "else": {}}, "desc": "获得1层摆盘和1层回味；回味≥3时额外+10风味"}
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "plating", "keyword_stacks": 3, "add_keyword_2": "aftertaste", "keyword_stacks_2": 1, "if_keyword_gte": {"keyword": "aftertaste", "stacks": 3}, "then": {"flavor": 10}, "else": {}}, "desc": "获得3层增色和1层回味；回味≥3时额外+10美味度"}
 			],
 			"on_activate": [],
 			"description": "月夜下供奉的白色圆月团子。"
@@ -162,7 +162,7 @@ static func get_dishes() -> Array:
 			"flavor": 6, "mod_slots": 2,
 			"tags": ["sweet", "egg", "rich"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "aftertaste", "keyword_stacks": 1, "delayed_trigger": {"delay_ticks": 15, "effect": {"add_keyword": "aftertaste", "keyword_stacks": 2, "flavor": 8}}}, "desc": "获得1层回味；1.5秒后额外获得2层回味和+8风味"}
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "aftertaste", "keyword_stacks": 1, "delayed_trigger": {"delay_ticks": 15, "effect": {"add_keyword": "aftertaste", "keyword_stacks": 2, "flavor": 8}}}, "desc": "获得1层回味；1.5秒后额外获得2层回味和+8美味度"}
 			],
 			"on_activate": [],
 			"description": "焦糖覆顶的丝滑日式布丁。"
@@ -173,8 +173,8 @@ static func get_dishes() -> Array:
 			"flavor": 6, "mod_slots": 2,
 			"tags": ["sweet"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "plating", "keyword_stacks": 1, "reduce_cooldown_self": 1.0}, "desc": "获得1层摆盘，自身CD-1秒"},
-				{"event": "adjacent_activate", "condition": {"has_tag": "sweet"}, "effect": {"add_keyword": "plating", "keyword_stacks": 1}, "desc": "相邻甜品(甜味)激活时，获得1层摆盘"}
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "plating", "keyword_stacks": 3, "reduce_cooldown_self": 1.0}, "desc": "获得3层增色，自身CD-1秒"},
+				{"event": "adjacent_activate", "condition": {"has_tag": "sweet"}, "effect": {"add_keyword": "plating", "keyword_stacks": 3}, "desc": "相邻甜品(甜味)激活时，获得3层增色"}
 			],
 			"on_activate": [],
 			"description": "薄饼卷裹鲜奶油与水果的街头甜品。"
@@ -185,8 +185,8 @@ static func get_dishes() -> Array:
 			"flavor": 5, "mod_slots": 2,
 			"tags": ["sweet", "mastered"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"type": "first_activate_bonus", "presentation": 8, "extra": {"add_keyword": "plating", "keyword_stacks": 2}}, "desc": "首次激活卖相+8，获得2层摆盘"},
-				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "plating", "keyword_stacks": 1}, "desc": "获得1层摆盘"}
+				{"event": "item_activated", "condition": "self", "effect": {"type": "first_activate_bonus", "presentation": 8, "extra": {"add_keyword": "plating", "keyword_stacks": 6}}, "desc": "首次激活卖相+8，获得6层增色"},
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "plating", "keyword_stacks": 3}, "desc": "获得3层增色"}
 			],
 			"on_activate": [],
 			"description": "精心造型的人偶形状手工饼干。"
@@ -197,7 +197,7 @@ static func get_dishes() -> Array:
 			"flavor": 7, "mod_slots": 2,
 			"tags": ["sweet", "seasonal"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "aftertaste", "keyword_stacks": 2, "accumulate": {"counter_id": "kinton_layers", "increment": 1, "threshold": 3, "reset_counter": true, "on_threshold": {"flavor": 20, "add_keyword": "secret_recipe", "keyword_stacks": 1}}}, "desc": "获得2层回味；每3次爆发+20风味并获得1层秘方"}
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "aftertaste", "keyword_stacks": 2, "accumulate": {"counter_id": "kinton_layers", "increment": 1, "threshold": 3, "reset_counter": true, "on_threshold": {"flavor": 20, "add_keyword": "secret_recipe", "keyword_stacks": 1}}}, "desc": "获得2层回味；每3次爆发+20美味度并获得1层秘方"}
 			],
 			"on_activate": [],
 			"description": "秋栗捣成的金黄甜泥，浓郁甘甜。"
@@ -210,7 +210,7 @@ static func get_dishes() -> Array:
 			"flavor": 12, "mod_slots": 2,
 			"tags": ["sweet", "seasonal", "mastered", "light"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"type": "first_activate_bonus", "presentation": 15, "extra": {"add_keyword": "plating", "keyword_stacks": 3, "add_keyword_2": "aftertaste", "keyword_stacks_2": 2}}, "desc": "首次激活卖相+15，获得3层摆盘和2层回味"}
+				{"event": "item_activated", "condition": "self", "effect": {"type": "first_activate_bonus", "presentation": 15, "extra": {"add_keyword": "plating", "keyword_stacks": 9, "add_keyword_2": "aftertaste", "keyword_stacks_2": 2}}, "desc": "首次激活卖相+15，获得9层增色和2层回味"}
 			],
 			"on_activate": [],
 			"description": "匠人手制的季节生菓子拼盘。"
@@ -221,7 +221,7 @@ static func get_dishes() -> Array:
 			"flavor": 14, "mod_slots": 2,
 			"tags": ["sweet", "rich", "mastered"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "plating", "keyword_stacks": 2, "add_keyword_2": "aftertaste", "keyword_stacks_2": 1, "if_keyword_gte": {"keyword": "aftertaste", "stacks": 3}, "then": {"flavor_mult": 1.5}, "else": {"flavor_mult": 1.2}}, "desc": "获得2层摆盘和1层回味；回味≥3时风味×1.5，否则×1.2"}
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "plating", "keyword_stacks": 6, "add_keyword_2": "aftertaste", "keyword_stacks_2": 1, "if_keyword_gte": {"keyword": "aftertaste", "stacks": 3}, "then": {"flavor_mult": 1.5}, "else": {"flavor_mult": 1.2}}, "desc": "获得6层增色和1层回味；回味≥3时美味度×1.5，否则×1.2"}
 			],
 			"on_activate": [],
 			"description": "巧克力与咖啡交织的多层法式蛋糕。"
@@ -232,7 +232,7 @@ static func get_dishes() -> Array:
 			"flavor": 10, "mod_slots": 2,
 			"tags": ["sweet", "rich"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "aftertaste", "keyword_stacks": 1, "accumulate": {"counter_id": "brulee_heat", "increment": 1, "threshold": 3, "reset_counter": true, "on_threshold": {"flavor": 35, "add_keyword": "secret_recipe", "keyword_stacks": 1}}}, "desc": "获得1层回味；每3次爆发+35风味并获得1层秘方"}
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "aftertaste", "keyword_stacks": 1, "accumulate": {"counter_id": "brulee_heat", "increment": 1, "threshold": 3, "reset_counter": true, "on_threshold": {"flavor": 35, "add_keyword": "secret_recipe", "keyword_stacks": 1}}}, "desc": "获得1层回味；每3次爆发+35美味度并获得1层秘方"}
 			],
 			"on_activate": [],
 			"description": "炙烤糖壳下的丝滑香草蛋奶。"
@@ -243,7 +243,7 @@ static func get_dishes() -> Array:
 			"flavor": 12, "mod_slots": 2,
 			"tags": ["sweet", "seasonal", "mastered"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"type": "first_activate_bonus", "flavor": 15, "extra": {"add_keyword": "aftertaste", "keyword_stacks": 3, "add_keyword_2": "secret_recipe", "keyword_stacks_2": 1}}, "desc": "首次激活风味+15，获得3层回味和1层秘方"}
+				{"event": "item_activated", "condition": "self", "effect": {"type": "first_activate_bonus", "flavor": 15, "extra": {"add_keyword": "aftertaste", "keyword_stacks": 3, "add_keyword_2": "secret_recipe", "keyword_stacks_2": 1}}, "desc": "首次激活美味度+15，获得3层回味和1层秘方"}
 			],
 			"on_activate": [],
 			"description": "月兔特制的精致月饼，馅料饱满。"
@@ -254,7 +254,7 @@ static func get_dishes() -> Array:
 			"flavor": 11, "mod_slots": 2,
 			"tags": ["sweet", "rich"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "plating", "keyword_stacks": 2, "type": "stat_bonus", "presentation": 5, "chain_right": {"range": 1, "effect": {"add_keyword": "plating", "keyword_stacks": 1}}}, "desc": "获得2层摆盘，卖相+5，向右传1层摆盘"}
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "plating", "keyword_stacks": 6, "type": "stat_bonus", "presentation": 5, "chain_right": {"range": 1, "effect": {"add_keyword": "plating", "keyword_stacks": 3}}}, "desc": "获得6层增色，卖相+5，向右传3层增色"}
 			],
 			"on_activate": [],
 			"description": "鲜草莓与轻奶油的日式蛋糕。"
@@ -265,7 +265,7 @@ static func get_dishes() -> Array:
 			"flavor": 12, "mod_slots": 2,
 			"tags": ["sweet", "mastered", "seasonal"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "aftertaste", "keyword_stacks": 2, "if_keyword_gte": {"keyword": "aftertaste", "stacks": 4}, "then": {"flavor_mult": 1.5, "add_keyword": "secret_recipe", "keyword_stacks": 1}, "else": {"flavor_mult": 1.2}}, "desc": "获得2层回味；回味≥4时风味×1.5并获得秘方，否则×1.2"}
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "aftertaste", "keyword_stacks": 2, "if_keyword_gte": {"keyword": "aftertaste", "stacks": 4}, "then": {"flavor_mult": 1.5, "add_keyword": "secret_recipe", "keyword_stacks": 1}, "else": {"flavor_mult": 1.2}}, "desc": "获得2层回味；回味≥4时美味度×1.5并获得秘方，否则×1.2"}
 			],
 			"on_activate": [],
 			"description": "栗子奶油细丝堆成的优雅小山。"
@@ -276,7 +276,7 @@ static func get_dishes() -> Array:
 			"flavor": 11, "mod_slots": 2,
 			"tags": ["sweet", "mastered"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "plating", "keyword_stacks": 2, "add_keyword_2": "knife_work", "keyword_stacks_2": 1, "reduce_cooldown_adjacent": 1.0}, "desc": "获得2层摆盘和1层刀工，相邻CD-1秒"}
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "plating", "keyword_stacks": 6, "add_keyword_2": "knife_work", "keyword_stacks_2": 2, "reduce_cooldown_adjacent": 1.0}, "desc": "获得6层增色和2层精技，相邻CD-1秒"}
 			],
 			"on_activate": [],
 			"description": "酥脆塔壳上排列的新鲜水果宝石。"
@@ -287,7 +287,7 @@ static func get_dishes() -> Array:
 			"flavor": 13, "mod_slots": 2,
 			"tags": ["sweet", "rich"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "aftertaste", "keyword_stacks": 2, "delayed_trigger": {"delay_ticks": 20, "effect": {"add_keyword": "aftertaste", "keyword_stacks": 3, "flavor": 15}}}, "desc": "获得2层回味；2秒后额外获得3层回味和+15风味"}
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "aftertaste", "keyword_stacks": 2, "delayed_trigger": {"delay_ticks": 20, "effect": {"add_keyword": "aftertaste", "keyword_stacks": 3, "flavor": 15}}}, "desc": "获得2层回味；2秒后额外获得3层回味和+15美味度"}
 			],
 			"on_activate": [],
 			"description": "咖啡酒浸手指饼与马斯卡彭的意式经典。"
@@ -298,8 +298,8 @@ static func get_dishes() -> Array:
 			"flavor": 10, "mod_slots": 2,
 			"tags": ["sweet", "mastered"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"type": "first_activate_bonus", "presentation": 12, "extra": {"add_keyword": "plating", "keyword_stacks": 3}}, "desc": "首次激活卖相+12，获得3层摆盘"},
-				{"event": "item_activated", "condition": "self", "effect": {"if_keyword_gte": {"keyword": "plating", "stacks": 5}, "then": {"presentation_mult": 1.3}, "else": {}}, "desc": "摆盘≥5层时卖相×1.3"}
+				{"event": "item_activated", "condition": "self", "effect": {"type": "first_activate_bonus", "presentation": 12, "extra": {"add_keyword": "plating", "keyword_stacks": 9}}, "desc": "首次激活卖相+12，获得9层增色"},
+				{"event": "item_activated", "condition": "self", "effect": {"if_keyword_gte": {"keyword": "plating", "stacks": 5}, "then": {"presentation_mult": 1.3}, "else": {}}, "desc": "增色≥5层时卖相×1.3"}
 			],
 			"on_activate": [],
 			"description": "五彩马卡龙堆叠成的华丽糖塔。"
@@ -312,8 +312,8 @@ static func get_dishes() -> Array:
 			"flavor": 16, "mod_slots": 2,
 			"tags": ["sweet", "mastered"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "plating", "keyword_stacks": 3, "type": "first_activate_bonus", "presentation": 25, "extra": {"add_keyword": "aftertaste", "keyword_stacks": 2}}, "desc": "首次激活卖相+25，获得3层摆盘和2层回味"},
-				{"event": "item_activated", "condition": "self", "effect": {"if_keyword_gte": {"keyword": "plating", "stacks": 5}, "then": {"presentation_mult": 1.5}, "else": {}}, "desc": "摆盘≥5层时卖相×1.5"}
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "plating", "keyword_stacks": 9, "type": "first_activate_bonus", "presentation": 25, "extra": {"add_keyword": "aftertaste", "keyword_stacks": 2}}, "desc": "首次激活卖相+25，获得9层增色和2层回味"},
+				{"event": "item_activated", "condition": "self", "effect": {"if_keyword_gte": {"keyword": "plating", "stacks": 5}, "then": {"presentation_mult": 1.5}, "else": {}}, "desc": "增色≥5层时卖相×1.5"}
 			],
 			"on_activate": [],
 			"description": "拉糖工艺打造的甜蜜建筑。"
@@ -324,7 +324,7 @@ static func get_dishes() -> Array:
 			"flavor": 18, "mod_slots": 2,
 			"tags": ["sweet", "mastered", "rich"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "plating", "keyword_stacks": 3, "add_keyword_2": "aftertaste", "keyword_stacks_2": 3, "if_keyword_gte": {"keyword": "aftertaste", "stacks": 5}, "then": {"flavor_mult": 2.0, "add_keyword_2": "secret_recipe", "keyword_stacks_2": 1}, "else": {"flavor_mult": 1.3}}, "desc": "获得3层摆盘和3层回味；回味≥5时风味×2.0并获得秘方，否则×1.3"}
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "plating", "keyword_stacks": 9, "add_keyword_2": "aftertaste", "keyword_stacks_2": 3, "if_keyword_gte": {"keyword": "aftertaste", "stacks": 5}, "then": {"flavor_mult": 2.0, "add_keyword_2": "secret_recipe", "keyword_stacks_2": 1}, "else": {"flavor_mult": 1.3}}, "desc": "获得9层增色和3层回味；回味≥5时美味度×2.0并获得秘方，否则×1.3"}
 			],
 			"on_activate": [],
 			"description": "融合幻想乡风味的梦幻芭菲。"
@@ -335,7 +335,7 @@ static func get_dishes() -> Array:
 			"flavor": 16, "mod_slots": 2,
 			"tags": ["sweet", "mastered"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"type": "first_activate_bonus", "flavor": 25, "presentation": 15, "extra": {"add_keyword": "aftertaste", "keyword_stacks": 3, "add_keyword_2": "secret_recipe", "keyword_stacks_2": 1, "haste_adjacent": 2.0, "haste_mult": 2.0}}, "desc": "首次激活风味+25、卖相+15，获得3层回味和1层秘方，相邻加速2秒"}
+				{"event": "item_activated", "condition": "self", "effect": {"type": "first_activate_bonus", "flavor": 25, "presentation": 15, "extra": {"add_keyword": "aftertaste", "keyword_stacks": 3, "add_keyword_2": "secret_recipe", "keyword_stacks_2": 1, "haste_adjacent": 2.0, "haste_mult": 2.0}}, "desc": "首次激活美味度+25、卖相+15，获得3层回味和1层秘方，相邻加速2秒"}
 			],
 			"on_activate": [],
 			"description": "据说能延年益寿的蓬莱药膳甜品。"
@@ -357,7 +357,7 @@ static func get_dishes() -> Array:
 			"flavor": 14, "mod_slots": 2,
 			"tags": ["sweet", "mastered"],
 			"triggers": [
-				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "plating", "keyword_stacks": 3, "add_keyword_2": "aftertaste", "keyword_stacks_2": 3, "chain_right": {"range": 2, "effect": {"add_keyword": "plating", "keyword_stacks": 2, "add_keyword_2": "aftertaste", "keyword_stacks_2": 1}}, "reduce_cooldown_adjacent": 1.0}, "desc": "获得3层摆盘和3层回味；向右2格传2层摆盘+1层回味；相邻CD-1秒"}
+				{"event": "item_activated", "condition": "self", "effect": {"add_keyword": "plating", "keyword_stacks": 9, "add_keyword_2": "aftertaste", "keyword_stacks_2": 3, "chain_right": {"range": 2, "effect": {"add_keyword": "plating", "keyword_stacks": 6, "add_keyword_2": "aftertaste", "keyword_stacks_2": 1}}, "reduce_cooldown_adjacent": 1.0}, "desc": "获得9层增色和3层回味；向右2格传6层增色+1层回味；相邻CD-1秒"}
 			],
 			"on_activate": [],
 			"description": "以人偶为主题的精致多层蛋糕。"

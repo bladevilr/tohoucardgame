@@ -39,19 +39,15 @@ func apply_keyword_modifiers(player_idx: int, base_scores: Dictionary) -> Dictio
 	# Buff keywords
 	var umami = player.get_keyword_stacks("umami")
 	if umami > 0:
-		modified["flavor"] = modified.get("flavor", 0) + umami * 3
-
-	var char_aroma = player.get_keyword_stacks("char_aroma")
-	if char_aroma > 0:
-		modified["flavor"] = modified.get("flavor", 0) + char_aroma * 2
+		modified["flavor"] = modified.get("flavor", 0) + umami * GameConfig.FLAVOR_BOOST_PER_STACK
 
 	var plating = player.get_keyword_stacks("plating")
 	if plating > 0:
-		modified["presentation"] = modified.get("presentation", 0) + plating * 3
+		modified["presentation"] = modified.get("presentation", 0) + plating * GameConfig.VISUAL_BOOST_PER_STACK
 
 	var knife_work = player.get_keyword_stacks("knife_work")
 	if knife_work > 0:
-		modified["technique"] = modified.get("technique", 0) + knife_work * 2
+		modified["technique"] = modified.get("technique", 0) + knife_work * GameConfig.TECH_BOOST_PER_STACK
 
 	# Aftertaste: +30% flavor per stack (boosted by kanmi synergy)
 	var aftertaste = player.get_keyword_stacks("aftertaste")

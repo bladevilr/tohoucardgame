@@ -20,7 +20,7 @@ class_name DishData
 ## Shop cost
 @export var cost: int = 2
 ## Base stats
-@export var base_stats: Dictionary = {"flavor": 0, "presentation": 0, "technique": 0, "aroma": 0}
+@export var base_stats: Dictionary = {"flavor": 0, "presentation": 0, "technique": 0}
 ## Effects executed when this item activates (serves)
 @export var on_activate: Array[Dictionary] = []
 ## Trigger conditions and effects

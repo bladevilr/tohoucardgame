@@ -87,6 +87,11 @@ func tick(delta: float) -> void:
 	_elapsed += delta
 	SignalBus.showdown_tick.emit(_elapsed)
 
+	# 分差提前结束
+	if absf(_scores[0] - _scores[1]) >= GameConfig.SCORE_DIFF_WIN_THRESHOLD:
+		_finished = true
+		return
+
 	# 30 秒时限检查
 	if _elapsed >= GameConfig.V2_SHOWDOWN_DURATION:
 		_finished = true
@@ -130,7 +135,7 @@ func _activate_item(p_idx: int, runtime: Dictionary, _multicast_depth: int = 0) 
 		"item_idx": runtime.slot_idx,
 		"item_data": item,
 		"activate_count": runtime.activate_count,
-		"score_bonus": {"flavor": 0, "technique": 0, "presentation": 0, "aroma": 0},
+		"score_bonus": {"flavor": 0, "technique": 0, "presentation": 0},
 	}
 	_trigger_system.process_event("item_activated", context)
 	var trigger_bonus: float = 0.0
@@ -147,7 +152,7 @@ func _activate_item(p_idx: int, runtime: Dictionary, _multicast_depth: int = 0) 
 	if plating_stacks >= GameConfig.KEYWORD_MULT_THRESHOLD:
 		score *= (1.0 + plating_stacks * GameConfig.PLATING_HIGH_SCORE_MULT)
 
-	# ---- 阶段4.6: 刀工高层CD减少 ----
+	# ---- 阶段4.6: 精技高层CD减少 ----
 	var kw_stacks: int = player.get_keyword_stacks("knife_work")
 	if kw_stacks >= GameConfig.KEYWORD_MULT_THRESHOLD:
 		var kw_cd_percent: float = 0.05
@@ -543,6 +548,7 @@ func get_result() -> Dictionary:
 	return {
 		"score_a": _scores[0],
 		"score_b": _scores[1],
+		"score_diff": _scores[0] - _scores[1],
 		"winner": winner,
 		"elapsed": _elapsed,
 		"timeline": _timeline,

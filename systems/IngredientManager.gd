@@ -147,12 +147,12 @@ func _process_special_effect(player: PlayerState, ingredient: Dictionary, dish: 
 			})
 			dish["triggers"] = triggers
 		
-		"grant_char_aroma_3":
-			# Yatagarasu Flame: grants 3 char_aroma at showdown start
+		"grant_umami_6":
+			# Yatagarasu Flame: grants 6 umami at showdown start
 			var triggers = dish.get("triggers", [])
 			triggers.append({
 				"event": "on_showdown_start",
-				"effect": {"type": "gain_keyword", "keyword": "char_aroma", "stacks": 3}
+				"effect": {"type": "gain_keyword", "keyword": "umami", "stacks": 6}
 			})
 			dish["triggers"] = triggers
 
@@ -203,7 +203,7 @@ func describe_special_effect(effect_id: String) -> String:
 		"fermented_growth_boost":
 			return "发酵类效果成长速度提升"
 		"umami_on_3rd_activate":
-			return "每第3次上菜时额外获得1层鲜美"
+			return "每第3次上菜时额外获得1层提味"
 		"dessert_zone_bonus":
 			return "甜品区菜品获得额外加成"
 		"addiction_double_stack":
@@ -223,8 +223,8 @@ func describe_special_effect(effect_id: String) -> String:
 		"grant_secret_recipe":
 			return "开场获得1层秘方"
 		"refreshing_full_clear":
-			return "开场清除全部沉闷与味觉疲劳"
-		"grant_char_aroma_3":
-			return "开场获得3层焦香"
+			return "开场清除全部沉闷与疲劳"
+		"grant_umami_6":
+			return "开场获得6层提味"
 		_:
 			return "无特殊效果" if effect_id == "" else "特殊效果"

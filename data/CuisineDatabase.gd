@@ -9,51 +9,51 @@ func _ready():
 func _init_cuisines():
 	# === 三大基本菜系 ===
 	_add_cuisine("washoku", "和食",
-		{flavor="normal", aroma="strong", technique="strong", presentation="normal"},
+		{flavor="normal", technique="strong", presentation="normal"},
 		{count=3, name="旬味极致", effect={per_washoku_flavor_bonus=0.10}, desc="「旬の味を極める」——三道和食共鸣，季节的精华在舌尖绽放。每道和食风味+10%。"})
 
 	_add_cuisine("chuuka", "中华",
-		{flavor="strong", aroma="strong", technique="normal", presentation="weak"},
+		{flavor="strong", technique="normal", presentation="weak"},
 		{count=3, name="火候精通", effect={chuuka_cd_reduction=0.15}, desc="「火候就是一切」——三道中华的锅气汇聚，炉火纯青。所有中华CD-15%。"})
 
 	_add_cuisine("youshoku", "洋食",
-		{flavor="normal", aroma="normal", technique="strong", presentation="strong"},
+		{flavor="normal", technique="strong", presentation="strong"},
 		{count=3, name="美食美学", effect={presentation_output_bonus=0.25}, desc="「料理即是艺术」——三道洋食的美学共鸣，视觉盛宴。卖相产出+25%。"})
 
 	# === 三大特殊菜系 ===
 	_add_cuisine("yatai", "夜市",
-		{flavor="strong", aroma="very_strong", technique="weak", presentation="weak"},
+		{flavor="strong", technique="weak", presentation="weak"},
 		{count=3, name="夜市匠心", effect={first_activate_flavor_mult=1.5}, desc="「夜市的第一口最重要！」——三道夜市的匠心，开场即巅峰。首次激活风味×1.5。"})
 
 	_add_cuisine("kanmi", "甜品",
-		{flavor="normal", aroma="normal", technique="normal", presentation="very_strong"},
+		{flavor="normal", technique="normal", presentation="very_strong"},
 		{count=3, name="甘美回味", effect={aftertaste_bonus_mult=1.5}, desc="「甜蜜的回味久久不散」——三道甜品的甘美共鸣，回味无穷。回味关键词效果×1.5。"})
 
 	_add_cuisine("yakuzen", "药膳",
-		{flavor="weak", aroma="strong", technique="strong", presentation="normal"},
+		{flavor="weak", technique="strong", presentation="normal"},
 		{count=3, name="养生之道", effect={env_debuff_clear_bonus=1, secret_recipe_bonus=0.25}, desc="「药食同源，养生之道」——三道药膳的调和之力，净化身心。每次清除环境debuff额外清1层，秘方效果+25%。"})
 
 func _init_fusion_combos():
 	# === 二菜系Fusion (对应英雄双池) ===
 	_add_fusion("yatai_washoku", ["yatai", "washoku"],
 		"夜雀食桌",
-		{char_aroma_to_umami=true, conversion_rate=0.5},
-		"ミスティアの夜雀食堂——炭火的焦香在和风出汁中升华。每2层焦香自动转化为1层鲜美。")
+		{umami_bonus_mult=1.5},
+		"夜雀食堂的独特调味让提味效果×1.5。")
 
 	_add_fusion("youshoku_kanmi", ["youshoku", "kanmi"],
 		"完美午后",
 		{plating_double_effect=true, on_serve_sweet=true},
-		"红魔馆的完美午后——咲夜与爱丽丝的下午茶时光。甜味菜品激活时摆盘效果翻倍。")
+		"红魔馆的完美午后——咲夜与爱丽丝的下午茶时光。甜味菜品激活时增色效果翻倍。")
 
 	_add_fusion("washoku_youshoku", ["washoku", "youshoku"],
 		"白玉楼盛宴",
 		{knife_work_bonus_mult=1.3, large_dish_bonus=0.15},
-		"白玉楼的跨界盛宴——妖梦以双刀融合东西方刀工。刀工效果+30%，大型菜品全属性+15%。")
+		"白玉楼的跨界盛宴——妖梦以双刀融合东西方刀法。精技效果+30%，大型菜品全属性+15%。")
 
 	_add_fusion("chuuka_yatai", ["chuuka", "yatai"],
 		"龙之铁板",
-		{char_aroma_cap_increase=3, greasy_resistance=0.5},
-		"龙之铁板——美铃的气功与炭火的碰撞。焦香上限+3，油腻负面效果减半。")
+		{umami_cap_increase=3, greasy_resistance=0.5},
+		"龙之铁板——美铃的气功与炭火的碰撞。提味上限+3，油腻负面效果减半。")
 
 	_add_fusion("yatai_yakuzen", ["yatai", "yakuzen"],
 		"恋色魔炮",

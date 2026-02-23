@@ -16,8 +16,8 @@ func _init_keywords():
 		"重口味道让人越吃越上头。每次激活叠加2层上瘾，每层每秒产出1.5分。每5秒自然衰减10%层数。",
 		{})
 
-	_add("umami", "鲜美", "mechanic",
-		"谷氨酸的魔力，让周围的一切都更好吃。同菜系≥2道时，标记右侧邻居下次激活得分×1.8。",
+	_add("umami", "提味", "buff",
+		"每层+1美味度。10层以上获得额外总分加成。",
 		{})
 
 	_add("sizzling", "爆香", "mechanic",
@@ -32,12 +32,46 @@ func _init_keywords():
 		"一口清茶，满血复活。清除当前油腻层数的50%，每清1层获得3分并全场CD加速1秒。",
 		{})
 
-	_add("greasy", "油腻", "mechanic",
-		"好吃但太油，越吃越慢。同时拥有浓郁+油炸标签时叠加油腻，每层减慢全场CD 8%，最多20层。",
+	_add("greasy", "油腻", "environment",
+		"全场负面状态。每层-2美味度。",
 		{})
 
 	_add("fermented", "发酵", "mechanic",
 		"时间带来的深邃味道，越陈越香。首次激活得分×1.3，之后每次激活永久+1%（上限+30%）。",
+		{})
+
+	# === Buff Keywords ===
+	_add("plating", "增色", "buff",
+		"每层+1卖相。10层以上获得额外总分加成。",
+		{})
+
+	_add("knife_work", "精技", "buff",
+		"每层+1技法。10层以上额外减少冷却。",
+		{})
+
+	_add("spotlight", "加速", "buff",
+		"获得时立即消耗所有层数，每层缩短1秒CD。",
+		{})
+
+	_add("aftertaste", "回味", "buff",
+		"延迟效果。每层使下一道菜上桌时额外+30%美味度。",
+		{})
+
+	_add("secret_recipe", "秘方", "buff",
+		"上菜时消耗所有层数，每层+50%美味度。",
+		{})
+
+	# === Environment Debuffs ===
+	_add("messy", "杂乱", "environment",
+		"全场负面状态。每层-2卖相。",
+		{})
+
+	_add("taste_fatigue", "疲劳", "environment",
+		"全场负面状态。每层-15%美味度倍率。",
+		{})
+
+	_add("dull", "沉闷", "environment",
+		"负面状态。每层+1秒CD。",
 		{})
 
 	# === Culinary Tags (For Cookware / Synergies) ===

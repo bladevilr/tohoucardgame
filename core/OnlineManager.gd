@@ -77,14 +77,14 @@ func fetch_leaderboard(limit: int = 50, offset: int = 0) -> void:
 	if not _enabled:
 		return
 	var url := "/api/leaderboard?limit=%d&offset=%d&client_id=%s" % [limit, offset, client_id]
-	_get(url, func(response: Dictionary):
+	_http_get(url, func(response: Dictionary):
 		leaderboard_fetched.emit(response)
 	)
 
 func fetch_global_stats() -> void:
 	if not _enabled:
 		return
-	_get("/api/stats", func(response: Dictionary):
+	_http_get("/api/stats", func(response: Dictionary):
 		global_stats_fetched.emit(response)
 	)
 
@@ -114,7 +114,7 @@ func upload_shadow(snapshot: Dictionary) -> void:
 func fetch_random_shadow() -> void:
 	if not _enabled or client_id.is_empty():
 		return
-	_get("/api/random_shadow?client_id=%s" % client_id, func(response: Dictionary):
+	_http_get("/api/random_shadow?client_id=%s" % client_id, func(response: Dictionary):
 		shadow_fetched.emit(response)
 	)
 
@@ -138,7 +138,7 @@ func _post(path: String, payload: Dictionary, callback: Callable) -> void:
 	if err != OK:
 		http.queue_free()
 
-func _get(path: String, callback: Callable) -> void:
+func _http_get(path: String, callback: Callable) -> void:
 	var http := HTTPRequest.new()
 	http.timeout = TIMEOUT_SECONDS
 	add_child(http)

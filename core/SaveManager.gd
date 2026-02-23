@@ -30,7 +30,8 @@ func _reset_data() -> void:
 		"chef_stats": {},
 		"history": [],
 		"shadow_pool": [],
-		"client_id": ""
+		"client_id": "",
+		"tutorial_done": false
 	}
 
 func save_data() -> void:
@@ -117,3 +118,10 @@ func set_client_id(id: String) -> void:
 
 func get_client_id() -> String:
 	return str(_data.get("client_id", ""))
+
+func is_tutorial_done() -> bool:
+	return bool(_data.get("tutorial_done", false))
+
+func set_tutorial_done() -> void:
+	_data["tutorial_done"] = true
+	save_data()
